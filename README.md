@@ -4,12 +4,12 @@ A full-stack information system for storing verified student records with automa
 
 ## Stack
 
-- **Web** — Next.js, tRPC, Prisma, Auth.js, PostgreSQL
-- **CV** — Hono, Puppeteer
+- **Web**: Next.js, Prisma, Auth.js, PostgreSQL
+- **CV**: Hono, Puppeteer
 
 ## Prerequisites
 
-- [Node.js](https://nodejs.org/) (v20+)
+- [Node.js](https://nodejs.org/)
 - [PostgreSQL](https://www.postgresql.org/)
 
 ## Getting Started
