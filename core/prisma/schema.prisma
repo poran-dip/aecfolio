@@ -12,6 +12,40 @@ enum Role {
   FACULTY
 }
 
+enum Course {
+  BTECH
+  MTECH
+  BCA
+  MCA
+}
+
+enum Branch {
+  CSE
+  ETE
+  EE
+  IE
+  ME
+  CE
+  IPE
+  CHE
+  CA
+}
+
+enum ExperienceType {
+  INTERNSHIP
+  VOLUNTEER
+  CLUB
+  OTHER
+}
+
+enum SocialType {
+  LINKEDIN
+  GITHUB
+  LEETCODE
+  CODEFORCES
+  OTHER
+}
+
 model User {
   id            String          @id @default(cuid(2))
   name          String?
@@ -20,7 +54,7 @@ model User {
   image         String?
   accounts      Account[]
   sessions      Session[]
-  role          Role
+  role          Role            @default(STUDENT)
 
   student       Student?
   faculty       Faculty?
@@ -68,23 +102,17 @@ model VerificationToken {
   @@id([identifier, token])
 }
 
-enum ExperienceType {
-  INTERNSHIP
-  VOLUNTEER
-  CLUB
-  OTHER
-}
-
 model Student {
   id      String    @id @default(cuid(2))
   userId  String    @unique
 
   rollNo    String
-  course    String
-  branch    String
+  course    Course
+  branch    Branch
   semester  Int
 
   bio       String?
+  results   Result[]
   cgpa      Float?
 
   experiences     Experience[]
@@ -94,6 +122,21 @@ model Student {
   socials         Social[]
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Result {
+  id          String @id @default(cuid(2))
+  studentId   String
+
+  semester    Int
+  sgpa        Float
+  verified    Boolean @default(false)
+
+  student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  @@unique([studentId, semester])
 }
 
 model Experience {
@@ -109,6 +152,9 @@ model Experience {
   endDate     DateTime?
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Project {
@@ -117,10 +163,13 @@ model Project {
 
   title       String
   description String
-  techStack   String
+  techStack   String[]
   link        String?
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Achievement {
@@ -134,6 +183,9 @@ model Achievement {
   verified    Boolean  @default(false)
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Certification {
@@ -148,14 +200,9 @@ model Certification {
   verified    Boolean @default(false)
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
-}
 
-enum SocialType {
-  LINKEDIN
-  GITHUB
-  LEETCODE
-  CODEFORCES
-  OTHER
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Social {
@@ -166,6 +213,9 @@ model Social {
   url       String
 
   student Student @relation(fields: [studentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Faculty {
@@ -176,4 +226,7 @@ model Faculty {
   department  String?
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
