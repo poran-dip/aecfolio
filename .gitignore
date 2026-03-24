@@ -10,6 +10,9 @@ next-env.d.ts
 build/
 dist/
 
+# Prisma
+core/src/generated/
+
 # Environment
 .env*
 !.env.example
