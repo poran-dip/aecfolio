@@ -51,6 +51,7 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
+  phone         String?
   image         String?
   accounts      Account[]
   sessions      Session[]
@@ -116,6 +117,7 @@ model Student {
   branch   Branch
   semester Int
   bio      String?
+  skills   String[]
   results  Result[]
   cgpa     Float?
 
