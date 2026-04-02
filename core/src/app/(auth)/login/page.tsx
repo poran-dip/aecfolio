@@ -101,7 +101,7 @@ export default function LoginPage() {
           <h2 className="text-3xl font-bold text-slate-900 tracking-tight">Welcome back</h2>
           <p className="text-slate-600 font-medium mt-2">
             Sign in with your{" "}
-            <span className="text-blue-600 font-bold">@aecian.ac.in</span>{" "}
+            <span className="text-blue-600 font-bold">@aec.ac.in</span>{" "}
             Google account to continue.
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function LoginPage() {
 
         <p className="text-center text-sm text-slate-500 font-medium mt-8 px-4 leading-relaxed">
           Access restricted to{" "}
-          <span className="text-slate-700 font-bold">@aecian.ac.in</span>{" "}
+          <span className="text-slate-700 font-bold">@aec.ac.in</span>{" "}
           accounts only.
           <br />
           Contact your department admin if you need access.

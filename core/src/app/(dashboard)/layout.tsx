@@ -2,7 +2,7 @@ import { Sidebar } from "@/components/ui/Sidebar";
 
 const MOCK_USER = {
   name: "Ankur Das",
-  email: "ankur@aecian.ac.in",
+  email: "ankur@aec.ac.in",
   image: null,
   role: "STUDENT" as "STUDENT" | "FACULTY" | "ADMIN",
 };

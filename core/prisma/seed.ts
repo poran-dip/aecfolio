@@ -12,7 +12,7 @@ async function main() {
   const faculty = await prisma.user.create({
     data: {
       name: "Dr. Smith",
-      email: "smith@aecian.ac.in",
+      email: "smith@aec.ac.in",
       role: "FACULTY",
       faculty: {
         create: {
@@ -28,7 +28,7 @@ async function main() {
   const student1 = await prisma.user.create({
     data: {
       name: "John Doe",
-      email: "john@aecian.ac.in",
+      email: "john@aec.ac.in",
       role: "STUDENT",
       student: {
         create: {
@@ -57,7 +57,7 @@ async function main() {
   const student2 = await prisma.user.create({
     data: {
       name: "Alice Smith",
-      email: "alice@aecian.ac.in",
+      email: "alice@aec.ac.in",
       role: "STUDENT",
       student: {
         create: {
