@@ -10,7 +10,6 @@ datasource db {
 enum Role {
   STUDENT
   FACULTY
-  ADMIN
 }
 
 enum Course {
@@ -52,6 +51,7 @@ model User {
   name          String?
   email         String    @unique
   emailVerified DateTime?
+  phone         String?
   image         String?
   accounts      Account[]
   sessions      Session[]
@@ -117,7 +117,6 @@ model Student {
   branch   Branch
   semester Int
   bio      String?
-  phone    String?
   skills   String[]
   results  Result[]
   cgpa     Float?
