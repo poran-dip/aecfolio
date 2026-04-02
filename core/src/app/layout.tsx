@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "react-hot-toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
 import { cn } from "@/lib/utils";
 
@@ -30,8 +31,10 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("h-full", "font-sans", inter.variable)}>
       <body className="min-h-full flex flex-col antialiased">
-        {children}
-        <Toaster position="top-right" />
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   );
