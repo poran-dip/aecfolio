@@ -54,15 +54,38 @@ export default function StudentDashboardPage() {
 
   const { student, counts, profileCompletion } = data ?? {
     student: null,
-    counts: { verifiedSemesters: 0, totalSemesters: 0, projects: 0, experiences: 0, achievements: 0, certifications: 0 },
+    counts: {
+      verifiedSemesters: 0,
+      totalSemesters: 0,
+      projects: 0,
+      experiences: 0,
+      achievements: 0,
+      certifications: 0,
+    },
     profileCompletion: 0,
   };
 
   const quickLinks = [
-    { label: "Update Profile", href: "/student/profile", icon: <ChevronRight size={16} /> },
-    { label: "Add Semester Results", href: "/student/academic", icon: <ChevronRight size={16} /> },
-    { label: "Manage Projects", href: "/student/projects", icon: <ChevronRight size={16} /> },
-    { label: "Generate CV", href: "/student/cv", icon: <ChevronRight size={16} /> },
+    {
+      label: "Update Profile",
+      href: "/student/profile",
+      icon: <ChevronRight size={16} />,
+    },
+    {
+      label: "Add Semester Results",
+      href: "/student/academic",
+      icon: <ChevronRight size={16} />,
+    },
+    {
+      label: "Manage Projects",
+      href: "/student/projects",
+      icon: <ChevronRight size={16} />,
+    },
+    {
+      label: "Generate CV",
+      href: "/student/cv",
+      icon: <ChevronRight size={16} />,
+    },
   ];
 
   const circumference = 2 * Math.PI * 28;
@@ -72,7 +95,11 @@ export default function StudentDashboardPage() {
     <div>
       <Navbar
         title="My Dashboard"
-        subtitle={student ? `${student.course} · ${student.branch} · Sem ${student.semester}` : "Complete your profile to get started"}
+        subtitle={
+          student
+            ? `${student.course} · ${student.branch} · Sem ${student.semester}`
+            : "Complete your profile to get started"
+        }
         actions={
           <Link href="/student/cv">
             <Button size="sm" icon={<FileText size={14} />}>
@@ -92,7 +119,8 @@ export default function StudentDashboardPage() {
                 Your profile is {profileCompletion}% complete
               </p>
               <p className="text-xs text-amber-600 mt-0.5">
-                A complete profile helps generate a better CV and improves placement visibility.
+                A complete profile helps generate a better CV and improves
+                placement visibility.
               </p>
             </div>
             <Link href="/student/profile">
@@ -109,7 +137,14 @@ export default function StudentDashboardPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-6 flex flex-col items-center justify-center shadow-sm">
             <div className="relative w-20 h-20 mb-3">
               <svg className="w-20 h-20 -rotate-90" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="28" fill="none" stroke="#e2e8f0" strokeWidth="6" />
+                <circle
+                  cx="32"
+                  cy="32"
+                  r="28"
+                  fill="none"
+                  stroke="#e2e8f0"
+                  strokeWidth="6"
+                />
                 <circle
                   cx="32"
                   cy="32"
@@ -127,7 +162,9 @@ export default function StudentDashboardPage() {
                 {profileCompletion}%
               </span>
             </div>
-            <p className="text-xs font-medium text-slate-500 text-center">Profile Complete</p>
+            <p className="text-xs font-medium text-slate-500 text-center">
+              Profile Complete
+            </p>
           </div>
 
           <StatCard
@@ -178,9 +215,13 @@ export default function StudentDashboardPage() {
           {/* Skills preview */}
           <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">Skills</h2>
+              <h2 className="text-sm font-semibold text-slate-700 uppercase tracking-wide">
+                Skills
+              </h2>
               <Link href="/student/skills">
-                <button className="text-xs text-blue-600 hover:underline">Edit</button>
+                <button className="text-xs text-blue-600 hover:underline">
+                  Edit
+                </button>
               </Link>
             </div>
             {student?.skills && student.skills.length > 0 ? (
@@ -202,7 +243,10 @@ export default function StudentDashboardPage() {
             ) : (
               <p className="text-sm text-slate-400">
                 No skills added yet.{" "}
-                <Link href="/student/skills" className="text-blue-600 hover:underline">
+                <Link
+                  href="/student/skills"
+                  className="text-blue-600 hover:underline"
+                >
                   Add skills →
                 </Link>
               </p>
@@ -216,7 +260,9 @@ export default function StudentDashboardPage() {
                 Achievements
               </h2>
               <Link href="/student/achievements">
-                <button className="text-xs text-blue-600 hover:underline">View All</button>
+                <button className="text-xs text-blue-600 hover:underline">
+                  View All
+                </button>
               </Link>
             </div>
             <div className="space-y-3">
@@ -225,7 +271,9 @@ export default function StudentDashboardPage() {
                   <Trophy size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{counts.achievements} Achievements</p>
+                  <p className="text-sm font-medium text-slate-700">
+                    {counts.achievements} Achievements
+                  </p>
                   <p className="text-xs text-slate-400">Listed on profile</p>
                 </div>
               </div>
@@ -234,7 +282,9 @@ export default function StudentDashboardPage() {
                   <Briefcase size={16} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-700">{counts.certifications} Certifications</p>
+                  <p className="text-sm font-medium text-slate-700">
+                    {counts.certifications} Certifications
+                  </p>
                   <p className="text-xs text-slate-400">Listed on profile</p>
                 </div>
               </div>

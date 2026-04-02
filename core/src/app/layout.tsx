@@ -16,7 +16,13 @@ export const metadata: Metadata = {
   },
   description:
     "Assam Engineering College Student Information System. Manage academic records, build your professional profile, and generate standardized CVs.",
-  keywords: ["AEC", "Assam Engineering College", "Student Profile", "CV Generator", "Academic Records"],
+  keywords: [
+    "AEC",
+    "Assam Engineering College",
+    "Student Profile",
+    "CV Generator",
+    "Academic Records",
+  ],
 };
 
 export default function RootLayout({

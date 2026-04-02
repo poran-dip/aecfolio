@@ -7,7 +7,12 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { PageLoader } from "@/components/ui/Spinner";
 import {
-  FolderGit2, Plus, Pencil, Trash2, ExternalLink, X,
+  FolderGit2,
+  Plus,
+  Pencil,
+  Trash2,
+  ExternalLink,
+  X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -19,7 +24,12 @@ interface Project {
   link: string | null;
 }
 
-const emptyProject = { title: "", description: "", techStack: [] as string[], link: "" };
+const emptyProject = {
+  title: "",
+  description: "",
+  techStack: [] as string[],
+  link: "",
+};
 
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -47,7 +57,12 @@ export default function ProjectsPage() {
 
   const openEdit = (p: Project) => {
     setEditing(p);
-    setForm({ title: p.title, description: p.description, techStack: [...p.techStack], link: p.link ?? "" });
+    setForm({
+      title: p.title,
+      description: p.description,
+      techStack: [...p.techStack],
+      link: p.link ?? "",
+    });
     setModalOpen(true);
   };
 
@@ -64,7 +79,9 @@ export default function ProjectsPage() {
     }
     setSaving(true);
     try {
-      const url = editing ? `/api/student/projects/${editing.id}` : "/api/student/projects";
+      const url = editing
+        ? `/api/student/projects/${editing.id}`
+        : "/api/student/projects";
       const method = editing ? "PATCH" : "POST";
       const res = await fetch(url, {
         method,
@@ -74,7 +91,9 @@ export default function ProjectsPage() {
       if (res.ok) {
         const d = await res.json();
         if (editing) {
-          setProjects((prev) => prev.map((p) => (p.id === editing.id ? d.project : p)));
+          setProjects((prev) =>
+            prev.map((p) => (p.id === editing.id ? d.project : p)),
+          );
           toast.success("Project updated!");
         } else {
           setProjects((prev) => [...prev, d.project]);
@@ -122,7 +141,9 @@ export default function ProjectsPage() {
             <div className="w-16 h-16 bg-slate-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
               <FolderGit2 size={28} className="text-slate-400" />
             </div>
-            <h3 className="text-slate-700 font-semibold mb-2">No projects yet</h3>
+            <h3 className="text-slate-700 font-semibold mb-2">
+              No projects yet
+            </h3>
             <p className="text-slate-400 text-sm mb-6">
               Add your academic & personal projects to showcase your skills.
             </p>
@@ -200,39 +221,63 @@ export default function ProjectsPage() {
         maxWidth="lg"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} loading={saving}>Save Project</Button>
+            <Button variant="ghost" onClick={() => setModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} loading={saving}>
+              Save Project
+            </Button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Project Title *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Project Title *
+            </label>
             <input
               type="text"
               value={form.title}
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, title: e.target.value }))
+              }
               placeholder="e.g. Student Management System"
               className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Description *</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Description *
+            </label>
             <textarea
               value={form.description}
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, description: e.target.value }))
+              }
               rows={3}
               placeholder="Describe what the project does, your role, and impact..."
               className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-50 transition resize-none"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">Tech Stack</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              Tech Stack
+            </label>
             <div className="flex flex-wrap gap-2 mb-2">
               {form.techStack.map((tech) => (
-                <span key={tech} className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full">
+                <span
+                  key={tech}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-blue-50 text-blue-700 text-xs font-medium rounded-full"
+                >
                   {tech}
-                  <button onClick={() => setForm((f) => ({ ...f, techStack: f.techStack.filter((t) => t !== tech) }))}>
+                  <button
+                    onClick={() =>
+                      setForm((f) => ({
+                        ...f,
+                        techStack: f.techStack.filter((t) => t !== tech),
+                      }))
+                    }
+                  >
                     <X size={11} />
                   </button>
                 </span>
@@ -244,14 +289,25 @@ export default function ProjectsPage() {
                 value={techInput}
                 onChange={(e) => setTechInput(e.target.value)}
                 placeholder="e.g. React"
-                onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTech())}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addTech())
+                }
                 className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition"
               />
-              <Button size="sm" variant="secondary" onClick={addTech} icon={<Plus size={13} />}>Add</Button>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={addTech}
+                icon={<Plus size={13} />}
+              >
+                Add
+              </Button>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">GitHub / Demo Link</label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              GitHub / Demo Link
+            </label>
             <input
               type="url"
               value={form.link ?? ""}

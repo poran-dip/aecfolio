@@ -32,11 +32,27 @@ type NavItem = {
 const studentNav: NavItem[] = [
   { label: "Dashboard", href: "/student", icon: <LayoutDashboard size={18} /> },
   { label: "Profile", href: "/student/profile", icon: <User size={18} /> },
-  { label: "Academic", href: "/student/academic", icon: <GraduationCap size={18} /> },
+  {
+    label: "Academic",
+    href: "/student/academic",
+    icon: <GraduationCap size={18} />,
+  },
   { label: "Skills", href: "/student/skills", icon: <Code2 size={18} /> },
-  { label: "Projects", href: "/student/projects", icon: <FolderGit2 size={18} /> },
-  { label: "Experience", href: "/student/experience", icon: <Briefcase size={18} /> },
-  { label: "Achievements", href: "/student/achievements", icon: <Trophy size={18} /> },
+  {
+    label: "Projects",
+    href: "/student/projects",
+    icon: <FolderGit2 size={18} />,
+  },
+  {
+    label: "Experience",
+    href: "/student/experience",
+    icon: <Briefcase size={18} />,
+  },
+  {
+    label: "Achievements",
+    href: "/student/achievements",
+    icon: <Trophy size={18} />,
+  },
   { label: "Generate CV", href: "/student/cv", icon: <FileText size={18} /> },
 ];
 
@@ -47,8 +63,16 @@ const facultyNav: NavItem[] = [
 
 const adminNav: NavItem[] = [
   { label: "Dashboard", href: "/admin", icon: <BarChart3 size={18} /> },
-  { label: "Placement Query", href: "/admin/query", icon: <Search size={18} /> },
-  { label: "All Students", href: "/faculty/students", icon: <Users size={18} /> },
+  {
+    label: "Placement Query",
+    href: "/admin/query",
+    icon: <Search size={18} />,
+  },
+  {
+    label: "All Students",
+    href: "/faculty/students",
+    icon: <Users size={18} />,
+  },
 ];
 
 interface SidebarProps {
@@ -58,7 +82,12 @@ interface SidebarProps {
   userImage?: string | null;
 }
 
-export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) {
+export function Sidebar({
+  role,
+  userName,
+  userEmail,
+  userImage,
+}: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
@@ -66,14 +95,18 @@ export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) 
     role === "FACULTY" ? facultyNav : role === "ADMIN" ? adminNav : studentNav;
 
   const roleLabel =
-    role === "FACULTY" ? "Faculty Advisor" : role === "ADMIN" ? "Administrator" : "Student";
+    role === "FACULTY"
+      ? "Faculty Advisor"
+      : role === "ADMIN"
+        ? "Administrator"
+        : "Student";
 
   return (
     <aside
       className={cn(
         "flex flex-col h-screen sticky top-0 bg-slate-900 text-slate-300",
         "sidebar-transition overflow-hidden shrink-0 z-40",
-        collapsed ? "w-[72px]" : "w-[260px]",
+        collapsed ? "w-18" : "w-65",
       )}
     >
       {/* Logo */}
@@ -83,7 +116,9 @@ export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) 
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">AEC Profiles</p>
+            <p className="text-sm font-bold text-white truncate">
+              AEC Profiles
+            </p>
             <p className="text-xs text-slate-500 truncate">{roleLabel}</p>
           </div>
         )}
@@ -93,7 +128,9 @@ export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) 
       <nav className="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive =
-            item.href === "/student" || item.href === "/faculty" || item.href === "/admin"
+            item.href === "/student" ||
+            item.href === "/faculty" ||
+            item.href === "/admin"
               ? pathname === item.href
               : pathname.startsWith(item.href);
 
@@ -145,7 +182,9 @@ export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) 
           )}
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-200 truncate">{userName}</p>
+              <p className="text-sm font-medium text-slate-200 truncate">
+                {userName}
+              </p>
               <p className="text-xs text-slate-500 truncate">{userEmail}</p>
             </div>
           )}

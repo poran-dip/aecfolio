@@ -1,7 +1,13 @@
 import { cn } from "@/lib/utils";
 import { CheckCircle, Clock, Lock, AlertCircle, XCircle } from "lucide-react";
 
-type BadgeVariant = "success" | "warning" | "danger" | "info" | "default" | "locked";
+type BadgeVariant =
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "default"
+  | "locked";
 
 interface BadgeProps {
   variant?: BadgeVariant;
@@ -40,7 +46,13 @@ const variantConfig: Record<
   },
 };
 
-export function Badge({ variant = "default", children, className, dot, icon = true }: BadgeProps) {
+export function Badge({
+  variant = "default",
+  children,
+  className,
+  dot,
+  icon = true,
+}: BadgeProps) {
   const { className: variantClass, Icon } = variantConfig[variant];
 
   return (

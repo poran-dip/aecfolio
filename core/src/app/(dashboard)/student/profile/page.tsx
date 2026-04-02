@@ -5,7 +5,16 @@ import { Navbar } from "@/components/ui/Navbar";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/Spinner";
-import { User, Phone, BookOpen, Link as LinkIcon, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
+import {
+  User,
+  Phone,
+  BookOpen,
+  Link as LinkIcon,
+  ExternalLink,
+  Save,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
@@ -52,7 +61,9 @@ export default function ProfilePage() {
         setBio(d.student?.bio ?? "");
         setPhone(d.student?.phone ?? "");
         setSemester(d.student?.semester ?? 1);
-        setSocials(d.student?.socials.map((s) => ({ type: s.type, url: s.url })) ?? []);
+        setSocials(
+          d.student?.socials.map((s) => ({ type: s.type, url: s.url })) ?? [],
+        );
       })
       .finally(() => setLoading(false));
   }, []);
@@ -83,7 +94,10 @@ export default function ProfilePage() {
         body: JSON.stringify({ type: newSocialType, url: newSocialUrl }),
       });
       if (res.ok) {
-        setSocials((prev) => [...prev, { type: newSocialType, url: newSocialUrl }]);
+        setSocials((prev) => [
+          ...prev,
+          { type: newSocialType, url: newSocialUrl },
+        ]);
         setNewSocialUrl("");
         toast.success("Social link added!");
       }
@@ -100,7 +114,11 @@ export default function ProfilePage() {
         title="My Profile"
         subtitle="Personal details and contact information"
         actions={
-          <Button onClick={handleSave} loading={saving} icon={<Save size={14} />}>
+          <Button
+            onClick={handleSave}
+            loading={saving}
+            icon={<Save size={14} />}
+          >
             Save Changes
           </Button>
         }
@@ -114,19 +132,25 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Name (read-only from Google) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Full Name
+              </label>
               <input
                 type="text"
                 value={data?.user.name ?? ""}
                 disabled
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
               />
-              <p className="text-xs text-slate-400 mt-1">Synced from your Google account</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Synced from your Google account
+              </p>
             </div>
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Email Address
+              </label>
               <input
                 type="email"
                 value={data?.user.email ?? ""}
@@ -137,14 +161,18 @@ export default function ProfilePage() {
 
             {/* Roll No (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Roll Number</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Roll Number
+              </label>
               <input
                 type="text"
                 value={data?.student?.rollNo ?? "Not assigned"}
                 disabled
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
               />
-              <p className="text-xs text-slate-400 mt-1">Assigned by administrator</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Assigned by administrator
+              </p>
             </div>
 
             {/* Phone */}
@@ -163,7 +191,9 @@ export default function ProfilePage() {
 
             {/* Course (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Course</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Course
+              </label>
               <div className="flex gap-2">
                 {COURSES.map((c) => (
                   <span
@@ -182,7 +212,9 @@ export default function ProfilePage() {
 
             {/* Branch (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Branch</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Branch
+              </label>
               <input
                 type="text"
                 value={data?.student?.branch ?? "Not assigned"}
@@ -222,7 +254,9 @@ export default function ProfilePage() {
               placeholder="Write a brief professional objective or bio that will appear on your CV..."
               className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition resize-none"
             />
-            <p className="text-xs text-slate-400 mt-1">{bio.length}/500 characters</p>
+            <p className="text-xs text-slate-400 mt-1">
+              {bio.length}/500 characters
+            </p>
           </div>
         </Card>
 
@@ -237,20 +271,30 @@ export default function ProfilePage() {
           {/* Existing socials */}
           <div className="space-y-3 mb-6">
             {socials.length === 0 ? (
-              <p className="text-sm text-slate-400">No social links added yet.</p>
+              <p className="text-sm text-slate-400">
+                No social links added yet.
+              </p>
             ) : (
               socials.map((s, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
                 >
-                  <span className="text-slate-400 shrink-0">{socialIcon(s.type)}</span>
-                  <span className="text-xs font-medium text-slate-500 w-24 shrink-0">{s.type}</span>
-                  <span className="text-sm text-blue-600 truncate flex-1">{s.url}</span>
+                  <span className="text-slate-400 shrink-0">
+                    {socialIcon(s.type)}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 w-24 shrink-0">
+                    {s.type}
+                  </span>
+                  <span className="text-sm text-blue-600 truncate flex-1">
+                    {s.url}
+                  </span>
                   <button
                     className="text-slate-300 hover:text-red-400 transition-colors"
                     onClick={async () => {
-                      await fetch(`/api/student/socials?type=${s.type}`, { method: "DELETE" });
+                      await fetch(`/api/student/socials?type=${s.type}`, {
+                        method: "DELETE",
+                      });
                       setSocials((prev) => prev.filter((_, idx) => idx !== i));
                     }}
                   >
@@ -264,19 +308,25 @@ export default function ProfilePage() {
           {/* Add new social */}
           <div className="flex items-end gap-3">
             <div className="w-36">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Platform</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                Platform
+              </label>
               <select
                 value={newSocialType}
                 onChange={(e) => setNewSocialType(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm outline-none bg-white focus:border-blue-400"
               >
                 {SOCIAL_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">URL</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                URL
+              </label>
               <input
                 type="url"
                 value={newSocialUrl}
@@ -286,7 +336,11 @@ export default function ProfilePage() {
                 onKeyDown={(e) => e.key === "Enter" && addSocial()}
               />
             </div>
-            <Button onClick={addSocial} icon={<Plus size={14} />} variant="secondary">
+            <Button
+              onClick={addSocial}
+              icon={<Plus size={14} />}
+              variant="secondary"
+            >
               Add
             </Button>
           </div>
