@@ -90,7 +90,7 @@ export default function SkillsPage() {
 
           {/* Input */}
           <div className="relative">
-            <div className="flex flex-wrap gap-2 p-3 border-2 border-slate-200 rounded-xl min-h-[56px] focus-within:border-blue-400 transition-colors bg-white">
+            <div className="flex flex-wrap gap-2 p-3 border-2 border-slate-200 rounded-xl min-h-14 focus-within:border-blue-400 transition-colors bg-white">
               {skills.map((skill) => (
                 <span
                   key={skill}
@@ -111,7 +111,7 @@ export default function SkillsPage() {
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder={skills.length === 0 ? "Type a skill and press Enter..." : "Add more..."}
-                className="flex-1 min-w-[150px] outline-none text-sm text-slate-700 bg-transparent py-1"
+                className="flex-1 min-w-37.5 outline-none text-sm text-slate-700 bg-transparent py-1"
               />
             </div>
 

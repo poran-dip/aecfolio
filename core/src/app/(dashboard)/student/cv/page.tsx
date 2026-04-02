@@ -51,7 +51,7 @@ export default function GenCVPage() {
                   ACTIVE
                 </div>
                 <div className="flex gap-3 mb-2">
-                  <div className="w-10 h-10 bg-slate-200 shadow-sm rounded border border-slate-300 flex-shrink-0" />
+                  <div className="w-10 h-10 bg-slate-200 shadow-sm rounded border border-slate-300 shrink-0" />
                   <div>
                     <h3 className="font-semibold text-blue-900 text-sm">AEC Standard</h3>
                     <p className="text-xs text-blue-700">Official college layout</p>
@@ -86,9 +86,9 @@ export default function GenCVPage() {
         {/* Right Area - Preview Pane */}
         <div className="flex-1 p-4 md:p-8 flex items-center justify-center bg-slate-200/50 shadow-[inset_0_2px_10px_rgba(0,0,0,0.02)] overflow-y-auto">
            {/* Visual representation of an A4 paper for preview state before PDF generated */}
-          <div className="w-full max-w-[800px] aspect-[1/1.4] bg-white shadow-xl rounded flex flex-col items-center justify-center text-center p-8 border border-slate-200 relative group overflow-hidden">
+          <div className="w-full max-w-200 aspect-[1/1.4] bg-white shadow-xl rounded flex flex-col items-center justify-center text-center p-8 border border-slate-200 relative group overflow-hidden">
             
-            <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-sm z-10 transition-all duration-300">
+            <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 flex items-center justify-center backdrop-blur-sm z-10 transition-all duration-300">
               <Button onClick={() => setIframeKey(k => k+1)} variant="secondary" icon={<Eye size={16}/>}>
                 Preview PDF Data
               </Button>

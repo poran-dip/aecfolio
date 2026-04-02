@@ -61,7 +61,7 @@ export default function AdminDashboardPage() {
               </Link>
            </div>
            
-           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl p-6 shadow-sm text-white">
+           <div className="bg-linear-to-br from-slate-800 to-slate-900 rounded-xl p-6 shadow-sm text-white">
               <h3 className="font-semibold text-slate-100 mb-2">System Health</h3>
               <div className="space-y-3 mt-4">
                  <div className="flex justify-between text-sm">

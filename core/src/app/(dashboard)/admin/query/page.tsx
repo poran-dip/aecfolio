@@ -113,7 +113,7 @@ export default function AdminQueryPage() {
                  <p className="text-sm font-medium text-slate-700 mb-1">Generated Query Logic:</p>
                  <code className="text-xs text-blue-700 bg-blue-50 px-2 py-1.5 rounded block">
                     SELECT * FROM Students<br/>
-                    WHERE CGPA >= {minCgpa || "0.0"}<br/>
+                    WHERE CGPA {">="} {minCgpa || "0.0"}<br/>
                     {branchFilter && `AND Branch = '${branchFilter}'\n`}
                     {skillFilter && `AND Skills CONTAINS '${skillFilter}'`}
                  </code>

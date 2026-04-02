@@ -96,7 +96,7 @@ export default function AcademicPage() {
       <div className="p-6 space-y-6 max-w-4xl mx-auto">
         {/* CGPA Cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="col-span-2 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-white shadow-md">
+          <div className="col-span-2 bg-linear-to-br from-blue-600 to-blue-700 rounded-xl p-5 text-white shadow-md">
             <div className="flex items-center gap-2 mb-1">
               <TrendingUp size={16} className="opacity-70" />
               <p className="text-blue-100 text-sm font-medium">Overall CGPA</p>

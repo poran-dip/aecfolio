@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
 import { PageLoader } from "@/components/ui/Spinner";
 import {
-  FolderGit2, Plus, Pencil, Trash2, ExternalLink, X, Github,
+  FolderGit2, Plus, Pencil, Trash2, ExternalLink, X,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -140,7 +140,7 @@ export default function ProjectsPage() {
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-2">
                     <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center">
-                      <Github size={18} />
+                      <p>GitHub</p>
                     </div>
                     <h3 className="font-semibold text-slate-900">{p.title}</h3>
                   </div>

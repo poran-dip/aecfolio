@@ -5,7 +5,7 @@ import { Navbar } from "@/components/ui/Navbar";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { PageLoader } from "@/components/ui/Spinner";
-import { User, Phone, BookOpen, Link as LinkIcon, Github, Linkedin, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
+import { User, Phone, BookOpen, Link as LinkIcon, ExternalLink, Save, Plus, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
@@ -26,8 +26,8 @@ interface ProfileData {
 }
 
 const socialIcon = (type: string) => {
-  if (type === "GITHUB") return <Github size={16} />;
-  if (type === "LINKEDIN") return <Linkedin size={16} />;
+  if (type === "GITHUB") return <p>GitHub</p>;
+  if (type === "LINKEDIN") return <p>LinkedIn</p>;
   return <ExternalLink size={16} />;
 };
 

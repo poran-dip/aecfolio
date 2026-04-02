@@ -67,7 +67,7 @@ export default function FacultyDashboard() {
             label="Students Pending Verification"
             value={pendingOverall}
             icon={<AlertTriangle size={22} />}
-            color={pendingOverall > 0 ? "warning" : "green"}
+            color={pendingOverall > 0 ? "yellow" : "green"}
           />
         </div>
 
