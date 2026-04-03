@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { PageLoader } from "@/components/ui/Spinner";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/ui/spinner";
 import {
   User,
   Phone,
@@ -15,7 +15,7 @@ import {
   Plus,
   Trash2,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
 const BRANCHES = ["CSE", "ETE", "EE", "IE", "ME", "CE", "IPE", "CHE", "CA"];

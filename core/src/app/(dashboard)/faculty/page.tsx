@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { StatCard, Card } from "@/components/ui/Card";
-import { PageLoader } from "@/components/ui/Spinner";
-import { Badge, VerificationBadge } from "@/components/ui/Badge";
+import { StatCard, Card } from "@/components/ui/card";
+import { PageLoader } from "@/components/ui/spinner";
+import { Badge, VerificationBadge } from "@/components/ui/badge";
 import { Users, AlertTriangle, Search, Filter } from "lucide-react";
 import Link from "next/link";
 import { formatExpType } from "@/lib/utils";

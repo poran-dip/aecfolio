@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { StatCard } from "@/components/ui/Card";
-import { Badge, VerificationBadge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { PageLoader } from "@/components/ui/Spinner";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 import {
   GraduationCap,
   Code2,
@@ -50,7 +50,7 @@ export default function StudentDashboardPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  if (loading) return <PageLoader />;
+  if (loading) return <Spinner />;
 
   const { student, counts, profileCompletion } = data ?? {
     student: null,
@@ -102,7 +102,8 @@ export default function StudentDashboardPage() {
         }
         actions={
           <Link href="/student/cv">
-            <Button size="sm" icon={<FileText size={14} />}>
+            <Button size="sm">
+              <FileText size={14} />
               Generate CV
             </Button>
           </Link>
@@ -167,27 +168,27 @@ export default function StudentDashboardPage() {
             </p>
           </div>
 
-          <StatCard
+          <Card>
             label="CGPA"
             value={student?.cgpa?.toFixed(2) ?? "N/A"}
             icon={<GraduationCap size={22} />}
             color="blue"
             trend={`${counts.verifiedSemesters}/${counts.totalSemesters} semesters verified`}
-          />
-          <StatCard
+          </Card>
+          <Card>
             label="Skills"
             value={student?.skills?.length ?? 0}
             icon={<Code2 size={22} />}
             color="purple"
             trend="Listed on profile"
-          />
-          <StatCard
+          </Card>
+          <Card>
             label="Projects"
             value={counts.projects}
             icon={<FolderGit2 size={22} />}
             color="green"
             trend={`+ ${counts.experiences} experiences`}
-          />
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import { PageLoader } from "@/components/ui/Spinner";
-import { Badge, VerificationBadge } from "@/components/ui/Badge";
+import { PageLoader } from "@/components/ui/spinner";
+import { Badge, VerificationBadge } from "@/components/ui/badge";
 import {
   Trophy,
   Plus,
@@ -18,7 +18,7 @@ import {
   Image as ImageIcon,
 } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 interface Achievement {
   id: string;

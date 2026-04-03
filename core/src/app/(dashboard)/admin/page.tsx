@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { StatCard } from "@/components/ui/Card";
-import { PageLoader } from "@/components/ui/Spinner";
+import { StatCard } from "@/components/ui/card";
+import { PageLoader } from "@/components/ui/spinner";
 import { Users, FileText, CheckCircle, GraduationCap } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 
 interface Stats {
   totalStudents: number;

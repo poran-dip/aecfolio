@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { PageLoader } from "@/components/ui/Spinner";
-import { Button } from "@/components/ui/Button";
-import { Badge, VerificationBadge } from "@/components/ui/Badge";
+import { Card, CardHeader } from "@/components/ui/card";
+import { PageLoader } from "@/components/ui/spinner";
+import { Button } from "@/components/ui/button";
+import { Badge, VerificationBadge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/Modal";
 import {
   ArrowLeft,
@@ -15,7 +15,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
-import toast from "react-hot-toast";
+import { toast } from "sonner";
 
 interface FullStudentProfile {
   id: string;

@@ -2,11 +2,11 @@
 
 import { useEffect, useState, KeyboardEvent } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { PageLoader } from "@/components/ui/Spinner";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { PageLoader } from "@/components/ui/spinner";
 import { Code2, X, Plus, Info } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 const SUGGESTED_SKILLS = [
   "Python",

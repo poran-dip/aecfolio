@@ -1,4 +1,4 @@
-# AEC Profiles & CV Generator
+# AECFolio
 
 A full-stack information system for storing verified student records with automatic CV generation.
 

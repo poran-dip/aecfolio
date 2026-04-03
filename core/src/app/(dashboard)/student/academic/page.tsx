@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card, CardHeader } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
-import { Badge, VerificationBadge } from "@/components/ui/Badge";
-import { PageLoader } from "@/components/ui/Spinner";
+import { Card, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge, VerificationBadge } from "@/components/ui/badge";
+import { PageLoader } from "@/components/ui/spinner";
 import { GraduationCap, Plus, Lock, TrendingUp, Info } from "lucide-react";
 import { calculateCGPA } from "@/lib/utils";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 interface Result {
   id: string;

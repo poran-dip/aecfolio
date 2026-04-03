@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import { PageLoader } from "@/components/ui/Spinner";
+import { PageLoader } from "@/components/ui/spinner";
 import {
   FolderGit2,
   Plus,
@@ -14,7 +14,7 @@ import {
   ExternalLink,
   X,
 } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 interface Project {
   id: string;

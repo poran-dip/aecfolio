@@ -1,4 +1,4 @@
-import { Sidebar } from "@/components/ui/Sidebar";
+import { Sidebar } from "@/components/ui/sidebar";
 
 const MOCK_USER = {
   name: "Ankur Das",

@@ -2,10 +2,10 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Button } from "@/components/ui/Button";
+import { Button } from "@/components/ui/button";
 import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import { PageLoader } from "@/components/ui/Spinner";
-import { Badge } from "@/components/ui/Badge";
+import { PageLoader } from "@/components/ui/spinner";
+import { Badge } from "@/components/ui/badge";
 import {
   Briefcase,
   Plus,
@@ -15,7 +15,7 @@ import {
   Calendar,
 } from "lucide-react";
 import { formatDate, formatExpType } from "@/lib/utils";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 interface Experience {
   id: string;

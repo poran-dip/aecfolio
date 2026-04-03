@@ -9,17 +9,18 @@ const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | AEC Profiles",
-    default: "AEC Profiles — Student Information System",
+    template: "%s | AECFolio",
+    default: "AECFolio",
   },
   description:
-    "Assam Engineering College Student Information System. Manage academic records, build your professional profile, and generate standardized CVs.",
+    "Verified academic profiles, one-click CVs, and placement tools for students at Assam Engineering College.",
   keywords: [
     "AEC",
     "Assam Engineering College",
     "Student Profile",
     "CV Generator",
     "Academic Records",
+    "Placement",
   ],
 };
 

@@ -2,10 +2,10 @@
 
 import { useState } from "react";
 import { Navbar } from "@/components/ui/Navbar";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { FileText, Download, Eye, FileOutput } from "lucide-react";
-import toast from "react-hot-toast";
+import { toast } from "sonner"
 
 export default function GenCVPage() {
   const [generating, setGenerating] = useState(false);
