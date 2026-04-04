@@ -1,27 +1,26 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
-import { Toaster } from "react-hot-toast";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster } from "@/components/ui/sonner"
 import "./globals.css";
+import { cn } from "@/lib/utils";
 
-const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-sans",
-});
+const inter = Inter({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
   title: {
-    template: "%s | AEC Profiles",
-    default: "AEC Profiles — Student Information System",
+    template: "%s | AECFolio",
+    default: "AECFolio",
   },
   description:
-    "Assam Engineering College Student Information System. Manage academic records, build your professional profile, and generate standardized CVs.",
+    "Verified academic profiles, one-click CVs, and placement tools for students at Assam Engineering College.",
   keywords: [
     "AEC",
     "Assam Engineering College",
     "Student Profile",
     "CV Generator",
     "Academic Records",
+    "Placement",
   ],
 };
 
@@ -31,10 +30,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} h-full`}>
+    <html lang="en" className={cn("h-full", "font-sans", "scroll-smooth", inter.variable)}>
       <body className="min-h-full flex flex-col antialiased">
-        {children}
-        <Toaster position="top-right" />
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
       </body>
     </html>
   );

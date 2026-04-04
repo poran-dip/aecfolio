@@ -1,105 +1,49 @@
-import { cn } from "@/lib/utils";
-import { CheckCircle, Clock, Lock, AlertCircle, XCircle } from "lucide-react";
+import * as React from "react"
+import { cva, type VariantProps } from "class-variance-authority"
+import { Slot } from "radix-ui"
 
-type BadgeVariant =
-  | "success"
-  | "warning"
-  | "danger"
-  | "info"
-  | "default"
-  | "locked";
+import { cn } from "@/lib/utils"
 
-interface BadgeProps {
-  variant?: BadgeVariant;
-  children: React.ReactNode;
-  className?: string;
-  dot?: boolean;
-  icon?: boolean;
-}
-
-const variantConfig: Record<
-  BadgeVariant,
-  { className: string; Icon?: typeof CheckCircle }
-> = {
-  success: {
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    Icon: CheckCircle,
-  },
-  warning: {
-    className: "bg-amber-50 text-amber-700 border-amber-200",
-    Icon: Clock,
-  },
-  danger: {
-    className: "bg-red-50 text-red-700 border-red-200",
-    Icon: XCircle,
-  },
-  info: {
-    className: "bg-blue-50 text-blue-700 border-blue-200",
-    Icon: AlertCircle,
-  },
-  locked: {
-    className: "bg-slate-100 text-slate-600 border-slate-200",
-    Icon: Lock,
-  },
-  default: {
-    className: "bg-slate-50 text-slate-600 border-slate-200",
-  },
-};
-
-export function Badge({
-  variant = "default",
-  children,
-  className,
-  dot,
-  icon = true,
-}: BadgeProps) {
-  const { className: variantClass, Icon } = variantConfig[variant];
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full",
-        "text-xs font-medium border",
-        variantClass,
-        className,
-      )}
-    >
-      {dot && (
-        <span
-          className={cn(
-            "w-1.5 h-1.5 rounded-full",
-            variant === "success" && "bg-emerald-500",
-            variant === "warning" && "bg-amber-500 pulse-dot",
-            variant === "danger" && "bg-red-500",
-            variant === "info" && "bg-blue-500",
-            variant === "locked" && "bg-slate-400",
-            variant === "default" && "bg-slate-400",
-          )}
-        />
-      )}
-      {icon && Icon && !dot && <Icon size={11} />}
-      {children}
-    </span>
-  );
-}
-
-export function VerificationBadge({
-  verified,
-  locked,
-}: {
-  verified: boolean;
-  locked?: boolean;
-}) {
-  if (locked ?? verified) {
-    return (
-      <Badge variant="locked" dot>
-        Verified & Locked
-      </Badge>
-    );
+const badgeVariants = cva(
+  "group/badge inline-flex h-5 w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent px-2 py-0.5 text-xs font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none [&>svg]:size-3!",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground [a]:hover:bg-primary/80",
+        secondary:
+          "bg-secondary text-secondary-foreground [a]:hover:bg-secondary/80",
+        destructive:
+          "bg-destructive/10 text-destructive focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:focus-visible:ring-destructive/40 [a]:hover:bg-destructive/20",
+        outline:
+          "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
+        ghost:
+          "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+    },
   }
+)
+
+function Badge({
+  className,
+  variant = "default",
+  asChild = false,
+  ...props
+}: React.ComponentProps<"span"> &
+  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : "span"
+
   return (
-    <Badge variant="warning" dot>
-      Pending Verification
-    </Badge>
-  );
+    <Comp
+      data-slot="badge"
+      data-variant={variant}
+      className={cn(badgeVariants({ variant }), className)}
+      {...props}
+    />
+  )
 }
+
+export { Badge, badgeVariants }
