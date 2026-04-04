@@ -1,24 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/navbar";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Modal, ConfirmModal } from "@/components/ui/Modal";
-import { Spinner } from "@/components/ui/spinner";
-import { Badge, VerificationBadge } from "@/components/ui/badge";
-import {
-  Trophy,
-  Plus,
-  Pencil,
-  Trash2,
-  Award,
-  ExternalLink,
-  Calendar,
-  Image as ImageIcon,
-} from "lucide-react";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Modal, ConfirmModal } from "@/components/dashboard/ui/Modal";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
+import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
+import { Trophy, Plus, Pencil, Trash2, Award, ExternalLink, Calendar, Image as ImageIcon } from "lucide-react";
 import { formatDate } from "@/lib/utils";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 interface Achievement {
   id: string;
@@ -70,13 +61,11 @@ export default function AchievementsPage() {
           verified: c.verified,
           description: "",
         }));
-        setItems(
-          [...achs, ...certs].sort((a, b) => {
-            if (!a.date) return 1;
-            if (!b.date) return -1;
-            return new Date(b.date).getTime() - new Date(a.date).getTime();
-          }),
-        );
+        setItems([...achs, ...certs].sort((a, b) => {
+          if (!a.date) return 1;
+          if (!b.date) return -1;
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        }));
       })
       .finally(() => setLoading(false));
   }, []);
@@ -112,25 +101,12 @@ export default function AchievementsPage() {
 
     setSaving(true);
     try {
-      const endpoint =
-        form.type === "achievement"
-          ? "/api/student/achievements"
-          : "/api/student/certifications";
+      const endpoint = form.type === "achievement" ? "/api/student/achievements" : "/api/student/certifications";
       const url = editing ? `${endpoint}/${editing.id}` : endpoint;
-
-      const payload =
-        form.type === "achievement"
-          ? {
-              title: form.title,
-              description: form.description,
-              proofImage: form.proofImage || null,
-            }
-          : {
-              name: form.title,
-              issuer: form.issuer,
-              issueDate: form.date || null,
-              proofImage: form.proofImage || null,
-            };
+      
+      const payload = form.type === "achievement" 
+        ? { title: form.title, description: form.description, proofImage: form.proofImage || null }
+        : { name: form.title, issuer: form.issuer, issueDate: form.date || null, proofImage: form.proofImage || null };
 
       const res = await fetch(url, {
         method: editing ? "PATCH" : "POST",
@@ -140,30 +116,16 @@ export default function AchievementsPage() {
 
       if (res.ok) {
         const d = await res.json();
-        const newItem =
-          form.type === "achievement"
-            ? { ...d.achievement, type: "achievement" }
-            : {
-                id: d.certification.id,
-                type: "certification",
-                title: d.certification.name,
-                issuer: d.certification.issuer,
-                date: d.certification.issueDate,
-                proofImage: d.certification.proofImage,
-                verified: d.certification.verified,
-                description: "",
-              };
+        const newItem = form.type === "achievement"
+          ? { ...d.achievement, type: "achievement" }
+          : { id: d.certification.id, type: "certification", title: d.certification.name, issuer: d.certification.issuer, date: d.certification.issueDate, proofImage: d.certification.proofImage, verified: d.certification.verified, description: "" };
 
         if (editing) {
-          setItems((prev) =>
-            prev.map((i) => (i.id === editing.id ? newItem : i)),
-          );
+          setItems((prev) => prev.map((i) => (i.id === editing.id ? newItem : i)));
         } else {
           setItems((prev) => [newItem, ...prev]);
         }
-        toast.success(
-          editing ? "Updated successfully!" : "Added successfully!",
-        );
+        toast.success(editing ? "Updated successfully!" : "Added successfully!");
         setModalOpen(false);
       }
     } catch {
@@ -180,10 +142,7 @@ export default function AchievementsPage() {
 
     setDeleting(true);
     try {
-      const endpoint =
-        itemToDelete.type === "achievement"
-          ? "/api/student/achievements"
-          : "/api/student/certifications";
+      const endpoint = itemToDelete.type === "achievement" ? "/api/student/achievements" : "/api/student/certifications";
       await fetch(`${endpoint}/${deleteId}`, { method: "DELETE" });
       setItems((prev) => prev.filter((i) => i.id !== deleteId));
       toast.success("Deleted successfully");
@@ -195,7 +154,7 @@ export default function AchievementsPage() {
     }
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
 
   const achievements = items.filter((i) => i.type === "achievement");
   const certifications = items.filter((i) => i.type === "certification");
@@ -208,17 +167,14 @@ export default function AchievementsPage() {
       />
 
       <div className="p-6 max-w-5xl mx-auto space-y-8">
+        
         {/* Achievements Section */}
         <section>
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
               <Trophy size={20} className="text-amber-500" /> Achievements
             </h2>
-            <Button
-              size="sm"
-              onClick={() => openCreate("achievement")}
-              icon={<Plus size={14} />}
-            >
+            <Button size="sm" onClick={() => openCreate("achievement")} icon={<Plus size={14} />}>
               Add Achievement
             </Button>
           </div>
@@ -230,41 +186,23 @@ export default function AchievementsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {achievements.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"
-                >
+                <div key={item.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                   <div className="flex justify-between items-start mb-2">
-                    <h3 className="font-semibold text-slate-900">
-                      {item.title}
-                    </h3>
+                    <h3 className="font-semibold text-slate-900">{item.title}</h3>
                     <div className="flex gap-1">
-                      <button
-                        onClick={() => openEdit(item)}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg"
-                      >
+                      <button onClick={() => openEdit(item)} className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg">
                         <Pencil size={14} />
                       </button>
-                      <button
-                        onClick={() => setDeleteId(item.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg"
-                      >
+                      <button onClick={() => setDeleteId(item.id)} className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg">
                         <Trash2 size={14} />
                       </button>
                     </div>
                   </div>
-                  <p className="text-sm text-slate-500 mb-3">
-                    {item.description}
-                  </p>
+                  <p className="text-sm text-slate-500 mb-3">{item.description}</p>
                   <div className="flex items-center justify-between mt-auto">
                     <VerificationBadge verified={item.verified} />
                     {item.proofImage && (
-                      <a
-                        href={item.proofImage}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-blue-600 flex items-center gap-1 hover:underline"
-                      >
+                      <a href={item.proofImage} target="_blank" rel="noreferrer" className="text-xs text-blue-600 flex items-center gap-1 hover:underline">
                         <ImageIcon size={12} /> View Proof
                       </a>
                     )}
@@ -281,11 +219,7 @@ export default function AchievementsPage() {
             <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
               <Award size={20} className="text-indigo-500" /> Certifications
             </h2>
-            <Button
-              size="sm"
-              onClick={() => openCreate("certification")}
-              icon={<Plus size={14} />}
-            >
+            <Button size="sm" onClick={() => openCreate("certification")} icon={<Plus size={14} />}>
               Add Certification
             </Button>
           </div>
@@ -297,38 +231,27 @@ export default function AchievementsPage() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {certifications.map((item) => (
-                <div
-                  key={item.id}
-                  className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm"
-                >
+                <div key={item.id} className="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
                   <div className="flex justify-between items-start mb-2">
                     <div>
-                      <h3 className="font-semibold text-slate-900">
-                        {item.title}
-                      </h3>
+                      <h3 className="font-semibold text-slate-900">{item.title}</h3>
                       <p className="text-sm text-slate-600 flex items-center gap-1 mt-1">
                         <span className="font-medium">{item.issuer}</span>
                         {item.date && (
                           <>
                             <span className="text-slate-300">·</span>
                             <span className="text-slate-500 text-xs flex items-center gap-1">
-                              <Calendar size={12} /> {formatDate(item.date)}
+                              <Calendar size={12}/> {formatDate(item.date)}
                             </span>
                           </>
                         )}
                       </p>
                     </div>
                     <div className="flex gap-1 shrink-0">
-                      <button
-                        onClick={() => openEdit(item)}
-                        className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg"
-                      >
+                      <button onClick={() => openEdit(item)} className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg">
                         <Pencil size={14} />
                       </button>
-                      <button
-                        onClick={() => setDeleteId(item.id)}
-                        className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg"
-                      >
+                      <button onClick={() => setDeleteId(item.id)} className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg">
                         <Trash2 size={14} />
                       </button>
                     </div>
@@ -336,12 +259,7 @@ export default function AchievementsPage() {
                   <div className="flex items-center justify-between mt-4">
                     <VerificationBadge verified={item.verified} />
                     {item.proofImage && (
-                      <a
-                        href={item.proofImage}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-xs text-blue-600 flex items-center gap-1 hover:underline"
-                      >
+                      <a href={item.proofImage} target="_blank" rel="noreferrer" className="text-xs text-blue-600 flex items-center gap-1 hover:underline">
                         <ExternalLink size={12} /> Certificate Link
                       </a>
                     )}
@@ -351,46 +269,31 @@ export default function AchievementsPage() {
             </div>
           )}
         </section>
+
       </div>
 
       <Modal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={
-          editing
-            ? `Edit ${form.type === "achievement" ? "Achievement" : "Certification"}`
-            : `Add ${form.type === "achievement" ? "Achievement" : "Certification"}`
-        }
+        title={editing ? `Edit ${form.type === "achievement" ? "Achievement" : "Certification"}` : `Add ${form.type === "achievement" ? "Achievement" : "Certification"}`}
         maxWidth="md"
         footer={
           <>
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={handleSave} loading={saving}>
-              Save
-            </Button>
+            <Button variant="ghost" onClick={() => setModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSave} loading={saving}>Save</Button>
           </>
         }
       >
         <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              {form.type === "achievement"
-                ? "Achievement Title *"
-                : "Certification Name *"}
+              {form.type === "achievement" ? "Achievement Title *" : "Certification Name *"}
             </label>
             <input
               type="text"
               value={form.title}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, title: e.target.value }))
-              }
-              placeholder={
-                form.type === "achievement"
-                  ? "e.g. 1st Place Hackathon"
-                  : "e.g. AWS Certified Developer"
-              }
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              placeholder={form.type === "achievement" ? "e.g. 1st Place Hackathon" : "e.g. AWS Certified Developer"}
               className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition"
             />
           </div>
@@ -398,29 +301,21 @@ export default function AchievementsPage() {
           {form.type === "certification" && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Issuer *
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Issuer *</label>
                 <input
                   type="text"
                   value={form.issuer}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, issuer: e.target.value }))
-                  }
+                  onChange={(e) => setForm((f) => ({ ...f, issuer: e.target.value }))}
                   placeholder="e.g. Coursera"
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                  Issue Date
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-1.5">Issue Date</label>
                 <input
                   type="date"
                   value={form.date}
-                  onChange={(e) =>
-                    setForm((f) => ({ ...f, date: e.target.value }))
-                  }
+                  onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))}
                   className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition"
                 />
               </div>
@@ -429,14 +324,10 @@ export default function AchievementsPage() {
 
           {form.type === "achievement" && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Description *
-              </label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">Description *</label>
               <textarea
                 value={form.description}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, description: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
                 rows={3}
                 placeholder="Briefly describe the achievement..."
                 className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition resize-none"
@@ -445,21 +336,15 @@ export default function AchievementsPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
-              Proof Link / Credential URL
-            </label>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5">Proof Link / Credential URL</label>
             <input
               type="url"
               value={form.proofImage}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, proofImage: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, proofImage: e.target.value }))}
               placeholder="https://..."
               className="w-full px-3 py-2.5 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition"
             />
-            <p className="text-xs text-slate-400 mt-1">
-              Used by faculty to verify this entry.
-            </p>
+            <p className="text-xs text-slate-400 mt-1">Used by faculty to verify this entry.</p>
           </div>
         </div>
       </Modal>

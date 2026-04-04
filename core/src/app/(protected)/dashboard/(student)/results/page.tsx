@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/navbar";
-import { Card, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge, VerificationBadge } from "@/components/ui/badge";
-import { Spinner } from "@/components/ui/spinner";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { Button } from "@/components/dashboard/ui/Button";
+import { VerificationBadge } from "@/components/dashboard/ui/Badge";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
 import { GraduationCap, Plus, Lock, TrendingUp, Info } from "lucide-react";
 import { calculateCGPA } from "@/lib/utils";
-import { toast } from "sonner"
+import { toast } from "sonner";
 
 interface Result {
   id: string;
@@ -31,10 +31,7 @@ export default function AcademicPage() {
       .then((d) => {
         setResults(d.results ?? []);
         // Suggest next semester
-        const maxSem = Math.max(
-          0,
-          ...((d.results ?? []) as Result[]).map((r) => r.semester),
-        );
+        const maxSem = Math.max(0, ...((d.results ?? []) as Result[]).map((r) => r.semester));
         setNewSem(Math.min(maxSem + 1, 8));
       })
       .finally(() => setLoading(false));
@@ -65,9 +62,7 @@ export default function AcademicPage() {
       });
       if (res.ok) {
         const newResult = await res.json();
-        setResults((prev) =>
-          [...prev, newResult.result].sort((a, b) => a.semester - b.semester),
-        );
+        setResults((prev) => [...prev, newResult.result].sort((a, b) => a.semester - b.semester));
         setNewSgpa("");
         setNewSem((prev) => Math.min(prev + 1, 8));
         toast.success("Semester result added!");
@@ -89,7 +84,7 @@ export default function AcademicPage() {
     return "text-red-500";
   };
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
 
   return (
     <div>
@@ -107,20 +102,14 @@ export default function AcademicPage() {
               <p className="text-blue-100 text-sm font-medium">Overall CGPA</p>
             </div>
             <p className="text-4xl font-bold">{cgpa.toFixed(2)}</p>
-            <p className="text-blue-200 text-xs mt-1">
-              Based on {results.length} semesters
-            </p>
+            <p className="text-blue-200 text-xs mt-1">Based on {results.length} semesters</p>
           </div>
           <div className="col-span-2 bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
             <div className="flex items-center gap-2 mb-1">
               <Lock size={16} className="text-slate-400" />
-              <p className="text-slate-500 text-sm font-medium">
-                Verified CGPA
-              </p>
+              <p className="text-slate-500 text-sm font-medium">Verified CGPA</p>
             </div>
-            <p className="text-4xl font-bold text-slate-900">
-              {verifiedCgpa.toFixed(2)}
-            </p>
+            <p className="text-4xl font-bold text-slate-900">{verifiedCgpa.toFixed(2)}</p>
             <p className="text-slate-400 text-xs mt-1">
               {verifiedSgpas.length}/{results.length} semesters verified
             </p>
@@ -131,9 +120,8 @@ export default function AcademicPage() {
         <div className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
           <Info size={16} className="text-blue-500 mt-0.5 shrink-0" />
           <p className="text-xs text-blue-700">
-            Once a semester result is <strong>Verified & Locked</strong> by your
-            Faculty Advisor, you cannot edit it. Contact your advisor if you
-            believe there is an error.
+            Once a semester result is <strong>Verified & Locked</strong> by your Faculty Advisor, you
+            cannot edit it. Contact your advisor if you believe there is an error.
           </p>
         </div>
 
@@ -166,10 +154,7 @@ export default function AcademicPage() {
               <tbody className="divide-y divide-slate-50">
                 {results.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={4}
-                      className="px-6 py-10 text-center text-slate-400 text-sm"
-                    >
+                    <td colSpan={4} className="px-6 py-10 text-center text-slate-400 text-sm">
                       No results added yet. Add your first semester below.
                     </td>
                   </tr>
@@ -184,15 +169,11 @@ export default function AcademicPage() {
                           <div className="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 text-xs font-bold flex items-center justify-center">
                             {result.semester}
                           </div>
-                          <span className="font-medium text-slate-700">
-                            Semester {result.semester}
-                          </span>
+                          <span className="font-medium text-slate-700">Semester {result.semester}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span
-                          className={`text-2xl font-bold ${getSgpaColor(result.sgpa)}`}
-                        >
+                        <span className={`text-2xl font-bold ${getSgpaColor(result.sgpa)}`}>
                           {result.sgpa.toFixed(2)}
                         </span>
                       </td>
@@ -201,14 +182,11 @@ export default function AcademicPage() {
                       </td>
                       <td className="px-6 py-4 text-slate-400 text-xs">
                         {result.verifiedAt
-                          ? new Date(result.verifiedAt).toLocaleDateString(
-                              "en-IN",
-                              {
-                                day: "numeric",
-                                month: "short",
-                                year: "numeric",
-                              },
-                            )
+                          ? new Date(result.verifiedAt).toLocaleDateString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            })
                           : "—"}
                       </td>
                     </tr>
@@ -225,37 +203,23 @@ export default function AcademicPage() {
             </p>
             <div className="flex items-end gap-3">
               <div className="w-40">
-                <label className="block text-xs text-slate-500 mb-1.5">
-                  Semester
-                </label>
+                <label className="block text-xs text-slate-500 mb-1.5">Semester</label>
                 <select
                   value={newSem}
                   onChange={(e) => setNewSem(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:border-blue-400"
                 >
                   {Array.from({ length: 8 }, (_, i) => i + 1)
-                    .filter(
-                      (s) =>
-                        !results.find((r) => r.semester === s) ||
-                        !results.find((r) => r.semester === s)?.verified,
-                    )
+                    .filter((s) => !results.find((r) => r.semester === s) || !results.find((r) => r.semester === s)?.verified)
                     .map((s) => (
-                      <option
-                        key={s}
-                        value={s}
-                        disabled={
-                          !!results.find((r) => r.semester === s && r.verified)
-                        }
-                      >
+                      <option key={s} value={s} disabled={!!results.find((r) => r.semester === s && r.verified)}>
                         Semester {s}
                       </option>
                     ))}
                 </select>
               </div>
               <div className="w-40">
-                <label className="block text-xs text-slate-500 mb-1.5">
-                  SGPA (0 – 10)
-                </label>
+                <label className="block text-xs text-slate-500 mb-1.5">SGPA (0 – 10)</label>
                 <input
                   type="number"
                   step="0.01"

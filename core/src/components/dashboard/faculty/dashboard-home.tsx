@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/navbar";
-import { Card } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
-import { Badge } from "@/components/ui/badge";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { StatCard, Card } from "@/components/dashboard/ui/Card";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
+import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
 import { Users, AlertTriangle, Search, Filter } from "lucide-react";
 import Link from "next/link";
+import { formatExpType } from "@/lib/utils";
 
 interface StudentListDetails {
   id: string;
@@ -37,62 +38,58 @@ export default function FacultyDashboard() {
 
   useEffect(() => {
     const s = search.toLowerCase();
-    setFiltered(
-      data.filter(
-        (stu) =>
-          (stu.name || "").toLowerCase().includes(s) ||
-          (stu.rollNo || "").toLowerCase().includes(s),
-      ),
-    );
+    setFiltered(data.filter((stu) => 
+      (stu.name || "").toLowerCase().includes(s) || 
+      (stu.rollNo || "").toLowerCase().includes(s)
+    ));
   }, [search, data]);
 
-  if (loading) return <Spinner />;
+  if (loading) return <PageLoader />;
 
   const totalStudents = data.length;
-  const pendingOverall = data.filter(
-    (s) => s.unverifiedResults > 0 || s.unverifiedAchievements > 0,
-  ).length;
+  const pendingOverall = data.filter(s => s.unverifiedResults > 0 || s.unverifiedAchievements > 0).length;
 
   return (
     <div>
-      <Navbar
-        title="Faculty Advisor Dashboard"
-        subtitle="Manage assigned students and verify records"
-      />
+      <Navbar title="Faculty Advisor Dashboard" subtitle="Manage assigned students and verify records" />
 
       <div className="p-6 max-w-6xl mx-auto space-y-6">
+        
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <Card>
-            Assigned Students
-          </Card>
-          <Card>
-            Students Pending Verification
-          </Card>
+          <StatCard
+            label="Assigned Students"
+            value={totalStudents}
+            icon={<Users size={22} />}
+            color="blue"
+          />
+          <StatCard
+            label="Students Pending Verification"
+            value={pendingOverall}
+            icon={<AlertTriangle size={22} />}
+            color={pendingOverall > 0 ? "yellow" : "green"}
+          />
         </div>
 
         {/* Action / Search Bar */}
         <div className="flex gap-4 mb-2">
-          <div className="relative flex-1">
-            <Search
-              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-              size={18}
-            />
-            <input
-              type="text"
-              placeholder="Search students by name or roll number..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
-            />
-          </div>
-          <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition">
-            <Filter size={16} /> Filter
-          </button>
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input
+                type="text"
+                placeholder="Search students by name or roll number..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
+              />
+            </div>
+            <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 flex items-center gap-2 hover:bg-slate-50 transition">
+              <Filter size={16}/> Filter
+            </button>
         </div>
 
         {/* Student List */}
-        <Card className="p-0 overflow-hidden">
+        <Card padding="none" className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
@@ -107,68 +104,39 @@ export default function FacultyDashboard() {
               <tbody className="divide-y divide-slate-100">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={5}
-                      className="px-6 py-12 text-center text-slate-500"
-                    >
+                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
                       No students found matching your criteria.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((stu) => (
-                    <tr
-                      key={stu.id}
-                      className="hover:bg-slate-50/50 transition"
-                    >
+                    <tr key={stu.id} className="hover:bg-slate-50/50 transition">
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-slate-900">
-                            {stu.name || "Unknown"}
-                          </span>
-                          <span className="text-xs text-slate-500">
-                            {stu.rollNo}
-                          </span>
+                          <span className="font-semibold text-slate-900">{stu.name || "Unknown"}</span>
+                          <span className="text-xs text-slate-500">{stu.rollNo}</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-medium text-slate-700">
-                          {stu.course}
-                        </span>
-                        <span className="text-slate-400 mx-1">·</span>
-                        <span className="text-slate-600">
-                          Sem {stu.semester}
-                        </span>
+                        <span className="font-medium text-slate-700">{stu.course}</span>
+                         <span className="text-slate-400 mx-1">·</span>
+                        <span className="text-slate-600">Sem {stu.semester}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="font-bold text-slate-800">
-                          {stu.cgpa ? stu.cgpa.toFixed(2) : "—"}
-                        </span>
+                        <span className="font-bold text-slate-800">{stu.cgpa ? stu.cgpa.toFixed(2) : "—"}</span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                          {stu.unverifiedResults > 0 && (
-                            <Badge variant="secondary">
-                              {stu.unverifiedResults} Res
-                            </Badge>
-                          )}
-                          {stu.unverifiedAchievements > 0 && (
-                            <Badge variant="secondary">
-                              {stu.unverifiedAchievements} Achv
-                            </Badge>
-                          )}
-                          {stu.unverifiedResults === 0 &&
-                            stu.unverifiedAchievements === 0 && (
-                              <Badge>
-                                Up to date
-                              </Badge>
-                            )}
+                           {stu.unverifiedResults > 0 && <Badge variant="warning" dot>{stu.unverifiedResults} Res</Badge>}
+                           {stu.unverifiedAchievements > 0 && <Badge variant="warning" dot>{stu.unverifiedAchievements} Achv</Badge>}
+                           {stu.unverifiedResults === 0 && stu.unverifiedAchievements === 0 && <Badge variant="success" icon>Up to date</Badge>}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Link href={`/faculty/students/${stu.id}`}>
-                          <button className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
-                            Review Profile
-                          </button>
+                           <button className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
+                              Review Profile
+                           </button>
                         </Link>
                       </td>
                     </tr>
@@ -178,6 +146,7 @@ export default function FacultyDashboard() {
             </table>
           </div>
         </Card>
+
       </div>
     </div>
   );
