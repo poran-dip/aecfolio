@@ -7,16 +7,15 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const faculty = await prisma.faculty.findFirst({
+  const project = await prisma.project.findFirst({
     where: { id, deletedAt: null },
-    include: { user: true },
   });
 
-  if (!faculty) {
-    return NextResponse.json({ error: "Faculty not found" }, { status: 404 });
+  if (!project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
-  return NextResponse.json(faculty);
+  return NextResponse.json(project);
 }
 
 export async function PATCH(
@@ -25,19 +24,19 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
+  const { title, description, techStack, link } = body;
 
-  const { employeeId, designation, department } = body;
-
-  const faculty = await prisma.faculty.update({
+  const project = await prisma.project.update({
     where: { id },
     data: {
-      ...(employeeId !== undefined && { employeeId }),
-      ...(designation !== undefined && { designation }),
-      ...(department !== undefined && { department }),
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(techStack !== undefined && { techStack }),
+      ...(link !== undefined && { link }),
     },
   });
 
-  return NextResponse.json(faculty);
+  return NextResponse.json(project);
 }
 
 export async function DELETE(
@@ -46,10 +45,10 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  const faculty = await prisma.faculty.update({
+  const project = await prisma.project.update({
     where: { id },
     data: { deletedAt: new Date() },
   });
 
-  return NextResponse.json(faculty);
+  return NextResponse.json(project);
 }
