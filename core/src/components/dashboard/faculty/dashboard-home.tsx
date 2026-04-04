@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/ui/Navbar";
-import { StatCard, Card } from "@/components/ui/card";
-import { PageLoader } from "@/components/ui/spinner";
-import { Badge, VerificationBadge } from "@/components/ui/badge";
+import { Navbar } from "@/components/dashboard/navbar";
+import { Card } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
+import { Badge } from "@/components/ui/badge";
 import { Users, AlertTriangle, Search, Filter } from "lucide-react";
 import Link from "next/link";
-import { formatExpType } from "@/lib/utils";
 
 interface StudentListDetails {
   id: string;
@@ -47,7 +46,7 @@ export default function FacultyDashboard() {
     );
   }, [search, data]);
 
-  if (loading) return <PageLoader />;
+  if (loading) return <Spinner />;
 
   const totalStudents = data.length;
   const pendingOverall = data.filter(
@@ -64,18 +63,12 @@ export default function FacultyDashboard() {
       <div className="p-6 max-w-6xl mx-auto space-y-6">
         {/* Stats */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <StatCard
-            label="Assigned Students"
-            value={totalStudents}
-            icon={<Users size={22} />}
-            color="blue"
-          />
-          <StatCard
-            label="Students Pending Verification"
-            value={pendingOverall}
-            icon={<AlertTriangle size={22} />}
-            color={pendingOverall > 0 ? "yellow" : "green"}
-          />
+          <Card>
+            Assigned Students
+          </Card>
+          <Card>
+            Students Pending Verification
+          </Card>
         </div>
 
         {/* Action / Search Bar */}
@@ -99,7 +92,7 @@ export default function FacultyDashboard() {
         </div>
 
         {/* Student List */}
-        <Card padding="none" className="overflow-hidden">
+        <Card className="p-0 overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
@@ -154,18 +147,18 @@ export default function FacultyDashboard() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {stu.unverifiedResults > 0 && (
-                            <Badge variant="warning" dot>
+                            <Badge variant="secondary">
                               {stu.unverifiedResults} Res
                             </Badge>
                           )}
                           {stu.unverifiedAchievements > 0 && (
-                            <Badge variant="warning" dot>
+                            <Badge variant="secondary">
                               {stu.unverifiedAchievements} Achv
                             </Badge>
                           )}
                           {stu.unverifiedResults === 0 &&
                             stu.unverifiedAchievements === 0 && (
-                              <Badge variant="success" icon>
+                              <Badge>
                                 Up to date
                               </Badge>
                             )}

@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/ui/Navbar";
+import { Navbar } from "@/components/dashboard/navbar";
 import { Card, CardHeader } from "@/components/ui/card";
-import { PageLoader } from "@/components/ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Badge, VerificationBadge } from "@/components/ui/badge";
 import { ConfirmModal } from "@/components/ui/Modal";
@@ -104,7 +104,7 @@ export default function FacultyStudentReviewPage({
     }
   };
 
-  if (loading || !data) return <PageLoader />;
+  if (loading || !data) return <Spinner />;
 
   return (
     <div>

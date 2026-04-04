@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/ui/Navbar";
+import { Navbar } from "@/components/dashboard/navbar";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PageLoader } from "@/components/ui/spinner";
+import { Spinner } from "@/components/ui/spinner";
 import {
   User,
   Phone,
@@ -106,7 +106,7 @@ export default function ProfilePage() {
     }
   };
 
-  if (loading) return <PageLoader />;
+  if (loading) return <Spinner />;
 
   return (
     <div>
@@ -116,8 +116,6 @@ export default function ProfilePage() {
         actions={
           <Button
             onClick={handleSave}
-            loading={saving}
-            icon={<Save size={14} />}
           >
             Save Changes
           </Button>
@@ -127,7 +125,7 @@ export default function ProfilePage() {
       <div className="p-6 space-y-6 max-w-4xl mx-auto">
         {/* Personal Details */}
         <Card>
-          <CardHeader title="Personal Details" icon={<User size={18} />} />
+          <CardHeader title="Personal Details" />
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Name (read-only from Google) */}
@@ -264,8 +262,6 @@ export default function ProfilePage() {
         <Card>
           <CardHeader
             title="Social & Portfolio Links"
-            icon={<LinkIcon size={18} />}
-            description="These will appear on your CV"
           />
 
           {/* Existing socials */}
@@ -338,7 +334,6 @@ export default function ProfilePage() {
             </div>
             <Button
               onClick={addSocial}
-              icon={<Plus size={14} />}
               variant="secondary"
             >
               Add

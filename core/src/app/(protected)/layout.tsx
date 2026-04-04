@@ -1,4 +1,5 @@
-import { Sidebar } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar"
+import { AppSidebar } from "@/components/dashboard/app-sidebar"
 
 const MOCK_USER = {
   name: "Ankur Das",
@@ -7,24 +8,14 @@ const MOCK_USER = {
   role: "STUDENT" as "STUDENT" | "FACULTY" | "ADMIN",
 };
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const { name, email, image, role } = MOCK_USER;
-
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-100">
-      <Sidebar
-        role={role}
-        userName={name}
-        userEmail={email}
-        userImage={image}
-      />
+    <SidebarProvider>
+      <AppSidebar user={MOCK_USER} />
       <main className="flex-1 overflow-y-auto">
-        <div className="page-enter">{children}</div>
+        <SidebarTrigger />
+        {children}
       </main>
-    </div>
-  );
+    </SidebarProvider>
+  )
 }
