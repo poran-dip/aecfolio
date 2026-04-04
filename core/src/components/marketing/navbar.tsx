@@ -1,81 +1,50 @@
-"use client";
+'use client';
 
 import Image from "next/image";
 import Link from "next/link";
-import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-  navigationMenuTriggerStyle,
-} from "@/components/ui/navigation-menu";
 import { Button } from "@/components/ui/button";
-
-function ListItem({
-  href,
-  children,
-}: {
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <li>
-      <NavigationMenuLink asChild>
-        <Link
-          href={href}
-          className="block px-3 py-2 text-sm rounded-md text-foreground hover:bg-accent hover:text-accent-foreground transition-colors"
-        >
-          {children}
-        </Link>
-      </NavigationMenuLink>
-    </li>
-  );
-}
+import { useState } from "react";
+import { Moon, Sun } from "lucide-react";
 
 export function MarketingNavbar() {
-  return (
-    <header className="fixed top-0 w-full z-30 flex items-center justify-between px-6 h-16 bg-background/80 backdrop-blur-sm border-b border-border">
+  const signedIn = false;
+  const [theme, setTheme] = useState<"light" | "dark">("light");
 
-      <Link href="/" className="flex items-center gap-2.5">
-        <Image src="/logo.png" alt="AEC logo" width={32} height={32} />
-        <span className="text-sm font-medium text-foreground">AECFolio</span>
+  const toggleTheme = () => {
+    if (theme === "dark") {
+      setTheme("light");
+      document.documentElement.classList.remove("dark")
+      localStorage.setItem("theme", "light")
+    } else {
+      setTheme("dark");
+      document.documentElement.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+    }
+  }
+
+  return (
+    <header className="fixed top-0 w-full z-30 flex items-center justify-between px-3 sm:px-6 h-16 bg-background/60 backdrop-blur-sm shadow-sm">
+      <Link href="/" className="flex items-center gap-3">
+        <Image src="/logo.png" alt="AEC logo" width={28} height={28} className="w-7 h-7" />
+        <span className="text-lg font-bold text-foreground/80 tracking-wide">AECFolio</span>
       </Link>
 
-      <div className="flex items-center gap-2">
-        <NavigationMenu>
-          <NavigationMenuList>
+      <div className="flex items-center gap-2 sm:gap-3">
+        <Link href="/dashboard">
+          <Button className="cursor-pointer">
+            {signedIn ? "Dashboard" : "Sign In"}
+          </Button>
+        </Link>
 
-            <NavigationMenuItem>
-              <NavigationMenuTrigger className="text-sm text-muted-foreground">
-                Talent
-              </NavigationMenuTrigger>
-              <NavigationMenuContent>
-                <ul className="flex flex-col w-48 p-1.5">
-                  <ListItem href="/talent/internship">Open to internship</ListItem>
-                  <ListItem href="/talent/hire">Open to work</ListItem>
-                  <li className="h-px bg-border my-1" />
-                  <ListItem href="/talent">View all</ListItem>
-                </ul>
-              </NavigationMenuContent>
-            </NavigationMenuItem>
-
-            <NavigationMenuItem>
-              <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-                <Link href="/about" className="text-sm text-muted-foreground">
-                  About
-                </Link>
-              </NavigationMenuLink>
-            </NavigationMenuItem>
-
-          </NavigationMenuList>
-        </NavigationMenu>
-
-        <div className="w-px h-5 bg-border mx-1.5" />
-
-        <Button asChild size="sm">
-          <Link href="/dashboard">Sign in</Link>
+        <Button 
+          variant={"ghost"}
+          onClick={toggleTheme}
+          className="cursor-pointer"
+        >
+          {theme === "dark" ?
+            <Sun className="w-5 h-5" /> :
+            <Moon className="w-5 h-5" />
+          }
         </Button>
       </div>
 

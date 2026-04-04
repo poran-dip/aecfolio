@@ -30,7 +30,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={cn("h-full", "font-sans", inter.variable)}>
+    <html lang="en" className={cn("h-full", "font-sans", "scroll-smooth", inter.variable)}>
       <body className="min-h-full flex flex-col antialiased">
         <TooltipProvider>
           {children}
