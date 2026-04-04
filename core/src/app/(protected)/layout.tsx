@@ -1,5 +1,3 @@
-import { auth } from "@/lib/auth";
-import { redirect } from "next/navigation";
 import { Sidebar } from "@/components/dashboard/ui/Sidebar";
 
 export default async function DashboardLayout({
@@ -7,17 +5,18 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await auth();
+  const MOCK_USER = {
+    name: "Ankur Das",
+    email: "ankur@aec.ac.in",
+    image: null,
+    role: "STUDENT" as "STUDENT" | "FACULTY",
+  };
 
-  if (!session?.user) {
-    redirect("/login");
-  }
-
-  const { name, email, image, role } = session.user as {
+  const { name, email, image, role } = MOCK_USER as {
     name?: string | null;
     email?: string | null;
     image?: string | null;
-    role: "STUDENT" | "FACULTY" | "ADMIN";
+    role: "STUDENT" | "FACULTY";
   };
 
   return (
