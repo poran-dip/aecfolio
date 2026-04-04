@@ -1,10 +1,9 @@
 import Link from "next/link";
-import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
-import { ExternalLink, Mail, BookOpen, Users, Wrench } from "lucide-react";
+import { ExternalLink, Mail, Users } from "lucide-react";
 
 const originalAuthors = [
   { name: "Poran Dip Boruah", role: "Author", url: "https://github.com/poran-dip" },
@@ -50,18 +49,18 @@ export default function InfoPage() {
           </div>
           <div className="flex flex-col gap-3">
             {originalAuthors.map((author) => (
-  <Link key={author.name} href={author.url} target="_blank" rel="noreferrer noopener">
-    <Card className="bg-background/40 backdrop-blur-sm border-border hover:bg-background/60 transition-colors cursor-pointer">
-      <CardContent className="px-4 py-3 flex items-center justify-between">
-        <p className="text-sm font-medium">{author.name}</p>
-        <div className="flex items-center gap-2">
-          <Badge variant="secondary" className="text-xs">CSE '27</Badge>
-          <ExternalLink className="w-3.5 h-3.5 text-foreground/70" />
-        </div>
-      </CardContent>
-    </Card>
-  </Link>
-))}
+              <Link key={author.name} href={author.url} target="_blank" rel="noreferrer noopener">
+                <Card className="bg-background/40 backdrop-blur-sm border-border hover:bg-background/60 transition-colors cursor-pointer">
+                  <CardContent className="px-4 py-3 flex items-center justify-between">
+                    <p className="text-sm font-medium">{author.name}</p>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">CSE '27</Badge>
+                      <ExternalLink className="w-3.5 h-3.5 text-foreground/70" />
+                    </div>
+                  </CardContent>
+                </Card>
+              </Link>
+            ))}
           </div>
           <Button variant="secondary" className="w-fit cursor-pointer gap-2" asChild>
             <Link href="https://github.com/your-repo/graphs/contributors" target="_blank" rel="noreferrer noopener">
