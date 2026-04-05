@@ -16,7 +16,7 @@ async function main() {
       role: "FACULTY",
       faculty: {
         create: {
-          employeeId: "FAC001",
+          employeeId: "FAC002",
           designation: "Professor",
           department: "CSE",
         },
@@ -28,7 +28,7 @@ async function main() {
   const student1 = await prisma.user.create({
     data: {
       name: "John Doe",
-      email: "john@aec.ac.in",
+      email: "john23-001@aec.ac.in",
       role: "STUDENT",
       student: {
         create: {
@@ -53,24 +53,28 @@ async function main() {
                 sgpa: 8.5,
                 verified: true,
                 verifiedBy: faculty.id,
+                verifiedAt: new Date(),
               },
               {
                 semester: 2,
                 sgpa: 8.8,
                 verified: true,
                 verifiedBy: faculty.id,
+                verifiedAt: new Date(),
               },
               {
                 semester: 3,
                 sgpa: 8.6,
                 verified: true,
                 verifiedBy: faculty.id,
+                verifiedAt: new Date(),
               },
               {
                 semester: 4,
                 sgpa: 9.0,
                 verified: true,
                 verifiedBy: faculty.id,
+                verifiedAt: new Date(),
               },
               { semester: 5, sgpa: 8.9, verified: false },
             ],
@@ -84,7 +88,7 @@ async function main() {
   const student2 = await prisma.user.create({
     data: {
       name: "Alice Smith",
-      email: "alice@aec.ac.in",
+      email: "alice23-005@aec.ac.in",
       role: "STUDENT",
       student: {
         create: {
