@@ -40,6 +40,11 @@ export async function POST(req: NextRequest) {
     data: { userId, rollNo, course, branch, semester, bio, skills: skills ?? [], cgpa },
   });
 
+  await prisma.user.update({
+    where: { id: userId },
+    data: { role: "STUDENT" },
+  });
+
   await createAuditLog({
     userId: session.user.id,
     action: "CREATE",
