@@ -2,12 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { StatCard, Card } from "@/components/dashboard/ui/Card";
+import { Card } from "@/components/dashboard/ui/Card";
 import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
-import { Users, AlertTriangle, Search, Filter } from "lucide-react";
+import { Badge } from "@/components/dashboard/ui/Badge";
+import { Search, Filter, BookOpen } from "lucide-react";
 import Link from "next/link";
-import { formatExpType } from "@/lib/utils";
 
 interface StudentListDetails {
   id: string;
@@ -21,66 +20,63 @@ interface StudentListDetails {
   unverifiedAchievements: number;
 }
 
-export default function FacultyDashboard() {
+const mockStudents: StudentListDetails[] = [
+  { id: "1", name: "Alice Smith", rollNo: "CSE23001", course: "BTECH", batch: "2023", semester: 5, cgpa: 8.9, unverifiedResults: 1, unverifiedAchievements: 0 },
+  { id: "2", name: "Bob Jones", rollNo: "CSE23002", course: "BTECH", batch: "2023", semester: 5, cgpa: 7.5, unverifiedResults: 0, unverifiedAchievements: 2 },
+  { id: "3", name: "Charlie Brown", rollNo: "ECE22001", course: "BTECH", batch: "2022", semester: 7, cgpa: 9.2, unverifiedResults: 0, unverifiedAchievements: 0 },
+  { id: "4", name: "Diana Prince", rollNo: "MCA24001", course: "MCA", batch: "2024", semester: 2, cgpa: null, unverifiedResults: 2, unverifiedAchievements: 1 },
+];
+
+export default function StudentsDirectoryPage() {
   const [data, setData] = useState<StudentListDetails[]>([]);
-  const [batchFilter, setBatchFilter] = useState("ALL");
-  const [courseFilter, setCourseFilter] = useState("ALL");
   const [filtered, setFiltered] = useState<StudentListDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [batchFilter, setBatchFilter] = useState("ALL");
+  const [courseFilter, setCourseFilter] = useState("ALL");
 
   useEffect(() => {
-    fetch("/api/faculty/students")
-      .then((r) => r.json())
-      .then((d) => {
-        setData(d.students || []);
-        setFiltered(d.students || []);
-      })
-      .finally(() => setLoading(false));
+    // Simulated API call
+    setTimeout(() => {
+      setData(mockStudents);
+      setFiltered(mockStudents);
+      setLoading(false);
+    }, 400);
   }, []);
 
   useEffect(() => {
     let result = data;
+
+    // Search
     const s = search.toLowerCase();
     if (s) {
-      result = result.filter((stu) =>
-        (stu.name || "").toLowerCase().includes(s) ||
+      result = result.filter((stu) => 
+        (stu.name || "").toLowerCase().includes(s) || 
         (stu.rollNo || "").toLowerCase().includes(s)
       );
     }
-    if (batchFilter !== "ALL") result = result.filter((stu) => stu.batch === batchFilter);
-    if (courseFilter !== "ALL") result = result.filter((stu) => stu.course === courseFilter);
+
+    // Filter by Batch
+    if (batchFilter !== "ALL") {
+      result = result.filter((stu) => stu.batch === batchFilter);
+    }
+
+    // Filter by Course
+    if (courseFilter !== "ALL") {
+      result = result.filter((stu) => stu.course === courseFilter);
+    }
+
     setFiltered(result);
   }, [search, batchFilter, courseFilter, data]);
 
   if (loading) return <PageLoader />;
 
-  const totalStudents = data.length;
-  const pendingOverall = data.filter(s => s.unverifiedResults > 0 || s.unverifiedAchievements > 0).length;
-
   return (
     <div>
-      <Navbar title="Faculty Advisor Dashboard" subtitle="Manage assigned students and verify records" />
+      <Navbar title="Student Directory" subtitle="View and manage all assigned students" />
 
       <div className="p-6 max-w-6xl mx-auto space-y-6">
-        
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <StatCard
-            label="Assigned Students"
-            value={totalStudents}
-            icon={<Users size={22} />}
-            color="blue"
-          />
-          <StatCard
-            label="Students Pending Verification"
-            value={pendingOverall}
-            icon={<AlertTriangle size={22} />}
-            color={pendingOverall > 0 ? "yellow" : "green"}
-          />
-        </div>
-
-        {/* Action / Search Bar */}
+        {/* Filters and Search Bar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
@@ -103,6 +99,7 @@ export default function FacultyDashboard() {
               <option value="2023">2023</option>
               <option value="2022">2022</option>
             </select>
+            
             <select
               value={courseFilter}
               onChange={(e) => setCourseFilter(e.target.value)}
@@ -123,9 +120,9 @@ export default function FacultyDashboard() {
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
                 <tr>
                   <th className="px-6 py-4">Student</th>
-                  <th className="px-6 py-4">Course & Sem</th>
+                  <th className="px-6 py-4">Course & Batch</th>
                   <th className="px-6 py-4 text-center">CGPA</th>
-                  <th className="px-6 py-4">Pending Verifications</th>
+                  <th className="px-6 py-4">Status</th>
                   <th className="px-6 py-4 text-right">Action</th>
                 </tr>
               </thead>
@@ -147,8 +144,8 @@ export default function FacultyDashboard() {
                       </td>
                       <td className="px-6 py-4">
                         <span className="font-medium text-slate-700">{stu.course}</span>
-                         <span className="text-slate-400 mx-1">·</span>
-                        <span className="text-slate-600">Sem {stu.semester}</span>
+                        <span className="text-slate-400 mx-1">·</span>
+                        <span className="text-slate-600">Batch {stu.batch}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="font-bold text-slate-800">{stu.cgpa ? stu.cgpa.toFixed(2) : "—"}</span>
@@ -157,13 +154,13 @@ export default function FacultyDashboard() {
                         <div className="flex gap-2">
                            {stu.unverifiedResults > 0 && <Badge variant="warning" dot>{stu.unverifiedResults} Res</Badge>}
                            {stu.unverifiedAchievements > 0 && <Badge variant="warning" dot>{stu.unverifiedAchievements} Achv</Badge>}
-                           {stu.unverifiedResults === 0 && stu.unverifiedAchievements === 0 && <Badge variant="success" icon>Up to date</Badge>}
+                           {stu.unverifiedResults === 0 && stu.unverifiedAchievements === 0 && <Badge variant="success" icon>Updated</Badge>}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
-                        <Link href={`/faculty/students/${stu.id}`}>
+                       <Link href={`/dashboard/students/${stu.id}`}>
                            <button className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
-                              Review Profile
+                              View Profile
                            </button>
                         </Link>
                       </td>
@@ -174,7 +171,6 @@ export default function FacultyDashboard() {
             </table>
           </div>
         </Card>
-
       </div>
     </div>
   );

@@ -4,15 +4,12 @@ import { signOut } from "next-auth/react"
 import {
   ChevronRight,
   ChevronsUpDown,
-  GalleryVerticalEnd,
   LogOut,
   GraduationCap,
   Briefcase,
   FileText,
   User,
   LayoutDashboard,
-  Code2,
-  FolderGit2,
   Trophy,
   Settings,
 } from "lucide-react"
@@ -54,85 +51,78 @@ import {
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-const studentNav = [
-  {
-    title: "Academics",
-    url: "/dashboard",
-    icon: GraduationCap,
-    isActive: true,
-    items: [
-      { title: "Dashboard", url: "/dashboard" },
-      { title: "Results", url: "/dashboard/results" },
-      { title: "Achievements", url: "/dashboard/achievements" },
-    ],
-  },
-  {
-    title: "Portfolio",
-    url: "/dashboard/projects",
-    icon: Briefcase,
-    items: [
-      { title: "Skills", url: "/dashboard/skills" },
-      { title: "Projects", url: "/dashboard/projects" },
-      { title: "Experience", url: "/dashboard/experience" },
-    ],
-  },
-  {
-    title: "Documents",
-    url: "/dashboard/cv",
-    icon: FileText,
-    items: [
-      { title: "Generate CV", url: "/dashboard/cv" },
-    ],
-  },
-]
-
-const facultyNav = [
-  {
-    title: "Manage Students",
-    url: "/dashboard",
-    icon: GraduationCap,
-    isActive: true,
-    items: [
-      { title: "Overview", url: "/dashboard" },
-      { title: "All Students", url: "/dashboard/students" },
-    ],
-  },
-  {
-    title: "Verify",
-    url: "/dashboard/verify",
-    icon: Trophy,
-    isActive: true,
-    items: [
-      { title: "Results", url: "/dashboard/verify/results" },
-      { title: "Achievements", url: "/dashboard/verify/achievements" },
-      { title: "Certifications", url: "/dashboard/verify/certifications" },
-    ],
-  },
-  {
-    title: "Manage Faculty",
-    url: "/dashboard/faculty",
-    icon: Briefcase,
-    items: [
-      { title: "All Faculty", url: "/dashboard/faculty" },
-    ],
-  },
-  {
-    title: "Pending Users",
-    url: "/dashboard/pending",
-    icon: User,
-    items: [
-      { title: "Pending Approvals", url: "/dashboard/pending" },
-    ],
-  },
-  {
-    title: "Settings",
-    url: "/dashboard/settings",
-    icon: Settings,
-    items: [
-      { title: "Edit Profile", url: "/dashboard/settings" },
-    ],
-  },
-]
+const data = {
+  studentNav: [
+    {
+      title: "Academics",
+      url: "/dashboard",
+      icon: GraduationCap,
+      isActive: true,
+      items: [
+        { title: "Dashboard", url: "/dashboard" },
+        { title: "Results", url: "/dashboard/results" },
+        { title: "Achievements", url: "/dashboard/achievements" },
+      ],
+    },
+    {
+      title: "Portfolio",
+      url: "/dashboard/projects",
+      icon: Briefcase,
+      items: [
+        { title: "Skills", url: "/dashboard/skills" },
+        { title: "Projects", url: "/dashboard/projects" },
+        { title: "Experience", url: "/dashboard/experience" },
+      ],
+    },
+    {
+      title: "Documents",
+      url: "/dashboard/cv",
+      icon: FileText,
+      items: [
+        { title: "Generate CV", url: "/dashboard/cv" },
+      ],
+    },
+  ],
+  facultyNav: [
+    {
+      title: "Students",
+      url: "/dashboard",
+      icon: GraduationCap,
+      isActive: true,
+      items: [
+        { title: "All Students", url: "/dashboard" },
+      ],
+    },
+    {
+      title: "Verify",
+      url: "/dashboard/verify",
+      icon: Trophy,
+      isActive: true,
+      items: [
+        { title: "Results", url: "/dashboard/verify/results" },
+        { title: "Achievements", url: "/dashboard/verify/achievements" },
+        { title: "Certifications", url: "/dashboard/verify/certifications" },
+      ],
+    },
+    {
+      title: "Administration",
+      url: "/dashboard/faculty",
+      icon: Briefcase,
+      items: [
+        { title: "Faculty", url: "/dashboard/faculty" },
+        { title: "Pending Users", url: "/dashboard/pending" },
+      ],
+    },
+    {
+      title: "Account",
+      url: "/dashboard/settings",
+      icon: Settings,
+      items: [
+        { title: "Edit Profile", url: "/dashboard/settings" },
+      ],
+    },
+  ],
+}
 
 interface AppSidebarProps {
   userName?: string
@@ -158,8 +148,8 @@ export function AppSidebar({
 
   const navMain = React.useMemo(() => {
     if (role === "PENDING") return []
-    if (role === "FACULTY") return facultyNav
-    return studentNav
+    if (role === "FACULTY") return data.facultyNav
+    return data.studentNav
   }, [role])
 
   const plan =

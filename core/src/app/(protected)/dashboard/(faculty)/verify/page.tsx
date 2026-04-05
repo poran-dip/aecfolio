@@ -1,7 +1,5 @@
-export default function FacultyVerify() {
-  return (
-    <div>
+import VerificationPage from "@/components/dashboard/faculty/verify-page";
 
-    </div>
-  )
+export default function Page() {
+  return <VerificationPage />;
 }

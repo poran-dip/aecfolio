@@ -1,7 +1,5 @@
-export default function FacultyStudentsManagement() {
-  return (
-    <div>
+import StudentsDirectoryPage from "@/components/dashboard/faculty/students-page";
 
-    </div>
-  )
+export default function Page() {
+  return <StudentsDirectoryPage />;
 }

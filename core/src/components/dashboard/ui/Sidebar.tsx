@@ -42,6 +42,8 @@ const studentNav: NavItem[] = [
 const facultyNav: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
   { label: "Students", href: "/dashboard/students", icon: <Users size={18} /> },
+  { label: "Verify", href: "/dashboard/verify", icon: <FileText size={18} /> },
+  { label: "Profile", href: "/dashboard/profile", icon: <User size={18} /> },
 ];
 
 interface SidebarProps {

@@ -1,7 +1,5 @@
-export default function FacultyProfile() {
-  return (
-    <div>
+import FacultyProfilePage from "@/components/dashboard/faculty/profile-page";
 
-    </div>
-  )
+export default function Page() {
+  return <FacultyProfilePage />;
 }
