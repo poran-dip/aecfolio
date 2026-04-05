@@ -24,7 +24,10 @@ interface FullStudentProfile {
   certifications: { id: string; name: string; issuer: string; proofImage: string; verified: boolean }[];
 }
 
-export default function FacultyStudentReviewPage({ params }: { params: { studentId: string } }) {
+export default function FacultyStudentReviewPage({  params,
+}: {
+  params: { id: string }  
+}) {
   const [data, setData] = useState<FullStudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
   
@@ -33,8 +36,7 @@ export default function FacultyStudentReviewPage({ params }: { params: { student
   const [verifying, setVerifying] = useState(false);
 
   // Use unwrap to access dynamic params in App Router properly (React.use(params)) if needed, but since we are simple we will just use as is for now. Assuming params is resolvable.
-  const studentId = params.studentId;
-
+  const studentId = params.id;
   const loadData = () => {
     fetch(`/api/faculty/students/${studentId}`)
       .then((r) => r.json())

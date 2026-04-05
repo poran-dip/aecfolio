@@ -14,6 +14,8 @@ import {
   Code2,
   FolderGit2,
   Trophy,
+  Users,
+  CheckSquare,
 } from "lucide-react"
 
 import {
@@ -54,7 +56,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 
 const data = {
-  navMain: [
+  studentNav: [
     {
       title: "Academics",
       url: "/dashboard",
@@ -106,6 +108,46 @@ const data = {
       ],
     },
   ],
+  facultyNav: [
+    {
+      title: "Overview",
+      url: "/dashboard",
+      icon: LayoutDashboard,
+      isActive: true,
+      items: [
+        {
+          title: "Dashboard",
+          url: "/dashboard",
+        },
+      ],
+    },
+    {
+      title: "Management",
+      url: "/dashboard/students",
+      icon: Users,
+      items: [
+        {
+          title: "Students",
+          url: "/dashboard/students",
+        },
+        {
+          title: "Verification Queue",
+          url: "/dashboard/verify",
+        },
+      ],
+    },
+    {
+      title: "Account",
+      url: "/dashboard/profile",
+      icon: User,
+      items: [
+        {
+          title: "Profile",
+          url: "/dashboard/profile",
+        },
+      ],
+    },
+  ],
 }
 
 interface AppSidebarProps {
@@ -131,10 +173,9 @@ export function AppSidebar({
   }
 
   const navMain = React.useMemo(() => {
-    if (role === "PENDING") {
-      return []
-    }
-    return data.navMain
+    if (role === "PENDING") return []
+    if (role === "FACULTY") return data.facultyNav
+    return data.studentNav
   }, [role])
 
   const plan =
