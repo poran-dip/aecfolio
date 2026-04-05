@@ -83,7 +83,7 @@ export function StatCard({
 
   return (
     <Card className="flex items-center gap-4">
-      <div className={cn("flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center", colors[color])}>
+      <div className={cn("shrink-0 w-12 h-12 rounded-xl flex items-center justify-center", colors[color])}>
         {icon}
       </div>
       <div>

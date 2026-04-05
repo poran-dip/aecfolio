@@ -16,6 +16,13 @@ export async function GET() {
         },
     });
 
+    const pendingUsers = await prisma.user.count({
+      where: {
+        deletedAt: null,
+        role: "PENDING",
+      },
+    });
+
     const formatted = students.map((stu) => ({
       id: stu.id,
       name: stu.user?.name || "Unknown",
@@ -28,7 +35,7 @@ export async function GET() {
       unverifiedAchievements: stu.achievements.filter(a => !a.verified).length,
     }));
 
-    return NextResponse.json({ students: formatted });
+    return NextResponse.json({ students: formatted, pendingUsers });
 
   } catch (err) {
     console.error(err);

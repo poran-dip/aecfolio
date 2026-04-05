@@ -1,13 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { StatCard, Card } from "@/components/dashboard/ui/Card";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
-import { Users, AlertTriangle, Search, Filter } from "lucide-react";
+import { Card } from "@/components/dashboard/ui/Card";
+import { Spinner } from "@/components/ui/spinner";
+import { Badge } from "@/components/dashboard/ui/Badge";
+import { Search, Dot } from "lucide-react";
 import Link from "next/link";
-import { formatExpType } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 interface StudentListDetails {
   id: string;
@@ -28,13 +27,15 @@ export default function FacultyDashboard() {
   const [filtered, setFiltered] = useState<StudentListDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [pendingUsers, setPendingUsers] = useState(0);
 
   useEffect(() => {
-    fetch("/api/faculty/students")
+    fetch("/api/faculty/dashboard")
       .then((r) => r.json())
       .then((d) => {
         setData(d.students || []);
         setFiltered(d.students || []);
+        setPendingUsers(d.pendingUsers || 0);
       })
       .finally(() => setLoading(false));
   }, []);
@@ -53,31 +54,43 @@ export default function FacultyDashboard() {
     setFiltered(result);
   }, [search, batchFilter, courseFilter, data]);
 
-  if (loading) return <PageLoader />;
+  if (loading) return <Spinner />;
 
-  const totalStudents = data.length;
   const pendingOverall = data.filter(s => s.unverifiedResults > 0 || s.unverifiedAchievements > 0).length;
 
   return (
     <div>
-      <Navbar title="Faculty Advisor Dashboard" subtitle="Manage assigned students and verify records" />
-
       <div className="p-6 max-w-6xl mx-auto space-y-6">
-        
-        {/* Stats */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <StatCard
-            label="Assigned Students"
-            value={totalStudents}
-            icon={<Users size={22} />}
-            color="blue"
-          />
-          <StatCard
-            label="Students Pending Verification"
-            value={pendingOverall}
-            icon={<AlertTriangle size={22} />}
-            color={pendingOverall > 0 ? "yellow" : "green"}
-          />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <Card className="relative p-4">
+            {pendingOverall > 0 && <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm text-muted-foreground">Pending Verifications</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <p className="text-2xl font-bold">{pendingOverall}</p>
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/dashboard/verify/results">Review & Verify</Link>
+              </Button>
+            </div>
+          </Card>
+          <Card className="relative p-4">
+            {pendingUsers > 0 && <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-2 mb-2">
+                <p className="text-sm text-muted-foreground">Pending User Approvals</p>
+              </div>
+            </div>
+            <div className="flex items-end justify-between">
+              <p className="text-2xl font-bold">{pendingUsers}</p>
+              <Button variant="secondary" size="sm" asChild>
+                <Link href="/dashboard/pending">Review & Approve</Link>
+              </Button>
+            </div>
+          </Card>
         </div>
 
         {/* Action / Search Bar */}
@@ -99,9 +112,9 @@ export default function FacultyDashboard() {
               className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none"
             >
               <option value="ALL">All Batches</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
+              <option value="2024">2026</option>
+              <option value="2023">2025</option>
+              <option value="2022">2024</option>
             </select>
             <select
               value={courseFilter}
