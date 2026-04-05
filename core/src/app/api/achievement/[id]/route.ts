@@ -8,16 +8,15 @@ export async function GET(
 ) {
   const { id } = await params;
 
-  const faculty = await prisma.faculty.findFirst({
+  const achievement = await prisma.achievement.findFirst({
     where: { id, deletedAt: null },
-    include: { user: true },
   });
 
-  if (!faculty) {
-    return NextResponse.json({ error: "Faculty not found" }, { status: 404 });
+  if (!achievement) {
+    return NextResponse.json({ error: "Achievement not found" }, { status: 404 });
   }
 
-  return NextResponse.json(faculty);
+  return NextResponse.json(achievement);
 }
 
 export async function PATCH(
@@ -26,22 +25,21 @@ export async function PATCH(
 ) {
   const { id } = await params;
   const body = await req.json();
+  const { title, description, proofImage } = body;
 
-  const { employeeId, designation, department } = body;
-
-  const faculty = await prisma.faculty.update({
+  const achievement = await prisma.achievement.update({
     where: { id },
     data: {
-      ...(employeeId !== undefined && { employeeId }),
-      ...(designation !== undefined && { designation }),
-      ...(department !== undefined && { department }),
+      ...(title !== undefined && { title }),
+      ...(description !== undefined && { description }),
+      ...(proofImage !== undefined && { proofImage }),
     },
   });
 
   const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "UPDATE", entity: "Faculty", entityId: id });
+  await createAuditLog({ userId, action: "UPDATE", entity: "Achievement", entityId: id });
 
-  return NextResponse.json(faculty);
+  return NextResponse.json(achievement);
 }
 
 export async function DELETE(
@@ -50,13 +48,13 @@ export async function DELETE(
 ) {
   const { id } = await params;
 
-  const faculty = await prisma.faculty.update({
+  const achievement = await prisma.achievement.update({
     where: { id },
     data: { deletedAt: new Date() },
   });
 
   const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "DELETE", entity: "Faculty", entityId: id });
+  await createAuditLog({ userId, action: "DELETE", entity: "Achievement", entityId: id });
 
-  return NextResponse.json(faculty);
+  return NextResponse.json(achievement);
 }
