@@ -40,5 +40,8 @@
     "prisma": "^7.5.0",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "overrides": {
+    "@auth/core": "0.41.1"
   }
 }
