@@ -82,7 +82,7 @@ export default function VerificationPage() {
                           <div>
                             <p className="font-semibold text-slate-900">{item.title}</p>
                             <div className="flex items-center gap-2 mt-1">
-                               <Badge variant={item.type === "RESULT" ? "default" : item.type === "ACHIEVEMENT" ? "primary" : "success"}>
+                               <Badge variant={item.type === "RESULT" ? "default" : item.type === "ACHIEVEMENT" ? "default" : "success"}>
                                   {item.type}
                                </Badge>
                                <span className="text-xs text-slate-500">{item.details}</span>
