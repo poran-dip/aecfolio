@@ -112,24 +112,37 @@ interface AppSidebarProps {
   userName?: string
   userEmail?: string
   userImage?: string | null
-  role?: "STUDENT" | "FACULTY" | "ADMIN"
+  role?: "STUDENT" | "FACULTY" | "PENDING"
 }
 
 export function AppSidebar({
-  userName = "shadcn",
-  userEmail = "m@example.com",
+  userName,
+  userEmail,
   userImage,
-  role = "STUDENT",
+  role,
   ...props
 }: AppSidebarProps & React.ComponentProps<typeof Sidebar>) {
   const { isMobile } = useSidebar()
   const pathname = usePathname()
 
-  const [activeTeam, setActiveTeam] = React.useState({
+  const activeTeam = {
     name: "AEC Profiles",
     logo: "/logo.png",
-    plan: role === "FACULTY" ? "Faculty Portal" : "Student Portal",
-  })
+  }
+
+  const navMain = React.useMemo(() => {
+    if (role === "PENDING") {
+      return []
+    }
+    return data.navMain
+  }, [role])
+
+  const plan =
+    role === "FACULTY"
+      ? "Faculty Portal"
+      : role === "PENDING"
+      ? "Pending Approval"
+      : "Student Portal"
 
   // Global mock state sync for image
   const [localImage, setLocalImage] = React.useState(userImage);
@@ -162,7 +175,7 @@ export function AppSidebar({
                     <span className="truncate font-medium">
                       {activeTeam.name}
                     </span>
-                    <span className="truncate text-xs">{activeTeam.plan}</span>
+                    <span className="truncate text-xs">{plan}</span>
                   </div>
                   <ChevronsUpDown className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -192,7 +205,7 @@ export function AppSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
           <SidebarMenu>
-            {data.navMain.map((item) => (
+            {navMain.map((item) => (
               <Collapsible
                 key={item.title}
                 asChild
@@ -242,7 +255,7 @@ export function AppSidebar({
                   <Avatar className="h-8 w-8 rounded-lg">
                     {localImage && <AvatarImage src={localImage} alt={userName} className="object-cover" />}
                     <AvatarFallback className="rounded-lg">
-                      {userName.substring(0, 2).toUpperCase()}
+                      {userName?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -263,7 +276,7 @@ export function AppSidebar({
                     <Avatar className="h-8 w-8 rounded-lg">
                       {localImage && <AvatarImage src={localImage} alt={userName} className="object-cover" />}
                       <AvatarFallback className="rounded-lg">
-                        {userName.substring(0, 2).toUpperCase()}
+                        {userName?.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
                     <div className="grid flex-1 text-left text-sm leading-tight">

@@ -10,10 +10,7 @@ const DashboardPage = async () => {
 
   const { role } = session.user;
 
-  if (session.user.role === "PENDING") {
-    return <PendingApprovalScreen />;
-  }
-
+  if (role === "PENDING") return <PendingApprovalScreen />
   if (role === "STUDENT") return <StudentDashboard />
   if (role === "FACULTY") return <FacultyDashboard />
 
