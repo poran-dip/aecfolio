@@ -1,8 +1,12 @@
+import { requireRole } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { createAuditLog } from "@/lib/audit";
 
 export async function GET() {
+  const { error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const faculty = await prisma.faculty.findMany({
     where: { deletedAt: null },
     include: { user: true },
@@ -12,9 +16,10 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  const { session, error } = await requireRole(["FACULTY"]);
+  if (error) return error;
 
-  const { userId, employeeId, designation, department } = body;
+  const { userId, employeeId, designation, department } = await req.json();
 
   const existing = await prisma.user.findFirst({
     where: { id: userId },
@@ -32,16 +37,15 @@ export async function POST(req: NextRequest) {
   }
 
   const faculty = await prisma.faculty.create({
-    data: {
-      userId,
-      employeeId,
-      designation,
-      department,
-    },
+    data: { userId, employeeId, designation, department },
   });
 
-  const actorId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId: actorId, action: "CREATE", entity: "Faculty", entityId: faculty.id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "CREATE",
+    entity: "Faculty",
+    entityId: faculty.id,
+  });
 
   return NextResponse.json(faculty, { status: 201 });
 }

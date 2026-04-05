@@ -1,11 +1,15 @@
+import { requireRole } from "@/lib/api-auth";
+import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
-import { createAuditLog } from "@/lib/audit";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
   const student = await prisma.student.findFirst({
@@ -24,12 +28,27 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
-  const body = await req.json();
 
-  const { rollNo, course, branch, semester, bio, skills, cgpa } = body;
+  const student = await prisma.student.findFirst({
+    where: { id, deletedAt: null },
+  });
 
-  const student = await prisma.student.update({
+  if (!student) {
+    return NextResponse.json({ error: "Student not found" }, { status: 404 });
+  }
+
+  // students can only edit their own profile
+  if (session.user.role === "STUDENT" && student.userId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { rollNo, course, branch, semester, bio, skills, cgpa } = await req.json();
+
+  const updated = await prisma.student.update({
     where: { id },
     data: {
       ...(rollNo !== undefined && { rollNo }),
@@ -42,25 +61,48 @@ export async function PATCH(
     },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "UPDATE", entity: "Student", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "UPDATE",
+    entity: "Student",
+    entityId: id,
+  });
 
-  return NextResponse.json(student);
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
-  const student = await prisma.student.update({
+  const student = await prisma.student.findFirst({
+    where: { id, deletedAt: null },
+  });
+
+  if (!student) {
+    return NextResponse.json({ error: "Student not found" }, { status: 404 });
+  }
+
+  if (session.user.role === "STUDENT" && student.userId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const deleted = await prisma.student.update({
     where: { id },
     data: { deletedAt: new Date() },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "DELETE", entity: "Student", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "DELETE",
+    entity: "Student",
+    entityId: id,
+  });
 
-  return NextResponse.json(student);
+  return NextResponse.json(deleted);
 }

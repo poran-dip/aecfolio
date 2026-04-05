@@ -1,30 +1,43 @@
+import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await req.json();
-  const { verifiedBy } = body;
+  const { session, error } = await requireRole(["FACULTY"]);
+  if (error) return error;
 
-  if (!verifiedBy) {
-    return NextResponse.json({ error: "Missing verifiedBy" }, { status: 400 });
+  const { id } = await params;
+
+  const result = await prisma.result.findFirst({ where: { id } });
+
+  if (!result) {
+    return NextResponse.json({ error: "Result not found" }, { status: 404 });
   }
 
-  const result = await prisma.result.update({
+  if (result.pendingSgpa === null) {
+    return NextResponse.json({ error: "No pending SGPA to verify" }, { status: 400 });
+  }
+
+  const updated = await prisma.result.update({
     where: { id },
     data: {
       verified: true,
-      verifiedBy,
+      verifiedBy: session.user.id,
       verifiedAt: new Date(),
+      sgpa: result.pendingSgpa,
     },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "VERIFY", entity: "Result", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "VERIFY",
+    entity: "Result",
+    entityId: id,
+  });
 
-  return NextResponse.json(result);
+  return NextResponse.json(updated);
 }

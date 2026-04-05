@@ -1,19 +1,29 @@
+import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { getStudentForUser } from "@/lib/student";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
-  const result = await prisma.result.findFirst({
-    where: { id },
-  });
+  const result = await prisma.result.findFirst({ where: { id } });
 
   if (!result) {
     return NextResponse.json({ error: "Result not found" }, { status: 404 });
+  }
+
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (result.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   return NextResponse.json(result);
@@ -23,36 +33,67 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await req.json();
-  const { sgpa, pendingSgpa } = body;
+  const { session, error } = await requireRole(["STUDENT"]);
+  if (error) return error;
 
-  const result = await prisma.result.update({
+  const { id } = await params;
+
+  const result = await prisma.result.findFirst({ where: { id } });
+
+  if (!result) {
+    return NextResponse.json({ error: "Result not found" }, { status: 404 });
+  }
+
+  const student = await getStudentForUser(session.user.id);
+  if (result.studentId !== student?.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const { pendingSgpa } = await req.json();
+
+  const updated = await prisma.result.update({
     where: { id },
-    data: {
-      ...(sgpa !== undefined && { sgpa }),
-      ...(pendingSgpa !== undefined && { pendingSgpa }),
-    },
+    data: { ...(pendingSgpa !== undefined && { pendingSgpa }) },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "UPDATE", entity: "Result", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "UPDATE",
+    entity: "Result",
+    entityId: id,
+  });
 
-  return NextResponse.json(result);
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT"]);
+  if (error) return error;
+
   const { id } = await params;
 
-  const result = await prisma.result.delete({
-    where: { id },
+  const result = await prisma.result.findFirst({ where: { id } });
+
+  if (!result) {
+    return NextResponse.json({ error: "Result not found" }, { status: 404 });
+  }
+
+  const student = await getStudentForUser(session.user.id);
+  if (result.studentId !== student?.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  const deleted = await prisma.result.delete({ where: { id } });
+
+  await createAuditLog({
+    userId: session.user.id,
+    action: "DELETE",
+    entity: "Result",
+    entityId: id,
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "DELETE", entity: "Result", entityId: id });
-
-  return NextResponse.json(result);
+  return NextResponse.json(deleted);
 }

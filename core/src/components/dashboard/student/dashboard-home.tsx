@@ -8,6 +8,7 @@ import { PageLoader } from "@/components/dashboard/ui/Spinner";
 import { User, Phone, BookOpen, Link as LinkIcon, ExternalLink, Save, Plus, Trash2, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
 const BRANCHES = ["CSE", "ETE", "EE", "IE", "ME", "CE", "IPE", "CHE", "CA"];
@@ -15,6 +16,7 @@ const SOCIAL_TYPES = ["LINKEDIN", "GITHUB", "LEETCODE", "CODEFORCES", "OTHER"];
 
 interface ProfileData {
   student: {
+    id: string;
     rollNo: string;
     course: string;
     branch: string;
@@ -24,7 +26,9 @@ interface ProfileData {
     address: string | null;
     socials: { id: string; type: string; url: string }[];
   } | null;
-  user: { name: string | null; email: string; image: string | null };
+  name: string | null; 
+  email: string; 
+  image: string | null;
 }
 
 const socialIcon = (type: string) => {
@@ -34,8 +38,9 @@ const socialIcon = (type: string) => {
 };
 
 export default function ProfilePage() {
+  const { data: session, status } = useSession();
+
   const [data, setData] = useState<ProfileData | null>(null);
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
   // Form state
@@ -43,7 +48,7 @@ export default function ProfilePage() {
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
   const [semester, setSemester] = useState(1);
-  const [status, setStatus] = useState("ACTIVE");
+  const [enrolled, setEnrolled] = useState("ACTIVE");
   const [socials, setSocials] = useState<{ type: string; url: string }[]>([]);
   const [newSocialType, setNewSocialType] = useState("LINKEDIN");
   const [newSocialUrl, setNewSocialUrl] = useState("");
@@ -65,13 +70,13 @@ export default function ProfilePage() {
     setData(prev => {
       if (!prev) {
         return {
-          user: { name: "Test Student", email: "student@aec.ac.in", image: imageUrl },
+          name: "Test Student", email: "student@aec.ac.in", image: imageUrl,
           student: null
         };
       }
       return {
         ...prev,
-        user: { ...prev.user, image: imageUrl }
+        image: imageUrl
       };
     });
     
@@ -82,26 +87,30 @@ export default function ProfilePage() {
   };
 
   useEffect(() => {
-    fetch("/api/student/profile")
+    if (!session?.user?.id) return;
+
+    fetch("/api/me", {
+      headers: { "x-user-id": session.user.id },
+    })
       .then((r) => r.json())
-      .then((d: ProfileData) => {
+      .then((d) => {
+        console.log("API response:", d);
         setData(d);
         setBio(d.student?.bio ?? "");
         setPhone(d.student?.phone ?? "");
         setAddress(d.student?.address ?? "");
         setSemester(d.student?.semester ?? 1);
-        setSocials(d.student?.socials.map((s) => ({ type: s.type, url: s.url })) ?? []);
+        setSocials(d.student?.socials?.map((s: { type: string; url: string }) => ({ type: s.type, url: s.url })) ?? []);
       })
-      .finally(() => setLoading(false));
-  }, []);
+  }, [session]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/student/profile", {
+      const res = await fetch("/api/me", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bio, phone, semester, address }),
+        headers: { "Content-Type": "application/json", "x-user-id": session?.user?.id ?? "" },
+        body: JSON.stringify({ phone }),
       });
       if (res.ok) toast.success("Profile updated!");
       else toast.error("Failed to update profile");
@@ -114,31 +123,25 @@ export default function ProfilePage() {
 
   const addSocial = async () => {
     if (!newSocialUrl.trim()) return;
-    
-    // Check for duplicates
     if (socials.some(s => s.type === newSocialType)) {
       toast.error(`You already added a ${newSocialType} link!`);
       return;
     }
-
     try {
-      // Temporarily update state immediately to make it functional
       setSocials((prev) => [...prev, { type: newSocialType, url: newSocialUrl }]);
       setNewSocialUrl("");
       toast.success("Social link added!");
-
-      // Backend sync (will fail silently if the route isn't built yet, but UI works)
-      await fetch("/api/student/socials", {
+      await fetch("/api/social", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ type: newSocialType, url: newSocialUrl }),
+        headers: { "Content-Type": "application/json", "x-user-id": session?.user?.id ?? "" },
+        body: JSON.stringify({ studentId: data?.student?.id, type: newSocialType, url: newSocialUrl }),
       });
     } catch {
       toast.error("Failed to sync social link to server");
     }
   };
 
-  if (loading) return <PageLoader />;
+  if (status === "loading") return <PageLoader />;
 
   return (
     <div>
@@ -160,9 +163,9 @@ export default function ProfilePage() {
           <div className="relative mt-8 md:mt-8 flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
             <div className="relative group shrink-0">
               <Avatar className="h-32 w-32 border-4 border-white shadow-xl bg-white">
-                {data?.user.image && <AvatarImage src={data.user.image} alt={data?.user.name || "Student"} className="object-cover" />}
+                {data?.image && <AvatarImage src={data.image} alt={data?.name || "Student"} className="object-cover" />}
                 <AvatarFallback className="text-4xl bg-slate-100 text-slate-500 font-medium">
-                  {data?.user.name?.substring(0, 2).toUpperCase() || "ST"}
+                  {data?.name?.substring(0, 2).toUpperCase() || "ST"}
                 </AvatarFallback>
               </Avatar>
               <button 
@@ -181,15 +184,15 @@ export default function ProfilePage() {
             </div>
             
             <div className="flex-1 text-center md:text-left pb-1">
-              <h2 className="text-3xl font-bold text-slate-800">{data?.user.name || "Student Name"}</h2>
+              <h2 className="text-3xl font-bold text-slate-800">{data?.name || "Student Name"}</h2>
               <p className="text-slate-500 font-medium mt-1">{data?.student?.rollNo || "No Roll Assigned"} • {data?.student?.course || "Course"} {data?.student?.branch || ""}</p>
               <div className="flex items-center justify-center md:justify-start gap-4 mt-4">
-                {status === "ACTIVE" ? (
+                {enrolled === "ACTIVE" ? (
                   <span className="text-xs px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full tracking-wide uppercase">Active Student</span>
                 ) : (
                   <span className="text-xs px-3 py-1 bg-slate-100 text-slate-600 font-bold rounded-full tracking-wide uppercase">Inactive Student</span>
                 )}
-                <span className="text-sm font-medium text-slate-500">{data?.user.email}</span>
+                <span className="text-sm font-medium text-slate-500">{data?.email}</span>
               </div>
             </div>
           </div>
@@ -205,7 +208,7 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
               <input
                 type="text"
-                value={data?.user.name ?? ""}
+                value={data?.name ?? ""}
                 disabled
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
               />
@@ -217,7 +220,7 @@ export default function ProfilePage() {
               <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
               <input
                 type="email"
-                value={data?.user.email ?? ""}
+                value={data?.email ?? ""}
                 disabled
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
               />
@@ -297,14 +300,14 @@ export default function ProfilePage() {
               </select>
             </div>
 
-            {/* Enrollment Status */}
+            {/* Enrollment enrolled */}
             <div>
               <label className="block text-sm font-medium text-slate-700 mb-1.5">
-                Enrollment Status
+                Enrollment enrolled
               </label>
               <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
+                value={enrolled}
+                onChange={(e) => setEnrolled(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition bg-white"
               >
                 <option value="ACTIVE">Currently Enrolled</option>

@@ -1,16 +1,14 @@
+import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-export async function GET(req: NextRequest) {
-  const userId = req.headers.get("x-user-id");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user id" }, { status: 400 });
-  }
+export async function GET(_req: NextRequest) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
 
   const user = await prisma.user.findFirst({
-    where: { id: userId, deletedAt: null },
+    where: { id: session.user.id, deletedAt: null },
     include: {
       student: true,
       faculty: true,
@@ -25,17 +23,13 @@ export async function GET(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
-  const userId = req.headers.get("x-user-id");
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
 
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user id" }, { status: 400 });
-  }
-
-  const body = await req.json();
-  const { name, phone, image } = body;
+  const { name, phone, image } = await req.json();
 
   const user = await prisma.user.update({
-    where: { id: userId },
+    where: { id: session.user.id },
     data: {
       ...(name !== undefined && { name }),
       ...(phone !== undefined && { phone }),
@@ -43,24 +37,31 @@ export async function PATCH(req: NextRequest) {
     },
   });
 
-  await createAuditLog({ userId, action: "UPDATE", entity: "User", entityId: userId });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "UPDATE",
+    entity: "User",
+    entityId: session.user.id,
+  });
 
   return NextResponse.json(user);
 }
 
-export async function DELETE(req: NextRequest) {
-  const userId = req.headers.get("x-user-id");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Missing user id" }, { status: 400 });
-  }
+export async function DELETE(_req: NextRequest) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
 
   const user = await prisma.user.update({
-    where: { id: userId },
+    where: { id: session.user.id },
     data: { deletedAt: new Date() },
   });
 
-  await createAuditLog({ userId, action: "DELETE", entity: "User", entityId: userId });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "DELETE",
+    entity: "User",
+    entityId: session.user.id,
+  });
 
   return NextResponse.json(user);
 }

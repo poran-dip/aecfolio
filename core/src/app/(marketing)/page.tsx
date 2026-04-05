@@ -4,6 +4,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Download, FileText, LogIn, Mail, UserPlus } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { SignIn } from "@/components/auth-components";
+import { auth } from "@/lib/auth";
 
 const steps = [
   {
@@ -48,8 +50,8 @@ const faqs = [
   },
 ];
 
-export default function Home() {
-  const signedIn = false;
+const Home = async () => {
+  const session = await auth();
 
   return (
     <div className="flex flex-col">
@@ -66,11 +68,13 @@ export default function Home() {
           <CardContent className="px-4 sm:py-2 flex flex-col items-center gap-4">
             <p className="text-foreground/70 text-center">Welcome back! Log in with your <span className="text-foreground font-medium">@aec.ac.in</span> email.</p>
 
-            <Link href="/dashboard" className="w-full">
-              <Button className="cursor-pointer w-full">
-                {signedIn ? "Dashboard" : "Sign In"}
-              </Button>
-            </Link>
+            {session ? (
+              <Link href="/dashboard" className="w-full">
+                <Button className="cursor-pointer w-full">Dashboard</Button>
+              </Link>
+            ) : (
+              <SignIn />
+            )}
 
             <Link href="#how-it-works">
               <Button variant="link" className="cursor-pointer">
@@ -143,3 +147,5 @@ export default function Home() {
     </div>
   )
 }
+
+export default Home;

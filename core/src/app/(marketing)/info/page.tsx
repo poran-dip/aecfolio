@@ -63,7 +63,7 @@ export default function InfoPage() {
             ))}
           </div>
           <Button variant="secondary" className="w-fit cursor-pointer gap-2" asChild>
-            <Link href="https://github.com/your-repo/graphs/contributors" target="_blank" rel="noreferrer noopener">
+            <Link href="https://github.com/poran-dip/aec-profiles/graphs/contributors" target="_blank" rel="noreferrer noopener">
               <ExternalLink className="w-4 h-4" />
               View all contributors on GitHub
             </Link>

@@ -3,6 +3,7 @@ import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { BadgeCheck, Briefcase, Building2, ExternalLink, GraduationCap, Info, LogIn, Phone } from "lucide-react";
+import { SignIn } from "../auth-components";
 
 export function MarketingFooter() {
   return (
@@ -23,13 +24,7 @@ export function MarketingFooter() {
           </p>
 
           {/* CTAs */}
-          <div className="flex items-center gap-4">
-            <Link href={"/dashboard"}>
-              <Button className="cursor-pointer">
-                Sign in to AECFolio
-              </Button>
-            </Link>
-          </div>
+          <SignIn extended />
         </div>
 
         {/* Links */}
