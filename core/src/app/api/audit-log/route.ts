@@ -17,14 +17,3 @@ export async function GET(req: NextRequest) {
 
   return NextResponse.json(auditLogs);
 }
-
-export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { userId, action, entity, entityId, metadata } = body;
-
-  const auditLog = await prisma.auditLog.create({
-    data: { userId, action, entity, entityId, metadata },
-  });
-
-  return NextResponse.json(auditLog, { status: 201 });
-}

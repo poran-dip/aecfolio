@@ -1,3 +1,4 @@
+import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -23,6 +24,9 @@ export async function POST(req: NextRequest) {
   const experience = await prisma.experience.create({
     data: { studentId, type, title, organization, description, startDate, endDate },
   });
+
+  const userId = req.headers.get("x-user-id")!;
+  await createAuditLog({ userId, action: "CREATE", entity: "Experience", entityId: experience.id });
 
   return NextResponse.json(experience, { status: 201 });
 }

@@ -1,3 +1,4 @@
+import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -33,11 +34,14 @@ export async function PATCH(
     },
   });
 
+  const userId = req.headers.get("x-user-id")!;
+  await createAuditLog({ userId, action: "UPDATE", entity: "Social", entityId: id });
+
   return NextResponse.json(social);
 }
 
 export async function DELETE(
-  _req: NextRequest,
+  req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
@@ -45,6 +49,9 @@ export async function DELETE(
   const social = await prisma.social.delete({
     where: { id },
   });
+
+  const userId = req.headers.get("x-user-id")!;
+  await createAuditLog({ userId, action: "DELETE", entity: "Social", entityId: id });
 
   return NextResponse.json(social);
 }

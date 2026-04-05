@@ -1,3 +1,4 @@
+import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -21,6 +22,9 @@ export async function PATCH(
       verifiedAt: new Date(),
     },
   });
+
+  const userId = req.headers.get("x-user-id")!;
+  await createAuditLog({ userId, action: "VERIFY", entity: "Certification", entityId: id });
 
   return NextResponse.json(certification);
 }

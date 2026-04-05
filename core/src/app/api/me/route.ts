@@ -1,3 +1,4 @@
+import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -42,6 +43,8 @@ export async function PATCH(req: NextRequest) {
     },
   });
 
+  await createAuditLog({ userId, action: "UPDATE", entity: "User", entityId: userId });
+
   return NextResponse.json(user);
 }
 
@@ -56,6 +59,8 @@ export async function DELETE(req: NextRequest) {
     where: { id: userId },
     data: { deletedAt: new Date() },
   });
+
+  await createAuditLog({ userId, action: "DELETE", entity: "User", entityId: userId });
 
   return NextResponse.json(user);
 }
