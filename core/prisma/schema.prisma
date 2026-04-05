@@ -144,7 +144,7 @@ model Result {
   studentId String?
 
   semester    Int
-  sgpa        Float
+  sgpa        Float?
   pendingSgpa Float?
 
   verified   Boolean   @default(false)

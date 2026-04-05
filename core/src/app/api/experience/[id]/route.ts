@@ -1,11 +1,16 @@
+import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { getStudentForUser } from "@/lib/student";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
   const experience = await prisma.experience.findFirst({
@@ -16,6 +21,13 @@ export async function GET(
     return NextResponse.json({ error: "Experience not found" }, { status: 404 });
   }
 
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (experience.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   return NextResponse.json(experience);
 }
 
@@ -23,11 +35,29 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await req.json();
-  const { type, title, organization, description, startDate, endDate } = body;
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
 
-  const experience = await prisma.experience.update({
+  const { id } = await params;
+
+  const experience = await prisma.experience.findFirst({
+    where: { id, deletedAt: null },
+  });
+
+  if (!experience) {
+    return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+  }
+
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (experience.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  const { type, title, organization, description, startDate, endDate } = await req.json();
+
+  const updated = await prisma.experience.update({
     where: { id },
     data: {
       ...(type !== undefined && { type }),
@@ -39,25 +69,51 @@ export async function PATCH(
     },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "UPDATE", entity: "Experience", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "UPDATE",
+    entity: "Experience",
+    entityId: id,
+  });
 
-  return NextResponse.json(experience);
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
-  const experience = await prisma.experience.update({
+  const experience = await prisma.experience.findFirst({
+    where: { id, deletedAt: null },
+  });
+
+  if (!experience) {
+    return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+  }
+
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (experience.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  const deleted = await prisma.experience.update({
     where: { id },
     data: { deletedAt: new Date() },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "DELETE", entity: "Experience", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "DELETE",
+    entity: "Experience",
+    entityId: id,
+  });
 
-  return NextResponse.json(experience);
+  return NextResponse.json(deleted);
 }

@@ -1,9 +1,23 @@
+import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { getStudentForUser } from "@/lib/student";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
-  const studentId = req.nextUrl.searchParams.get("studentId");
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
+  let studentId = null;
+  const paramStudentId = req.nextUrl.searchParams.get("studentId");
+
+  if (session.user.role === "FACULTY" && paramStudentId) {
+    studentId = paramStudentId;
+  } else if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (!student) return NextResponse.json({ error: "Student profile not found" }, { status: 404 });
+    studentId = student.id;
+  }
 
   const projects = await prisma.project.findMany({
     where: {
@@ -16,15 +30,24 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { studentId, title, description, techStack, link } = body;
+  const { session, error } = await requireRole(["STUDENT"]);
+  if (error) return error;
+
+  const student = await getStudentForUser(session.user.id);
+  if (!student) return NextResponse.json({ error: "Student profile not found" }, { status: 404 });
+
+  const { title, description, techStack, link } = await req.json();
 
   const project = await prisma.project.create({
-    data: { studentId, title, description, techStack: techStack ?? [], link },
+    data: { studentId: student.id, title, description, techStack: techStack ?? [], link },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "CREATE", entity: "Project", entityId: project.id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "CREATE",
+    entity: "Project",
+    entityId: project.id,
+  });
 
   return NextResponse.json(project, { status: 201 });
 }

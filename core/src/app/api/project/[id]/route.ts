@@ -1,11 +1,16 @@
+import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
+import { getStudentForUser } from "@/lib/student";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
   const project = await prisma.project.findFirst({
@@ -16,6 +21,13 @@ export async function GET(
     return NextResponse.json({ error: "Project not found" }, { status: 404 });
   }
 
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (project.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
   return NextResponse.json(project);
 }
 
@@ -23,11 +35,29 @@ export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const body = await req.json();
-  const { title, description, techStack, link } = body;
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
 
-  const project = await prisma.project.update({
+  const { id } = await params;
+
+  const project = await prisma.project.findFirst({
+    where: { id, deletedAt: null },
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (project.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  const { title, description, techStack, link } = await req.json();
+
+  const updated = await prisma.project.update({
     where: { id },
     data: {
       ...(title !== undefined && { title }),
@@ -37,25 +67,51 @@ export async function PATCH(
     },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "UPDATE", entity: "Project", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "UPDATE",
+    entity: "Project",
+    entityId: id,
+  });
 
-  return NextResponse.json(project);
+  return NextResponse.json(updated);
 }
 
 export async function DELETE(
-  req: NextRequest,
+  _req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
+  if (error) return error;
+
   const { id } = await params;
 
-  const project = await prisma.project.update({
+  const project = await prisma.project.findFirst({
+    where: { id, deletedAt: null },
+  });
+
+  if (!project) {
+    return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  }
+
+  if (session.user.role === "STUDENT") {
+    const student = await getStudentForUser(session.user.id);
+    if (project.studentId !== student?.id) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+  }
+
+  const deleted = await prisma.project.update({
     where: { id },
     data: { deletedAt: new Date() },
   });
 
-  const userId = req.headers.get("x-user-id")!;
-  await createAuditLog({ userId, action: "DELETE", entity: "Project", entityId: id });
+  await createAuditLog({
+    userId: session.user.id,
+    action: "DELETE",
+    entity: "Project",
+    entityId: id,
+  });
 
-  return NextResponse.json(project);
+  return NextResponse.json(deleted);
 }
