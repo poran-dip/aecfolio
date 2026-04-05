@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const users = await prisma.user.findMany({
     where: {
       deletedAt: null,
-      ...(pending === "true" && { student: null, faculty: null }),
+      ...(pending === "true" && { role: "PENDING" }),
     },
     include: { student: true, faculty: true },
   });
