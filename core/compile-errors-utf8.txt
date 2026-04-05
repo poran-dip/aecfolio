@@ -1,0 +1,71 @@
+﻿.next/dev/types/validator.ts(71,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(faculty)/profile/page.tsx' is not a module.
+.next/dev/types/validator.ts(89,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(faculty)/students/page.tsx' is not a module.
+.next/dev/types/validator.ts(98,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(faculty)/verify/page.tsx' is not a module.
+.next/dev/types/validator.ts(116,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(student)/certifications/page.tsx' is not a module.
+.next/dev/types/validator.ts(179,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/achievements/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(188,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/achievements/[id]/verify/route.ts' is not a module.
+.next/dev/types/validator.ts(197,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/achievements/route.ts' is not a module.
+.next/dev/types/validator.ts(206,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/audit-logs/route.ts' is not a module.
+.next/dev/types/validator.ts(224,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/certifications/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(233,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/certifications/[id]/verify/route.ts' is not a module.
+.next/dev/types/validator.ts(242,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/certifications/route.ts' is not a module.
+.next/dev/types/validator.ts(251,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/experiences/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(260,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/experiences/route.ts' is not a module.
+.next/dev/types/validator.ts(269,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/faculty/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(278,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/faculty/route.ts' is not a module.
+.next/dev/types/validator.ts(287,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/me/route.ts' is not a module.
+.next/dev/types/validator.ts(296,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/projects/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(305,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/projects/route.ts' is not a module.
+.next/dev/types/validator.ts(314,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/results/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(323,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/results/[id]/verify/route.ts' is not a module.
+.next/dev/types/validator.ts(332,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/results/route.ts' is not a module.
+.next/dev/types/validator.ts(341,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/socials/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(350,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/socials/route.ts' is not a module.
+.next/dev/types/validator.ts(359,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/students/[id]/route.ts' is not a module.
+.next/dev/types/validator.ts(368,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/students/route.ts' is not a module.
+.next/types/validator.ts(71,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(faculty)/profile/page.tsx' is not a module.
+.next/types/validator.ts(89,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(faculty)/students/page.tsx' is not a module.
+.next/types/validator.ts(98,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(faculty)/verify/page.tsx' is not a module.
+.next/types/validator.ts(116,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/(protected)/dashboard/(student)/certifications/page.tsx' is not a module.
+.next/types/validator.ts(179,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/achievements/[id]/route.ts' is not a module.
+.next/types/validator.ts(188,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/achievements/[id]/verify/route.ts' is not a module.
+.next/types/validator.ts(197,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/achievements/route.ts' is not a module.
+.next/types/validator.ts(206,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/audit-logs/route.ts' is not a module.
+.next/types/validator.ts(224,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/certifications/[id]/route.ts' is not a module.
+.next/types/validator.ts(233,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/certifications/[id]/verify/route.ts' is not a module.
+.next/types/validator.ts(242,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/certifications/route.ts' is not a module.
+.next/types/validator.ts(251,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/experiences/[id]/route.ts' is not a module.
+.next/types/validator.ts(260,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/experiences/route.ts' is not a module.
+.next/types/validator.ts(269,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/faculty/[id]/route.ts' is not a module.
+.next/types/validator.ts(278,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/faculty/route.ts' is not a module.
+.next/types/validator.ts(287,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/me/route.ts' is not a module.
+.next/types/validator.ts(296,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/projects/[id]/route.ts' is not a module.
+.next/types/validator.ts(305,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/projects/route.ts' is not a module.
+.next/types/validator.ts(314,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/results/[id]/route.ts' is not a module.
+.next/types/validator.ts(323,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/results/[id]/verify/route.ts' is not a module.
+.next/types/validator.ts(332,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/results/route.ts' is not a module.
+.next/types/validator.ts(341,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/socials/[id]/route.ts' is not a module.
+.next/types/validator.ts(350,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/socials/route.ts' is not a module.
+.next/types/validator.ts(359,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/students/[id]/route.ts' is not a module.
+.next/types/validator.ts(368,39): error TS2306: File 'D:/mini/aec-profiles/core/src/app/api/students/route.ts' is not a module.
+src/app/(marketing)/page.tsx(3,35): error TS1261: Already included file name 'D:/mini/aec-profiles/core/src/components/ui/card.tsx' differs from file name 'D:/mini/aec-profiles/core/src/components/ui/Card.tsx' only in casing.
+  The file is in the program because:
+    Imported via "@/components/ui/card" from file 'D:/mini/aec-profiles/core/src/app/(marketing)/page.tsx'
+    Imported via "@/components/ui/card" from file 'D:/mini/aec-profiles/core/src/app/(marketing)/info/page.tsx'
+    Matched by include pattern '**/*.tsx' in 'D:/mini/aec-profiles/core/tsconfig.json'
+src/app/(marketing)/page.tsx(4,23): error TS1261: Already included file name 'D:/mini/aec-profiles/core/src/components/ui/badge.tsx' differs from file name 'D:/mini/aec-profiles/core/src/components/ui/Badge.tsx' only in casing.
+  The file is in the program because:
+    Imported via "@/components/ui/badge" from file 'D:/mini/aec-profiles/core/src/app/(marketing)/page.tsx'
+    Imported via "@/components/ui/badge" from file 'D:/mini/aec-profiles/core/src/app/(marketing)/info/page.tsx'
+    Matched by include pattern '**/*.tsx' in 'D:/mini/aec-profiles/core/tsconfig.json'
+src/components/dashboard/modal.tsx(6,24): error TS2307: Cannot find module './button' or its corresponding type declarations.
+src/components/marketing/footer.tsx(4,24): error TS1261: Already included file name 'D:/mini/aec-profiles/core/src/components/ui/button.tsx' differs from file name 'D:/mini/aec-profiles/core/src/components/ui/Button.tsx' only in casing.
+  The file is in the program because:
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/components/marketing/footer.tsx'
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/components/marketing/navbar.tsx'
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/app/(marketing)/page.tsx'
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/app/(marketing)/info/page.tsx'
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/components/ui/Sidebar.tsx'
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/components/ui/sheet.tsx'
+    Matched by include pattern '**/*.tsx' in 'D:/mini/aec-profiles/core/tsconfig.json'
+    Imported via "@/components/ui/button" from file 'D:/mini/aec-profiles/core/src/components/ui/dialog.tsx'
