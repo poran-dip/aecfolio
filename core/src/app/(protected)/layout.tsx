@@ -1,7 +1,11 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
-import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar";
+import {
+  SidebarProvider,
+  SidebarInset,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 import { SessionProvider } from "next-auth/react";
 
 export default async function DashboardLayout({
@@ -28,9 +32,7 @@ export default async function DashboardLayout({
             <SidebarTrigger className="-ml-1" />
           </header>
           <main className="flex-1 overflow-y-auto bg-slate-50">
-            <div className="page-enter p-4 md:p-6">
-              {children}
-            </div>
+            <div className="page-enter p-4 md:p-6">{children}</div>
           </main>
         </SidebarInset>
       </SidebarProvider>

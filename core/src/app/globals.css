@@ -116,7 +116,7 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
-@layer base{
+@layer base {
   html {
     @apply font-sans;
   }

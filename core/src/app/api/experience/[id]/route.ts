@@ -6,7 +6,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
   if (error) return error;
@@ -18,7 +18,10 @@ export async function GET(
   });
 
   if (!experience) {
-    return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Experience not found" },
+      { status: 404 },
+    );
   }
 
   if (session.user.role === "STUDENT") {
@@ -33,7 +36,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
   if (error) return error;
@@ -45,7 +48,10 @@ export async function PATCH(
   });
 
   if (!experience) {
-    return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Experience not found" },
+      { status: 404 },
+    );
   }
 
   if (session.user.role === "STUDENT") {
@@ -55,7 +61,8 @@ export async function PATCH(
     }
   }
 
-  const { type, title, organization, description, startDate, endDate } = await req.json();
+  const { type, title, organization, description, startDate, endDate } =
+    await req.json();
 
   const updated = await prisma.experience.update({
     where: { id },
@@ -81,7 +88,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
   if (error) return error;
@@ -93,7 +100,10 @@ export async function DELETE(
   });
 
   if (!experience) {
-    return NextResponse.json({ error: "Experience not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Experience not found" },
+      { status: 404 },
+    );
   }
 
   if (session.user.role === "STUDENT") {

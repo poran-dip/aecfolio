@@ -55,11 +55,19 @@ interface FacultyForm {
 }
 
 const INITIAL_STUDENT: StudentForm = {
-  rollNo: "", course: "", branch: "", semester: "", cgpa: "", bio: "", skills: "",
+  rollNo: "",
+  course: "",
+  branch: "",
+  semester: "",
+  cgpa: "",
+  bio: "",
+  skills: "",
 };
 
 const INITIAL_FACULTY: FacultyForm = {
-  employeeId: "", designation: "", department: "",
+  employeeId: "",
+  designation: "",
+  department: "",
 };
 
 export default function PendingApprovalsPage() {
@@ -93,8 +101,8 @@ export default function PendingApprovalsPage() {
       data.filter(
         (u) =>
           (u.name || "").toLowerCase().includes(s) ||
-          u.email.toLowerCase().includes(s)
-      )
+          u.email.toLowerCase().includes(s),
+      ),
     );
   }, [search, data]);
 
@@ -131,7 +139,10 @@ export default function PendingApprovalsPage() {
           cgpa: studentForm.cgpa ? parseFloat(studentForm.cgpa) : null,
           bio: studentForm.bio || null,
           skills: studentForm.skills
-            ? studentForm.skills.split(",").map((s) => s.trim()).filter(Boolean)
+            ? studentForm.skills
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
             : [],
         };
       } else {
@@ -216,13 +227,19 @@ export default function PendingApprovalsPage() {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-12 text-center text-slate-500">
+                  <TableCell
+                    colSpan={4}
+                    className="py-12 text-center text-slate-500"
+                  >
                     Loading...
                   </TableCell>
                 </TableRow>
               ) : filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={4} className="py-12 text-center text-slate-500">
+                  <TableCell
+                    colSpan={4}
+                    className="py-12 text-center text-slate-500"
+                  >
                     No pending users.
                   </TableCell>
                 </TableRow>
@@ -256,7 +273,10 @@ export default function PendingApprovalsPage() {
       </Card>
 
       {/* Assign Role Modal */}
-      <Dialog open={!!selectedUser} onOpenChange={(open) => !open && closeModal()}>
+      <Dialog
+        open={!!selectedUser}
+        onOpenChange={(open) => !open && closeModal()}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Assign Role</DialogTitle>
@@ -290,7 +310,12 @@ export default function PendingApprovalsPage() {
                     <Label>Roll No *</Label>
                     <Input
                       value={studentForm.rollNo}
-                      onChange={(e) => setStudentForm((p) => ({ ...p, rollNo: e.target.value }))}
+                      onChange={(e) =>
+                        setStudentForm((p) => ({
+                          ...p,
+                          rollNo: e.target.value,
+                        }))
+                      }
                       placeholder="e.g. CSE23001"
                     />
                   </div>
@@ -298,7 +323,9 @@ export default function PendingApprovalsPage() {
                     <Label>Course *</Label>
                     <Select
                       value={studentForm.course}
-                      onValueChange={(v: string) => setStudentForm((p) => ({ ...p, course: v }))}
+                      onValueChange={(v: string) =>
+                        setStudentForm((p) => ({ ...p, course: v }))
+                      }
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select" />
@@ -314,7 +341,12 @@ export default function PendingApprovalsPage() {
                     <Label>Branch *</Label>
                     <Input
                       value={studentForm.branch}
-                      onChange={(e) => setStudentForm((p) => ({ ...p, branch: e.target.value }))}
+                      onChange={(e) =>
+                        setStudentForm((p) => ({
+                          ...p,
+                          branch: e.target.value,
+                        }))
+                      }
                       placeholder="e.g. CSE"
                     />
                   </div>
@@ -325,7 +357,12 @@ export default function PendingApprovalsPage() {
                       min={1}
                       max={12}
                       value={studentForm.semester}
-                      onChange={(e) => setStudentForm((p) => ({ ...p, semester: e.target.value }))}
+                      onChange={(e) =>
+                        setStudentForm((p) => ({
+                          ...p,
+                          semester: e.target.value,
+                        }))
+                      }
                       placeholder="e.g. 5"
                     />
                   </div>
@@ -337,7 +374,9 @@ export default function PendingApprovalsPage() {
                       min={0}
                       max={10}
                       value={studentForm.cgpa}
-                      onChange={(e) => setStudentForm((p) => ({ ...p, cgpa: e.target.value }))}
+                      onChange={(e) =>
+                        setStudentForm((p) => ({ ...p, cgpa: e.target.value }))
+                      }
                       placeholder="e.g. 8.5"
                     />
                   </div>
@@ -345,7 +384,12 @@ export default function PendingApprovalsPage() {
                     <Label>Skills</Label>
                     <Input
                       value={studentForm.skills}
-                      onChange={(e) => setStudentForm((p) => ({ ...p, skills: e.target.value }))}
+                      onChange={(e) =>
+                        setStudentForm((p) => ({
+                          ...p,
+                          skills: e.target.value,
+                        }))
+                      }
                       placeholder="React, Python, ..."
                     />
                   </div>
@@ -358,7 +402,12 @@ export default function PendingApprovalsPage() {
                     <Label>Employee ID *</Label>
                     <Input
                       value={facultyForm.employeeId}
-                      onChange={(e) => setFacultyForm((p) => ({ ...p, employeeId: e.target.value }))}
+                      onChange={(e) =>
+                        setFacultyForm((p) => ({
+                          ...p,
+                          employeeId: e.target.value,
+                        }))
+                      }
                       placeholder="e.g. FAC001"
                     />
                   </div>
@@ -366,7 +415,12 @@ export default function PendingApprovalsPage() {
                     <Label>Designation *</Label>
                     <Input
                       value={facultyForm.designation}
-                      onChange={(e) => setFacultyForm((p) => ({ ...p, designation: e.target.value }))}
+                      onChange={(e) =>
+                        setFacultyForm((p) => ({
+                          ...p,
+                          designation: e.target.value,
+                        }))
+                      }
                       placeholder="e.g. Assistant Professor"
                     />
                   </div>
@@ -374,7 +428,12 @@ export default function PendingApprovalsPage() {
                     <Label>Department *</Label>
                     <Input
                       value={facultyForm.department}
-                      onChange={(e) => setFacultyForm((p) => ({ ...p, department: e.target.value }))}
+                      onChange={(e) =>
+                        setFacultyForm((p) => ({
+                          ...p,
+                          department: e.target.value,
+                        }))
+                      }
                       placeholder="e.g. Computer Science"
                     />
                   </div>
@@ -382,13 +441,15 @@ export default function PendingApprovalsPage() {
               </>
             )}
 
-            {formError && (
-              <p className="text-sm text-red-600">{formError}</p>
-            )}
+            {formError && <p className="text-sm text-red-600">{formError}</p>}
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={closeModal} disabled={submitting}>
+            <Button
+              variant="outline"
+              onClick={closeModal}
+              disabled={submitting}
+            >
               Cancel
             </Button>
             <Button onClick={handleSubmit} disabled={submitting}>

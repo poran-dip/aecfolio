@@ -9,7 +9,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   callbacks: {
     async signIn({ user }) {
-      return user.email?.endsWith("@aec.ac.in") ?? false
+      return user.email?.endsWith("@aec.ac.in") ?? false;
     },
     async jwt({ token, user }) {
       if (user) {
@@ -21,8 +21,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const dbUser = await prisma.user.findUnique({
           where: { id: token.sub },
           select: { role: true },
-        })
-        token.role = dbUser?.role
+        });
+        token.role = dbUser?.role;
       }
       return token;
     },
@@ -34,5 +34,5 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       session.user.phone = token.phone as string;
       return session;
     },
-  }
+  },
 });

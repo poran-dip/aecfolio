@@ -2,7 +2,16 @@ import Link from "next/link";
 import Image from "next/image";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
-import { BadgeCheck, Briefcase, Building2, ExternalLink, GraduationCap, Info, LogIn, Phone } from "lucide-react";
+import {
+  BadgeCheck,
+  Briefcase,
+  Building2,
+  ExternalLink,
+  GraduationCap,
+  Info,
+  LogIn,
+  Phone,
+} from "lucide-react";
 import { SignIn } from "../auth-components";
 
 export function MarketingFooter() {
@@ -14,13 +23,20 @@ export function MarketingFooter() {
         <div className="flex flex-col gap-4">
           {/* Logo + Name */}
           <Link href={"/"} className="inline-flex items-center gap-3 w-fit">
-            <Image src="/logo.png" alt="AEC" width={28} height={28} className="w-7 h-7" />
+            <Image
+              src="/logo.png"
+              alt="AEC"
+              width={28}
+              height={28}
+              className="w-7 h-7"
+            />
             <h3 className="text-lg font-bold tracking-wide">AECFolio</h3>
           </Link>
 
           {/* Description */}
           <p className="text-sm text-foreground/70">
-            The student information and portfolio system for Assam Engineering College.
+            The student information and portfolio system for Assam Engineering
+            College.
           </p>
 
           {/* CTAs */}
@@ -34,13 +50,21 @@ export function MarketingFooter() {
             <p className="text-sm font-bold">ABOUT</p>
             <ul className="flex flex-col gap-3 text-sm text-foreground/70">
               <li>
-                <Link href={"https://aec.ac.in"} target="_blank" rel="noreferrer noopener" className="flex items-center gap-2 hover:text-foreground transition-colors">
+                <Link
+                  href={"https://aec.ac.in"}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                >
                   <Building2 className="w-4 h-4 shrink-0" />
                   <p>About AEC</p>
                 </Link>
               </li>
               <li>
-                <Link href={"/info"} className="flex items-center gap-2 hover:text-foreground transition-colors">
+                <Link
+                  href={"/info"}
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                >
                   <Info className="w-4 h-4 shrink-0" />
                   <p>About AECFolio</p>
                 </Link>
@@ -53,13 +77,21 @@ export function MarketingFooter() {
             <p className="text-sm font-bold">RESOURCES</p>
             <ul className="flex flex-col gap-3 text-sm text-foreground/70">
               <li>
-                <Link href={"https://placement.aec.ac.in/"} target="_blank" rel="noreferrer noopener" className="flex items-center gap-2 hover:text-foreground transition-colors">
+                <Link
+                  href={"https://placement.aec.ac.in/"}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                >
                   <Briefcase className="w-4 h-4 shrink-0" />
                   <p>Placement Cell</p>
                 </Link>
               </li>
               <li>
-                <Link href={"/info#get-in-touch"} className="flex items-center gap-2 hover:text-foreground transition-colors">
+                <Link
+                  href={"/info#get-in-touch"}
+                  className="flex items-center gap-2 hover:text-foreground transition-colors"
+                >
                   <Phone className="w-4 h-4 shrink-0" />
                   <p>Contact Us</p>
                 </Link>
@@ -73,9 +105,13 @@ export function MarketingFooter() {
 
       {/* Bottom */}
       <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 px-4">
-        <p className="text-sm text-foreground/70">© {new Date().getFullYear()} AECFolio. All Rights Reserved.</p>
+        <p className="text-sm text-foreground/70">
+          © {new Date().getFullYear()} AECFolio. All Rights Reserved.
+        </p>
 
-        <p className="text-center sm:text-start text-sm text-foreground/70">Designed & developed by the CSE batch of 2027, AEC.</p>
+        <p className="text-center sm:text-start text-sm text-foreground/70">
+          Designed & developed by the CSE batch of 2027, AEC.
+        </p>
       </div>
     </footer>
   );

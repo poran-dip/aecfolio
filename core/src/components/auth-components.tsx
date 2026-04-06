@@ -6,12 +6,11 @@ interface SignInProps {
   extended?: boolean;
 }
 
-export function SignIn({ extended=false }: SignInProps) {
+export function SignIn({ extended = false }: SignInProps) {
   return (
     <form action={handleSignIn}>
       <Button type="submit" className="cursor-pointer">
-        Sign In {" "}
-        {extended && "to AECFolio"}
+        Sign In {extended && "to AECFolio"}
       </Button>
     </form>
   );

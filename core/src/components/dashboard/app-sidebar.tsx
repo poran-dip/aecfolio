@@ -1,6 +1,6 @@
-"use client"
-import * as React from "react"
-import { signOut } from "next-auth/react"
+"use client";
+import * as React from "react";
+import { signOut } from "next-auth/react";
 import {
   ChevronRight,
   ChevronsUpDown,
@@ -12,18 +12,14 @@ import {
   LayoutDashboard,
   Trophy,
   Settings,
-} from "lucide-react"
+} from "lucide-react";
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@/components/ui/collapsible"
+} from "@/components/ui/collapsible";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -32,7 +28,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import {
   Sidebar,
   SidebarContent,
@@ -47,9 +43,9 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "@/components/ui/sidebar"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+} from "@/components/ui/sidebar";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 const data = {
   studentNav: [
@@ -78,9 +74,7 @@ const data = {
       title: "Documents",
       url: "/dashboard/cv",
       icon: FileText,
-      items: [
-        { title: "Generate CV", url: "/dashboard/cv" },
-      ],
+      items: [{ title: "Generate CV", url: "/dashboard/cv" }],
     },
   ],
   facultyNav: [
@@ -89,9 +83,7 @@ const data = {
       url: "/dashboard",
       icon: GraduationCap,
       isActive: true,
-      items: [
-        { title: "All Students", url: "/dashboard" },
-      ],
+      items: [{ title: "All Students", url: "/dashboard" }],
     },
     {
       title: "Verify",
@@ -117,18 +109,16 @@ const data = {
       title: "Account",
       url: "/dashboard/settings",
       icon: Settings,
-      items: [
-        { title: "Edit Profile", url: "/dashboard/settings" },
-      ],
+      items: [{ title: "Edit Profile", url: "/dashboard/settings" }],
     },
   ],
-}
+};
 
 interface AppSidebarProps {
-  userName?: string
-  userEmail?: string
-  userImage?: string | null
-  role?: "STUDENT" | "FACULTY" | "PENDING"
+  userName?: string;
+  userEmail?: string;
+  userImage?: string | null;
+  role?: "STUDENT" | "FACULTY" | "PENDING";
 }
 
 export function AppSidebar({
@@ -138,26 +128,26 @@ export function AppSidebar({
   role,
   ...props
 }: AppSidebarProps & React.ComponentProps<typeof Sidebar>) {
-  const { isMobile } = useSidebar()
-  const pathname = usePathname()
+  const { isMobile } = useSidebar();
+  const pathname = usePathname();
 
   const activeTeam = {
     name: "AEC Profiles",
     logo: "/logo.png",
-  }
+  };
 
   const navMain = React.useMemo(() => {
-    if (role === "PENDING") return []
-    if (role === "FACULTY") return data.facultyNav
-    return data.studentNav
-  }, [role])
+    if (role === "PENDING") return [];
+    if (role === "FACULTY") return data.facultyNav;
+    return data.studentNav;
+  }, [role]);
 
   const plan =
     role === "FACULTY"
       ? "Faculty Portal"
       : role === "PENDING"
-      ? "Pending Approval"
-      : "Student Portal"
+        ? "Pending Approval"
+        : "Student Portal";
 
   // Global mock state sync for image
   const [localImage, setLocalImage] = React.useState(userImage);
@@ -184,7 +174,11 @@ export function AppSidebar({
                   className="data-state-open:bg-sidebar-accent data-state-open:text-sidebar-accent-foreground"
                 >
                   <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 overflow-hidden">
-                    <img src={activeTeam.logo} alt="Logo" className="size-full object-contain" />
+                    <img
+                      src={activeTeam.logo}
+                      alt="Logo"
+                      className="size-full object-contain"
+                    />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-medium">
@@ -206,7 +200,11 @@ export function AppSidebar({
                 </DropdownMenuLabel>
                 <DropdownMenuItem className="gap-2 p-2">
                   <div className="flex size-6 shrink-0 items-center justify-center rounded-sm border bg-white overflow-hidden p-0.5">
-                    <img src={activeTeam.logo} alt="Logo" className="size-full object-contain" />
+                    <img
+                      src={activeTeam.logo}
+                      alt="Logo"
+                      className="size-full object-contain"
+                    />
                   </div>
                   AEC Profiles
                 </DropdownMenuItem>
@@ -215,7 +213,7 @@ export function AppSidebar({
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      
+
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupLabel>Platform</SidebarGroupLabel>
@@ -238,7 +236,7 @@ export function AppSidebar({
                   <CollapsibleContent>
                     <SidebarMenuSub>
                       {item.items?.map((subItem) => {
-                        const isActive = pathname === subItem.url
+                        const isActive = pathname === subItem.url;
                         return (
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton asChild isActive={isActive}>
@@ -247,7 +245,7 @@ export function AppSidebar({
                               </Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>
-                        )
+                        );
                       })}
                     </SidebarMenuSub>
                   </CollapsibleContent>
@@ -268,7 +266,13 @@ export function AppSidebar({
                   className="data-state-open:bg-sidebar-accent data-state-open:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    {localImage && <AvatarImage src={localImage} alt={userName} className="object-cover" />}
+                    {localImage && (
+                      <AvatarImage
+                        src={localImage}
+                        alt={userName}
+                        className="object-cover"
+                      />
+                    )}
                     <AvatarFallback className="rounded-lg">
                       {userName?.substring(0, 2).toUpperCase()}
                     </AvatarFallback>
@@ -289,7 +293,13 @@ export function AppSidebar({
                 <DropdownMenuLabel className="p-0 font-normal">
                   <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                     <Avatar className="h-8 w-8 rounded-lg">
-                      {localImage && <AvatarImage src={localImage} alt={userName} className="object-cover" />}
+                      {localImage && (
+                        <AvatarImage
+                          src={localImage}
+                          alt={userName}
+                          className="object-cover"
+                        />
+                      )}
                       <AvatarFallback className="rounded-lg">
                         {userName?.substring(0, 2).toUpperCase()}
                       </AvatarFallback>
@@ -310,7 +320,10 @@ export function AppSidebar({
                   </DropdownMenuItem>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => signOut({ callbackUrl: "/" })} className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-100 dark:focus:bg-red-950">
+                <DropdownMenuItem
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="cursor-pointer text-red-500 focus:text-red-600 focus:bg-red-100 dark:focus:bg-red-950"
+                >
                   <LogOut className="mr-2 h-4 w-4" />
                   Log out
                 </DropdownMenuItem>
@@ -320,5 +333,5 @@ export function AppSidebar({
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>
-  )
+  );
 }

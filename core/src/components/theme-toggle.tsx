@@ -1,4 +1,4 @@
-'use client';
+"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,11 @@ export default function ThemeToggle() {
 
   return (
     <Button variant="ghost" onClick={toggleTheme} className="cursor-pointer">
-      {theme === "dark" ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      {theme === "dark" ? (
+        <Sun className="w-5 h-5" />
+      ) : (
+        <Moon className="w-5 h-5" />
+      )}
     </Button>
   );
 }

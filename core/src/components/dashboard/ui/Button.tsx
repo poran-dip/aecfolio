@@ -16,10 +16,8 @@ const variantStyles = {
     "bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white shadow-sm hover:shadow-md",
   secondary:
     "bg-slate-100 hover:bg-slate-200 active:bg-slate-300 text-slate-700",
-  ghost:
-    "bg-transparent hover:bg-slate-100 active:bg-slate-200 text-slate-600",
-  danger:
-    "bg-red-500 hover:bg-red-600 active:bg-red-700 text-white shadow-sm",
+  ghost: "bg-transparent hover:bg-slate-100 active:bg-slate-200 text-slate-600",
+  danger: "bg-red-500 hover:bg-red-600 active:bg-red-700 text-white shadow-sm",
   outline:
     "border border-slate-300 hover:border-blue-400 hover:bg-blue-50 text-slate-700",
 };

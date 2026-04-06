@@ -30,10 +30,16 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
   if (existing.faculty) {
-    return NextResponse.json({ error: "User already has a faculty profile" }, { status: 409 });
+    return NextResponse.json(
+      { error: "User already has a faculty profile" },
+      { status: 409 },
+    );
   }
   if (existing.student) {
-    return NextResponse.json({ error: "User already has a student profile" }, { status: 409 });
+    return NextResponse.json(
+      { error: "User already has a student profile" },
+      { status: 409 },
+    );
   }
 
   const faculty = await prisma.faculty.create({

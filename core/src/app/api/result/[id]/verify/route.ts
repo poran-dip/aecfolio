@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function PATCH(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { session, error } = await requireRole(["FACULTY"]);
   if (error) return error;
@@ -19,7 +19,10 @@ export async function PATCH(
   }
 
   if (result.pendingSgpa === null) {
-    return NextResponse.json({ error: "No pending SGPA to verify" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No pending SGPA to verify" },
+      { status: 400 },
+    );
   }
 
   const updated = await prisma.result.update({

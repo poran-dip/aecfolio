@@ -22,9 +22,7 @@ export function Navbar({ title, subtitle, actions, className }: NavbarProps) {
     >
       <div>
         <h1 className="text-lg font-semibold text-slate-900">{title}</h1>
-        {subtitle && (
-          <p className="text-sm text-slate-500">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-sm text-slate-500">{subtitle}</p>}
       </div>
 
       <div className="flex items-center gap-3">

@@ -9,9 +9,26 @@ import { Code2, X, Plus, Info } from "lucide-react";
 import { toast } from "sonner";
 
 const SUGGESTED_SKILLS = [
-  "Python", "Java", "C++", "JavaScript", "TypeScript", "React", "Node.js",
-  "Next.js", "SQL", "MySQL", "PostgreSQL", "MongoDB", "Git", "Docker",
-  "Machine Learning", "Deep Learning", "DSA", "Linux", "REST API", "GraphQL",
+  "Python",
+  "Java",
+  "C++",
+  "JavaScript",
+  "TypeScript",
+  "React",
+  "Node.js",
+  "Next.js",
+  "SQL",
+  "MySQL",
+  "PostgreSQL",
+  "MongoDB",
+  "Git",
+  "Docker",
+  "Machine Learning",
+  "Deep Learning",
+  "DSA",
+  "Linux",
+  "REST API",
+  "GraphQL",
 ];
 
 export default function SkillsPage() {
@@ -110,7 +127,11 @@ export default function SkillsPage() {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder={skills.length === 0 ? "Type a skill and press Enter..." : "Add more..."}
+                placeholder={
+                  skills.length === 0
+                    ? "Type a skill and press Enter..."
+                    : "Add more..."
+                }
                 className="flex-1 min-w-37.5 outline-none text-sm text-slate-700 bg-transparent py-1"
               />
             </div>
@@ -139,7 +160,9 @@ export default function SkillsPage() {
 
           {/* Skill count */}
           <div className="flex items-center justify-between mt-4 pt-4 border-t border-slate-100">
-            <span className="text-xs text-slate-500">{skills.length} skills added</span>
+            <span className="text-xs text-slate-500">
+              {skills.length} skills added
+            </span>
             {skills.length > 0 && (
               <button
                 onClick={() => setSkills([])}
@@ -163,7 +186,10 @@ export default function SkillsPage() {
                 onClick={() => addSkill(s)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-full hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all group"
               >
-                <Plus size={11} className="text-slate-400 group-hover:text-blue-500" />
+                <Plus
+                  size={11}
+                  className="text-slate-400 group-hover:text-blue-500"
+                />
                 {s}
               </button>
             ))}

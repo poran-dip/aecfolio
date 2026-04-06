@@ -16,7 +16,11 @@ export async function GET(req: NextRequest) {
     studentId = paramStudentId;
   } else if (session.user.role === "STUDENT") {
     const student = await getStudentForUser(session.user.id);
-    if (!student) return NextResponse.json({ error: "Student profile not found" }, { status: 404 });
+    if (!student)
+      return NextResponse.json(
+        { error: "Student profile not found" },
+        { status: 404 },
+      );
     studentId = student.id;
   }
 
@@ -36,12 +40,25 @@ export async function POST(req: NextRequest) {
   if (error) return error;
 
   const student = await getStudentForUser(session.user.id);
-  if (!student) return NextResponse.json({ error: "Student profile not found" }, { status: 404 });
+  if (!student)
+    return NextResponse.json(
+      { error: "Student profile not found" },
+      { status: 404 },
+    );
 
-  const { type, title, organization, description, startDate, endDate } = await req.json();
+  const { type, title, organization, description, startDate, endDate } =
+    await req.json();
 
   const experience = await prisma.experience.create({
-    data: { studentId: student.id, type, title, organization, description, startDate, endDate },
+    data: {
+      studentId: student.id,
+      type,
+      title,
+      organization,
+      description,
+      startDate,
+      endDate,
+    },
   });
 
   await createAuditLog({

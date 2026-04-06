@@ -8,7 +8,13 @@ interface CardProps {
   padding?: "none" | "sm" | "md" | "lg";
 }
 
-export function Card({ children, className, hover, glass, padding = "md" }: CardProps) {
+export function Card({
+  children,
+  className,
+  hover,
+  glass,
+  padding = "md",
+}: CardProps) {
   const paddings = {
     none: "",
     sm: "p-4",
@@ -39,7 +45,12 @@ interface CardHeaderProps {
   icon?: React.ReactNode;
 }
 
-export function CardHeader({ title, description, action, icon }: CardHeaderProps) {
+export function CardHeader({
+  title,
+  description,
+  action,
+  icon,
+}: CardHeaderProps) {
   return (
     <div className="flex items-start justify-between mb-6">
       <div className="flex items-center gap-3">
@@ -83,7 +94,12 @@ export function StatCard({
 
   return (
     <Card className="flex items-center gap-4">
-      <div className={cn("shrink-0 w-12 h-12 rounded-xl flex items-center justify-center", colors[color])}>
+      <div
+        className={cn(
+          "shrink-0 w-12 h-12 rounded-xl flex items-center justify-center",
+          colors[color],
+        )}
+      >
         {icon}
       </div>
       <div>

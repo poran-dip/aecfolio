@@ -5,7 +5,17 @@ import { Navbar } from "@/components/dashboard/ui/Navbar";
 import { Card, CardHeader } from "@/components/dashboard/ui/Card";
 import { Button } from "@/components/dashboard/ui/Button";
 import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { User, Phone, BookOpen, Link as LinkIcon, ExternalLink, Save, Plus, Trash2, Camera } from "lucide-react";
+import {
+  User,
+  Phone,
+  BookOpen,
+  Link as LinkIcon,
+  ExternalLink,
+  Save,
+  Plus,
+  Trash2,
+  Camera,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
@@ -26,8 +36,8 @@ interface ProfileData {
     address: string | null;
     socials: { id: string; type: string; url: string }[];
   } | null;
-  name: string | null; 
-  email: string; 
+  name: string | null;
+  email: string;
   image: string | null;
 }
 
@@ -61,25 +71,27 @@ export default function ProfilePage() {
 
     // Create a temporary local URL for instant preview
     const imageUrl = URL.createObjectURL(file);
-    
+
     // Save to localStorage for cross-component mock sync
     localStorage.setItem("mockUserImage", imageUrl);
     window.dispatchEvent(new Event("userImageUpdated"));
-    
+
     // Optimistically update the UI to show the new image
-    setData(prev => {
+    setData((prev) => {
       if (!prev) {
         return {
-          name: "Test Student", email: "student@aec.ac.in", image: imageUrl,
-          student: null
+          name: "Test Student",
+          email: "student@aec.ac.in",
+          image: imageUrl,
+          student: null,
         };
       }
       return {
         ...prev,
-        image: imageUrl
+        image: imageUrl,
       };
     });
-    
+
     toast.success("Profile image updated!");
 
     // Simulate backend upload delay (API missing)
@@ -100,8 +112,13 @@ export default function ProfilePage() {
         setPhone(d.student?.phone ?? "");
         setAddress(d.student?.address ?? "");
         setSemester(d.student?.semester ?? 1);
-        setSocials(d.student?.socials?.map((s: { type: string; url: string }) => ({ type: s.type, url: s.url })) ?? []);
-      })
+        setSocials(
+          d.student?.socials?.map((s: { type: string; url: string }) => ({
+            type: s.type,
+            url: s.url,
+          })) ?? [],
+        );
+      });
   }, [session]);
 
   const handleSave = async () => {
@@ -109,7 +126,10 @@ export default function ProfilePage() {
     try {
       const res = await fetch("/api/me", {
         method: "PATCH",
-        headers: { "Content-Type": "application/json", "x-user-id": session?.user?.id ?? "" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": session?.user?.id ?? "",
+        },
         body: JSON.stringify({ phone }),
       });
       if (res.ok) toast.success("Profile updated!");
@@ -123,18 +143,28 @@ export default function ProfilePage() {
 
   const addSocial = async () => {
     if (!newSocialUrl.trim()) return;
-    if (socials.some(s => s.type === newSocialType)) {
+    if (socials.some((s) => s.type === newSocialType)) {
       toast.error(`You already added a ${newSocialType} link!`);
       return;
     }
     try {
-      setSocials((prev) => [...prev, { type: newSocialType, url: newSocialUrl }]);
+      setSocials((prev) => [
+        ...prev,
+        { type: newSocialType, url: newSocialUrl },
+      ]);
       setNewSocialUrl("");
       toast.success("Social link added!");
       await fetch("/api/social", {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-user-id": session?.user?.id ?? "" },
-        body: JSON.stringify({ studentId: data?.student?.id, type: newSocialType, url: newSocialUrl }),
+        headers: {
+          "Content-Type": "application/json",
+          "x-user-id": session?.user?.id ?? "",
+        },
+        body: JSON.stringify({
+          studentId: data?.student?.id,
+          type: newSocialType,
+          url: newSocialUrl,
+        }),
       });
     } catch {
       toast.error("Failed to sync social link to server");
@@ -149,50 +179,71 @@ export default function ProfilePage() {
         title="My Profile"
         subtitle="Personal details and contact information"
         actions={
-          <Button onClick={handleSave} loading={saving} icon={<Save size={14} />}>
+          <Button
+            onClick={handleSave}
+            loading={saving}
+            icon={<Save size={14} />}
+          >
             Save Changes
           </Button>
         }
       />
 
       <div className="p-6 space-y-6 max-w-4xl mx-auto">
-        
         {/* Profile Hero Section */}
         <div className="flex flex-col md:flex-row gap-6 items-center md:items-start p-6 bg-white border border-slate-200 rounded-xl shadow-sm relative overflow-hidden">
           <div className="absolute top-0 left-0 w-full h-24 bg-linear-to-r from-blue-600 to-indigo-600"></div>
           <div className="relative mt-8 md:mt-8 flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
             <div className="relative group shrink-0">
               <Avatar className="h-32 w-32 border-4 border-white shadow-xl bg-white">
-                {data?.image && <AvatarImage src={data.image} alt={data?.name || "Student"} className="object-cover" />}
+                {data?.image && (
+                  <AvatarImage
+                    src={data.image}
+                    alt={data?.name || "Student"}
+                    className="object-cover"
+                  />
+                )}
                 <AvatarFallback className="text-4xl bg-slate-100 text-slate-500 font-medium">
                   {data?.name?.substring(0, 2).toUpperCase() || "ST"}
                 </AvatarFallback>
               </Avatar>
-              <button 
+              <button
                 onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <Camera size={16} />
               </button>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                className="hidden" 
-                accept="image/*" 
-                onChange={handleImageUpload} 
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
               />
             </div>
-            
+
             <div className="flex-1 text-center md:text-left pb-1">
-              <h2 className="text-3xl font-bold text-slate-800">{data?.name || "Student Name"}</h2>
-              <p className="text-slate-500 font-medium mt-1">{data?.student?.rollNo || "No Roll Assigned"} • {data?.student?.course || "Course"} {data?.student?.branch || ""}</p>
+              <h2 className="text-3xl font-bold text-slate-800">
+                {data?.name || "Student Name"}
+              </h2>
+              <p className="text-slate-500 font-medium mt-1">
+                {data?.student?.rollNo || "No Roll Assigned"} •{" "}
+                {data?.student?.course || "Course"}{" "}
+                {data?.student?.branch || ""}
+              </p>
               <div className="flex items-center justify-center md:justify-start gap-4 mt-4">
                 {enrolled === "ACTIVE" ? (
-                  <span className="text-xs px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full tracking-wide uppercase">Active Student</span>
+                  <span className="text-xs px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full tracking-wide uppercase">
+                    Active Student
+                  </span>
                 ) : (
-                  <span className="text-xs px-3 py-1 bg-slate-100 text-slate-600 font-bold rounded-full tracking-wide uppercase">Inactive Student</span>
+                  <span className="text-xs px-3 py-1 bg-slate-100 text-slate-600 font-bold rounded-full tracking-wide uppercase">
+                    Inactive Student
+                  </span>
                 )}
-                <span className="text-sm font-medium text-slate-500">{data?.email}</span>
+                <span className="text-sm font-medium text-slate-500">
+                  {data?.email}
+                </span>
               </div>
             </div>
           </div>
@@ -205,19 +256,25 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Name (read-only from Google) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Full Name</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Full Name
+              </label>
               <input
                 type="text"
                 value={data?.name ?? ""}
                 disabled
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
               />
-              <p className="text-xs text-slate-400 mt-1">Synced from your Google account</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Synced from your Google account
+              </p>
             </div>
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Email Address</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Email Address
+              </label>
               <input
                 type="email"
                 value={data?.email ?? ""}
@@ -228,14 +285,18 @@ export default function ProfilePage() {
 
             {/* Roll No (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Roll Number</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Roll Number
+              </label>
               <input
                 type="text"
                 value={data?.student?.rollNo ?? "Not assigned"}
                 disabled
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
               />
-              <p className="text-xs text-slate-400 mt-1">Assigned by administrator</p>
+              <p className="text-xs text-slate-400 mt-1">
+                Assigned by administrator
+              </p>
             </div>
 
             {/* Phone */}
@@ -254,7 +315,9 @@ export default function ProfilePage() {
 
             {/* Course (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Course</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Course
+              </label>
               <div className="flex gap-2">
                 {COURSES.map((c) => (
                   <span
@@ -273,7 +336,9 @@ export default function ProfilePage() {
 
             {/* Branch (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">Branch</label>
+              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                Branch
+              </label>
               <input
                 type="text"
                 value={data?.student?.branch ?? "Not assigned"}
@@ -342,7 +407,9 @@ export default function ProfilePage() {
               placeholder="Write a brief professional objective or bio that will appear on your CV..."
               className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition resize-none"
             />
-            <p className="text-xs text-slate-400 mt-1">{bio.length}/500 characters</p>
+            <p className="text-xs text-slate-400 mt-1">
+              {bio.length}/500 characters
+            </p>
           </div>
         </Card>
 
@@ -357,25 +424,35 @@ export default function ProfilePage() {
           {/* Existing socials */}
           <div className="space-y-3 mb-6">
             {socials.length === 0 ? (
-              <p className="text-sm text-slate-400">No social links added yet.</p>
+              <p className="text-sm text-slate-400">
+                No social links added yet.
+              </p>
             ) : (
               socials.map((s, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
                 >
-                  <span className="text-slate-400 shrink-0">{socialIcon(s.type)}</span>
-                  <span className="text-xs font-medium text-slate-500 w-24 shrink-0">{s.type}</span>
-                  <span className="text-sm text-blue-600 truncate flex-1">{s.url}</span>
+                  <span className="text-slate-400 shrink-0">
+                    {socialIcon(s.type)}
+                  </span>
+                  <span className="text-xs font-medium text-slate-500 w-24 shrink-0">
+                    {s.type}
+                  </span>
+                  <span className="text-sm text-blue-600 truncate flex-1">
+                    {s.url}
+                  </span>
                   <button
                     className="text-slate-300 hover:text-red-400 transition-colors"
                     onClick={async () => {
                       // Update state immediately for functional UI
                       setSocials((prev) => prev.filter((_, idx) => idx !== i));
                       toast.success("Social link removed");
-                      
+
                       // Background sync
-                      await fetch(`/api/student/socials?type=${s.type}`, { method: "DELETE" }).catch(() => {});
+                      await fetch(`/api/student/socials?type=${s.type}`, {
+                        method: "DELETE",
+                      }).catch(() => {});
                     }}
                   >
                     <Trash2 size={14} />
@@ -388,19 +465,25 @@ export default function ProfilePage() {
           {/* Add new social */}
           <div className="flex items-end gap-3">
             <div className="w-36">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">Platform</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                Platform
+              </label>
               <select
                 value={newSocialType}
                 onChange={(e) => setNewSocialType(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm outline-none bg-white focus:border-blue-400"
               >
                 {SOCIAL_TYPES.map((t) => (
-                  <option key={t} value={t}>{t}</option>
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
                 ))}
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">URL</label>
+              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+                URL
+              </label>
               <input
                 type="url"
                 value={newSocialUrl}
@@ -410,7 +493,11 @@ export default function ProfilePage() {
                 onKeyDown={(e) => e.key === "Enter" && addSocial()}
               />
             </div>
-            <Button onClick={addSocial} icon={<Plus size={14} />} variant="secondary">
+            <Button
+              onClick={addSocial}
+              icon={<Plus size={14} />}
+              variant="secondary"
+            >
               Add
             </Button>
           </div>

@@ -44,30 +44,38 @@ export default function FacultyDashboard() {
     let result = data;
     const s = search.toLowerCase();
     if (s) {
-      result = result.filter((stu) =>
-        (stu.name || "").toLowerCase().includes(s) ||
-        (stu.rollNo || "").toLowerCase().includes(s)
+      result = result.filter(
+        (stu) =>
+          (stu.name || "").toLowerCase().includes(s) ||
+          (stu.rollNo || "").toLowerCase().includes(s),
       );
     }
-    if (batchFilter !== "ALL") result = result.filter((stu) => stu.batch === batchFilter);
-    if (courseFilter !== "ALL") result = result.filter((stu) => stu.course === courseFilter);
+    if (batchFilter !== "ALL")
+      result = result.filter((stu) => stu.batch === batchFilter);
+    if (courseFilter !== "ALL")
+      result = result.filter((stu) => stu.course === courseFilter);
     setFiltered(result);
   }, [search, batchFilter, courseFilter, data]);
 
   if (loading) return <Spinner />;
 
-  const pendingOverall = data.filter(s => s.unverifiedResults > 0 || s.unverifiedAchievements > 0).length;
+  const pendingOverall = data.filter(
+    (s) => s.unverifiedResults > 0 || s.unverifiedAchievements > 0,
+  ).length;
 
   return (
     <div>
       <div className="p-6 max-w-6xl mx-auto space-y-6">
-
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="relative p-4">
-            {pendingOverall > 0 && <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />}
+            {pendingOverall > 0 && (
+              <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-yellow-500 animate-pulse" />
+            )}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2 mb-2">
-                <p className="text-sm text-muted-foreground">Pending Verifications</p>
+                <p className="text-sm text-muted-foreground">
+                  Pending Verifications
+                </p>
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -78,10 +86,14 @@ export default function FacultyDashboard() {
             </div>
           </Card>
           <Card className="relative p-4">
-            {pendingUsers > 0 && <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-red-500 animate-pulse" />}
+            {pendingUsers > 0 && (
+              <span className="absolute top-3 right-3 w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+            )}
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-2 mb-2">
-                <p className="text-sm text-muted-foreground">Pending User Approvals</p>
+                <p className="text-sm text-muted-foreground">
+                  Pending User Approvals
+                </p>
               </div>
             </div>
             <div className="flex items-end justify-between">
@@ -96,7 +108,10 @@ export default function FacultyDashboard() {
         {/* Action / Search Bar */}
         <div className="flex flex-col sm:flex-row gap-4 mb-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <Search
+              className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+              size={18}
+            />
             <input
               type="text"
               placeholder="Search students by name or roll number..."
@@ -145,39 +160,68 @@ export default function FacultyDashboard() {
               <tbody className="divide-y divide-slate-100">
                 {filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-slate-500">
+                    <td
+                      colSpan={5}
+                      className="px-6 py-12 text-center text-slate-500"
+                    >
                       No students found matching your criteria.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((stu) => (
-                    <tr key={stu.id} className="hover:bg-slate-50/50 transition">
+                    <tr
+                      key={stu.id}
+                      className="hover:bg-slate-50/50 transition"
+                    >
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
-                          <span className="font-semibold text-slate-900">{stu.name || "Unknown"}</span>
-                          <span className="text-xs text-slate-500">{stu.rollNo}</span>
+                          <span className="font-semibold text-slate-900">
+                            {stu.name || "Unknown"}
+                          </span>
+                          <span className="text-xs text-slate-500">
+                            {stu.rollNo}
+                          </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <span className="font-medium text-slate-700">{stu.course}</span>
-                         <span className="text-slate-400 mx-1">·</span>
-                        <span className="text-slate-600">Sem {stu.semester}</span>
+                        <span className="font-medium text-slate-700">
+                          {stu.course}
+                        </span>
+                        <span className="text-slate-400 mx-1">·</span>
+                        <span className="text-slate-600">
+                          Sem {stu.semester}
+                        </span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                        <span className="font-bold text-slate-800">{stu.cgpa ? stu.cgpa.toFixed(2) : "—"}</span>
+                        <span className="font-bold text-slate-800">
+                          {stu.cgpa ? stu.cgpa.toFixed(2) : "—"}
+                        </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
-                           {stu.unverifiedResults > 0 && <Badge variant="warning" dot>{stu.unverifiedResults} Res</Badge>}
-                           {stu.unverifiedAchievements > 0 && <Badge variant="warning" dot>{stu.unverifiedAchievements} Achv</Badge>}
-                           {stu.unverifiedResults === 0 && stu.unverifiedAchievements === 0 && <Badge variant="success" icon>Up to date</Badge>}
+                          {stu.unverifiedResults > 0 && (
+                            <Badge variant="warning" dot>
+                              {stu.unverifiedResults} Res
+                            </Badge>
+                          )}
+                          {stu.unverifiedAchievements > 0 && (
+                            <Badge variant="warning" dot>
+                              {stu.unverifiedAchievements} Achv
+                            </Badge>
+                          )}
+                          {stu.unverifiedResults === 0 &&
+                            stu.unverifiedAchievements === 0 && (
+                              <Badge variant="success" icon>
+                                Up to date
+                              </Badge>
+                            )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Link href={`/faculty/students/${stu.id}`}>
-                           <button className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
-                              Review Profile
-                           </button>
+                          <button className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
+                            Review Profile
+                          </button>
                         </Link>
                       </td>
                     </tr>
@@ -187,7 +231,6 @@ export default function FacultyDashboard() {
             </table>
           </div>
         </Card>
-
       </div>
     </div>
   );

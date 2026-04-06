@@ -5,7 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { error } = await requireRole(["STUDENT", "FACULTY"]);
   if (error) return error;
@@ -26,7 +26,7 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
   if (error) return error;
@@ -46,7 +46,8 @@ export async function PATCH(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { rollNo, course, branch, semester, bio, skills, cgpa } = await req.json();
+  const { rollNo, course, branch, semester, bio, skills, cgpa } =
+    await req.json();
 
   const updated = await prisma.student.update({
     where: { id },
@@ -73,7 +74,7 @@ export async function PATCH(
 
 export async function DELETE(
   _req: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { session, error } = await requireRole(["STUDENT", "FACULTY"]);
   if (error) return error;

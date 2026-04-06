@@ -18,7 +18,10 @@ export async function GET(
   });
 
   if (!achievement) {
-    return NextResponse.json({ error: "Achievement not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Achievement not found" },
+      { status: 404 },
+    );
   }
 
   if (session.user.role === "STUDENT") {
@@ -45,7 +48,10 @@ export async function PATCH(
   });
 
   if (!achievement) {
-    return NextResponse.json({ error: "Achievement not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Achievement not found" },
+      { status: 404 },
+    );
   }
 
   if (session.user.role === "STUDENT") {
@@ -90,7 +96,10 @@ export async function DELETE(
   });
 
   if (!achievement) {
-    return NextResponse.json({ error: "Achievement not found" }, { status: 404 });
+    return NextResponse.json(
+      { error: "Achievement not found" },
+      { status: 404 },
+    );
   }
 
   if (session.user.role === "STUDENT") {

@@ -30,17 +30,41 @@ type NavItem = {
 };
 
 const studentNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
-  { label: "Academic", href: "/dashboard/results", icon: <GraduationCap size={18} /> },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <LayoutDashboard size={18} />,
+  },
+  {
+    label: "Academic",
+    href: "/dashboard/results",
+    icon: <GraduationCap size={18} />,
+  },
   { label: "Skills", href: "/dashboard/skills", icon: <Code2 size={18} /> },
-  { label: "Projects", href: "/dashboard/projects", icon: <FolderGit2 size={18} /> },
-  { label: "Experience", href: "/dashboard/experience", icon: <Briefcase size={18} /> },
-  { label: "Achievements", href: "/dashboard/achievements", icon: <Trophy size={18} /> },
+  {
+    label: "Projects",
+    href: "/dashboard/projects",
+    icon: <FolderGit2 size={18} />,
+  },
+  {
+    label: "Experience",
+    href: "/dashboard/experience",
+    icon: <Briefcase size={18} />,
+  },
+  {
+    label: "Achievements",
+    href: "/dashboard/achievements",
+    icon: <Trophy size={18} />,
+  },
   { label: "Generate CV", href: "/dashboard/cv", icon: <FileText size={18} /> },
 ];
 
 const facultyNav: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: <LayoutDashboard size={18} /> },
+  {
+    label: "Dashboard",
+    href: "/dashboard",
+    icon: <LayoutDashboard size={18} />,
+  },
   { label: "Students", href: "/dashboard/students", icon: <Users size={18} /> },
   { label: "Verify", href: "/dashboard/verify", icon: <FileText size={18} /> },
   { label: "Profile", href: "/dashboard/settings", icon: <User size={18} /> },
@@ -53,15 +77,23 @@ interface SidebarProps {
   userImage?: string | null;
 }
 
-export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) {
+export function Sidebar({
+  role,
+  userName,
+  userEmail,
+  userImage,
+}: SidebarProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
 
-  const navItems =
-    role === "FACULTY" ? facultyNav : studentNav;
+  const navItems = role === "FACULTY" ? facultyNav : studentNav;
 
   const roleLabel =
-    role === "FACULTY" ? "Faculty Advisor" : role === "ADMIN" ? "Administrator" : "Student";
+    role === "FACULTY"
+      ? "Faculty Advisor"
+      : role === "ADMIN"
+        ? "Administrator"
+        : "Student";
 
   return (
     <aside
@@ -78,7 +110,9 @@ export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) 
         </div>
         {!collapsed && (
           <div className="min-w-0">
-            <p className="text-sm font-bold text-white truncate">AEC Profiles</p>
+            <p className="text-sm font-bold text-white truncate">
+              AEC Profiles
+            </p>
             <p className="text-xs text-slate-500 truncate">{roleLabel}</p>
           </div>
         )}
@@ -140,7 +174,9 @@ export function Sidebar({ role, userName, userEmail, userImage }: SidebarProps) 
           )}
           {!collapsed && (
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-200 truncate">{userName}</p>
+              <p className="text-sm font-medium text-slate-200 truncate">
+                {userName}
+              </p>
               <p className="text-xs text-slate-500 truncate">{userEmail}</p>
             </div>
           )}

@@ -9,11 +9,11 @@ export async function GET() {
   try {
     const students = await prisma.student.findMany({
       where: { deletedAt: null },
-        include: {
-          user: { select: { name: true } },
-          results: { select: { verified: true } },
-          achievements: { select: { verified: true } },
-        },
+      include: {
+        user: { select: { name: true } },
+        results: { select: { verified: true } },
+        achievements: { select: { verified: true } },
+      },
     });
 
     const pendingUsers = await prisma.user.count({
@@ -31,17 +31,17 @@ export async function GET() {
       semester: stu.semester,
       cgpa: stu.cgpa,
 
-      unverifiedResults: stu.results.filter(r => !r.verified).length,
-      unverifiedAchievements: stu.achievements.filter(a => !a.verified).length,
+      unverifiedResults: stu.results.filter((r) => !r.verified).length,
+      unverifiedAchievements: stu.achievements.filter((a) => !a.verified)
+        .length,
     }));
 
     return NextResponse.json({ students: formatted, pendingUsers });
-
   } catch (err) {
     console.error(err);
     return NextResponse.json(
       { error: "Failed to fetch students" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
