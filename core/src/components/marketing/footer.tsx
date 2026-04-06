@@ -1,16 +1,6 @@
-import {
-  BadgeCheck,
-  Briefcase,
-  Building2,
-  ExternalLink,
-  GraduationCap,
-  Info,
-  LogIn,
-  Phone,
-} from "lucide-react";
+import { Briefcase, Building2, Info, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { SignIn } from "../auth-components";
 

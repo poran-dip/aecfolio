@@ -155,6 +155,7 @@ export default function VerificationPage() {
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
+                            type="button"
                             onClick={() => handleAction(item.id, "approve")}
                             className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
                             title="Approve"
@@ -162,6 +163,7 @@ export default function VerificationPage() {
                             <Check size={18} />
                           </button>
                           <button
+                            type="button"
                             onClick={() => handleAction(item.id, "reject")}
                             className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
                             title="Reject"

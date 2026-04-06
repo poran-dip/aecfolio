@@ -1,6 +1,6 @@
 "use client";
 
-import { Clock, Search, UserCheck } from "lucide-react";
+import { Clock, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -135,7 +135,7 @@ export default function PendingApprovalsPage() {
           rollNo: studentForm.rollNo,
           course: studentForm.course,
           branch: studentForm.branch,
-          semester: parseInt(studentForm.semester),
+          semester: parseInt(studentForm.semester, 10),
           cgpa: studentForm.cgpa ? parseFloat(studentForm.cgpa) : null,
           bio: studentForm.bio || null,
           skills: studentForm.skills
@@ -304,141 +304,137 @@ export default function PendingApprovalsPage() {
             </div>
 
             {accountType === "STUDENT" ? (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Roll No *</Label>
-                    <Input
-                      value={studentForm.rollNo}
-                      onChange={(e) =>
-                        setStudentForm((p) => ({
-                          ...p,
-                          rollNo: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. CSE23001"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Course *</Label>
-                    <Select
-                      value={studentForm.course}
-                      onValueChange={(v: string) =>
-                        setStudentForm((p) => ({ ...p, course: v }))
-                      }
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="BTECH">B.Tech</SelectItem>
-                        <SelectItem value="MTECH">M.Tech</SelectItem>
-                        <SelectItem value="MCA">MCA</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Branch *</Label>
-                    <Input
-                      value={studentForm.branch}
-                      onChange={(e) =>
-                        setStudentForm((p) => ({
-                          ...p,
-                          branch: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. CSE"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Semester *</Label>
-                    <Input
-                      type="number"
-                      min={1}
-                      max={12}
-                      value={studentForm.semester}
-                      onChange={(e) =>
-                        setStudentForm((p) => ({
-                          ...p,
-                          semester: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. 5"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>CGPA</Label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min={0}
-                      max={10}
-                      value={studentForm.cgpa}
-                      onChange={(e) =>
-                        setStudentForm((p) => ({ ...p, cgpa: e.target.value }))
-                      }
-                      placeholder="e.g. 8.5"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Skills</Label>
-                    <Input
-                      value={studentForm.skills}
-                      onChange={(e) =>
-                        setStudentForm((p) => ({
-                          ...p,
-                          skills: e.target.value,
-                        }))
-                      }
-                      placeholder="React, Python, ..."
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Roll No *</Label>
+                  <Input
+                    value={studentForm.rollNo}
+                    onChange={(e) =>
+                      setStudentForm((p) => ({
+                        ...p,
+                        rollNo: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. CSE23001"
+                  />
                 </div>
-              </>
+                <div className="space-y-1.5">
+                  <Label>Course *</Label>
+                  <Select
+                    value={studentForm.course}
+                    onValueChange={(v: string) =>
+                      setStudentForm((p) => ({ ...p, course: v }))
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="BTECH">B.Tech</SelectItem>
+                      <SelectItem value="MTECH">M.Tech</SelectItem>
+                      <SelectItem value="MCA">MCA</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Branch *</Label>
+                  <Input
+                    value={studentForm.branch}
+                    onChange={(e) =>
+                      setStudentForm((p) => ({
+                        ...p,
+                        branch: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. CSE"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Semester *</Label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={12}
+                    value={studentForm.semester}
+                    onChange={(e) =>
+                      setStudentForm((p) => ({
+                        ...p,
+                        semester: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. 5"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>CGPA</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    min={0}
+                    max={10}
+                    value={studentForm.cgpa}
+                    onChange={(e) =>
+                      setStudentForm((p) => ({ ...p, cgpa: e.target.value }))
+                    }
+                    placeholder="e.g. 8.5"
+                  />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>Skills</Label>
+                  <Input
+                    value={studentForm.skills}
+                    onChange={(e) =>
+                      setStudentForm((p) => ({
+                        ...p,
+                        skills: e.target.value,
+                      }))
+                    }
+                    placeholder="React, Python, ..."
+                  />
+                </div>
+              </div>
             ) : (
-              <>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label>Employee ID *</Label>
-                    <Input
-                      value={facultyForm.employeeId}
-                      onChange={(e) =>
-                        setFacultyForm((p) => ({
-                          ...p,
-                          employeeId: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. FAC001"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label>Designation *</Label>
-                    <Input
-                      value={facultyForm.designation}
-                      onChange={(e) =>
-                        setFacultyForm((p) => ({
-                          ...p,
-                          designation: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. Assistant Professor"
-                    />
-                  </div>
-                  <div className="col-span-2 space-y-1.5">
-                    <Label>Department *</Label>
-                    <Input
-                      value={facultyForm.department}
-                      onChange={(e) =>
-                        setFacultyForm((p) => ({
-                          ...p,
-                          department: e.target.value,
-                        }))
-                      }
-                      placeholder="e.g. Computer Science"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <Label>Employee ID *</Label>
+                  <Input
+                    value={facultyForm.employeeId}
+                    onChange={(e) =>
+                      setFacultyForm((p) => ({
+                        ...p,
+                        employeeId: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. FAC001"
+                  />
                 </div>
-              </>
+                <div className="space-y-1.5">
+                  <Label>Designation *</Label>
+                  <Input
+                    value={facultyForm.designation}
+                    onChange={(e) =>
+                      setFacultyForm((p) => ({
+                        ...p,
+                        designation: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. Assistant Professor"
+                  />
+                </div>
+                <div className="col-span-2 space-y-1.5">
+                  <Label>Department *</Label>
+                  <Input
+                    value={facultyForm.department}
+                    onChange={(e) =>
+                      setFacultyForm((p) => ({
+                        ...p,
+                        department: e.target.value,
+                      }))
+                    }
+                    placeholder="e.g. Computer Science"
+                  />
+                </div>
+              </div>
             )}
 
             {formError && <p className="text-sm text-red-600">{formError}</p>}

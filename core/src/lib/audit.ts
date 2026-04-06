@@ -1,3 +1,4 @@
+import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
 export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "VERIFY";
@@ -7,7 +8,7 @@ interface CreateAuditLogParams {
   action: AuditAction;
   entity: string;
   entityId: string;
-  metadata?: Record<string, unknown>;
+  metadata?: Prisma.JsonObject;
 }
 
 export async function createAuditLog({
@@ -18,6 +19,6 @@ export async function createAuditLog({
   metadata,
 }: CreateAuditLogParams) {
   await prisma.auditLog.create({
-    data: { userId, action, entity, entityId, metadata: metadata as any },
+    data: { userId, action, entity, entityId, metadata },
   });
 }

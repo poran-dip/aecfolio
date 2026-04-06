@@ -160,7 +160,7 @@ export default function ExperiencePage() {
             {/* Timeline */}
             <div className="relative pl-8">
               <div className="absolute left-3 top-4 bottom-4 w-0.5 bg-slate-200" />
-              {experiences.map((exp, i) => (
+              {experiences.map((exp) => (
                 <div key={exp.id} className="relative mb-6 last:mb-0">
                   {/* Dot */}
                   <div className="absolute -left-5 top-4 w-3 h-3 rounded-full bg-blue-600 border-2 border-white shadow-sm" />
@@ -195,12 +195,14 @@ export default function ExperiencePage() {
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <button
+                          type="button"
                           onClick={() => openEdit(exp)}
                           className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                         >
                           <Pencil size={14} />
                         </button>
                         <button
+                          type="button"
                           onClick={() => setDeleteId(exp.id)}
                           className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
                         >
@@ -234,13 +236,14 @@ export default function ExperiencePage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <p className="block text-sm font-medium text-slate-700 mb-1.5">
               Type
-            </label>
+            </p>
             <div className="flex gap-2 flex-wrap">
               {EXP_TYPES.map((t) => (
                 <button
                   key={t}
+                  type="button"
                   onClick={() => setForm((f) => ({ ...f, type: t }))}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${form.type === t ? "bg-blue-600 text-white border-blue-600" : "bg-slate-50 text-slate-500 border-slate-200 hover:border-blue-300"}`}
                 >
@@ -251,10 +254,14 @@ export default function ExperiencePage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="experience-role"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Title / Role *
               </label>
               <input
+                id="experience-role"
                 type="text"
                 value={form.title}
                 onChange={(e) =>
@@ -265,10 +272,14 @@ export default function ExperiencePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="organization"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Organization *
               </label>
               <input
+                id="organization"
                 type="text"
                 value={form.organization}
                 onChange={(e) =>
@@ -281,10 +292,14 @@ export default function ExperiencePage() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="start-date"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Start Date
               </label>
               <input
+                id="end-date"
                 type="date"
                 value={form.startDate}
                 onChange={(e) =>
@@ -294,10 +309,14 @@ export default function ExperiencePage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="end-date"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 End Date
               </label>
               <input
+                id="end-date"
                 type="date"
                 value={form.endDate}
                 onChange={(e) =>
@@ -309,10 +328,14 @@ export default function ExperiencePage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="experience-description"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Description
             </label>
             <textarea
+              id="experience-description"
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value }))

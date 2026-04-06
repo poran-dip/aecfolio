@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BarChart3,
   Briefcase,
   ChevronLeft,
   ChevronRight,
@@ -11,11 +10,11 @@ import {
   GraduationCap,
   LayoutDashboard,
   LogOut,
-  Search,
   Trophy,
   User,
   Users,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -162,9 +161,11 @@ export function Sidebar({
           )}
         >
           {userImage ? (
-            <img
+            <Image
               src={userImage}
               alt={userName}
+              width={32}
+              height={32}
               className="w-8 h-8 rounded-full object-cover shrink-0 border-2 border-slate-700"
             />
           ) : (
@@ -184,6 +185,7 @@ export function Sidebar({
 
         {/* Sign out */}
         <button
+          type="button"
           onClick={() => signOut({ callbackUrl: "/" })}
           title={collapsed ? "Sign out" : undefined}
           className={cn(
@@ -198,6 +200,7 @@ export function Sidebar({
 
         {/* Collapse toggle */}
         <button
+          type="button"
           onClick={() => setCollapsed(!collapsed)}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
           className={cn(

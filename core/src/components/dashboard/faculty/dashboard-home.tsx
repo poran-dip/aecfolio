@@ -1,6 +1,6 @@
 "use client";
 
-import { Dot, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/dashboard/ui/Badge";
@@ -219,7 +219,10 @@ export default function FacultyDashboard() {
                       </td>
                       <td className="px-6 py-4 text-right">
                         <Link href={`/faculty/students/${stu.id}`}>
-                          <button className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition">
+                          <button
+                            type="button"
+                            className="px-4 py-1.5 text-xs font-medium bg-blue-50 text-blue-600 rounded-full hover:bg-blue-100 transition"
+                          >
                             Review Profile
                           </button>
                         </Link>

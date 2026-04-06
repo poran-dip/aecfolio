@@ -47,7 +47,7 @@ export default function AcademicPage() {
 
   const handleAddResult = async () => {
     const sgpaVal = parseFloat(newSgpa);
-    if (isNaN(sgpaVal) || sgpaVal < 0 || sgpaVal > 10) {
+    if (Number.isNaN(sgpaVal) || sgpaVal < 0 || sgpaVal > 10) {
       toast.error("SGPA must be between 0 and 10");
       return;
     }
@@ -225,10 +225,14 @@ export default function AcademicPage() {
             </p>
             <div className="flex items-end gap-3">
               <div className="w-40">
-                <label className="block text-xs text-slate-500 mb-1.5">
+                <label
+                  htmlFor="semester"
+                  className="block text-xs text-slate-500 mb-1.5"
+                >
                   Semester
                 </label>
                 <select
+                  id="semester"
                   value={newSem}
                   onChange={(e) => setNewSem(Number(e.target.value))}
                   className="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm bg-white outline-none focus:border-blue-400"
@@ -253,10 +257,14 @@ export default function AcademicPage() {
                 </select>
               </div>
               <div className="w-40">
-                <label className="block text-xs text-slate-500 mb-1.5">
-                  SGPA (0 – 10)
+                <label
+                  htmlFor="sgpa"
+                  className="block text-xs text-slate-500 mb-1.5"
+                >
+                  SGPA (0 - 10)
                 </label>
                 <input
+                  id="sgpa"
                   type="number"
                   step="0.01"
                   min="0"

@@ -11,7 +11,6 @@ import {
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/dashboard/ui/Button";
-import { Card } from "@/components/dashboard/ui/Card";
 import { ConfirmModal, Modal } from "@/components/dashboard/ui/Modal";
 import { Navbar } from "@/components/dashboard/ui/Navbar";
 import { PageLoader } from "@/components/dashboard/ui/Spinner";
@@ -177,12 +176,14 @@ export default function ProjectsPage() {
                       </a>
                     )}
                     <button
+                      type="button"
                       onClick={() => openEdit(p)}
                       className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
                     >
                       <Pencil size={14} />
                     </button>
                     <button
+                      type="button"
                       onClick={() => setDeleteId(p.id)}
                       className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg hover:bg-red-50 transition-colors"
                     >
@@ -232,10 +233,14 @@ export default function ProjectsPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="project-title"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Project Title *
             </label>
             <input
+              id="project-title"
               type="text"
               value={form.title}
               onChange={(e) =>
@@ -246,10 +251,14 @@ export default function ProjectsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="project-description"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Description *
             </label>
             <textarea
+              id="project-description"
               value={form.description}
               onChange={(e) =>
                 setForm((f) => ({ ...f, description: e.target.value }))
@@ -260,7 +269,10 @@ export default function ProjectsPage() {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="tech-stack"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Tech Stack
             </label>
             <div className="flex flex-wrap gap-2 mb-2">
@@ -271,6 +283,7 @@ export default function ProjectsPage() {
                 >
                   {tech}
                   <button
+                    type="button"
                     onClick={() =>
                       setForm((f) => ({
                         ...f,
@@ -285,13 +298,17 @@ export default function ProjectsPage() {
             </div>
             <div className="flex gap-2">
               <input
+                id="tech-stack"
                 type="text"
                 value={techInput}
                 onChange={(e) => setTechInput(e.target.value)}
                 placeholder="e.g. React"
-                onKeyDown={(e) =>
-                  e.key === "Enter" && (e.preventDefault(), addTech())
-                }
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    addTech();
+                  }
+                }}
                 className="flex-1 px-3 py-2 border border-slate-200 rounded-lg text-sm outline-none focus:border-blue-400 transition"
               />
               <Button
@@ -305,10 +322,14 @@ export default function ProjectsPage() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="demo-link"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               GitHub / Demo Link
             </label>
             <input
+              id="demo-link"
               type="url"
               value={form.link ?? ""}
               onChange={(e) => setForm((f) => ({ ...f, link: e.target.value }))}

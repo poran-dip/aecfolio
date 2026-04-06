@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Briefcase, Mail, User } from "lucide-react";
+import { User } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/dashboard/ui/Card";
 import { Navbar } from "@/components/dashboard/ui/Navbar";
@@ -97,10 +97,14 @@ export default function FacultyProfilePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Full Name
               </label>
               <input
+                id="name"
                 type="text"
                 value={data.name}
                 disabled
@@ -109,10 +113,14 @@ export default function FacultyProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Email Address
               </label>
               <input
+                id="email"
                 type="email"
                 value={data.email}
                 disabled
@@ -121,10 +129,14 @@ export default function FacultyProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="department"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Department
               </label>
               <input
+                id="department"
                 type="text"
                 value={data.department}
                 disabled
@@ -133,10 +145,14 @@ export default function FacultyProfilePage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="designation"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Designation
               </label>
               <input
+                id="designation"
                 type="text"
                 value={data.designation}
                 disabled
@@ -146,10 +162,14 @@ export default function FacultyProfilePage() {
 
             {data.joinDate && (
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="join-date"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Join Date
                 </label>
                 <input
+                  id="join-date"
                   type="text"
                   value={new Date(data.joinDate).toLocaleDateString()}
                   disabled

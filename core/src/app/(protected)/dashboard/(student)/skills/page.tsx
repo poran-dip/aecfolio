@@ -115,6 +115,7 @@ export default function SkillsPage() {
                 >
                   {skill}
                   <button
+                    type="button"
                     onClick={() => removeSkill(skill)}
                     className="hover:bg-blue-700 rounded-full p-0.5 transition-colors"
                   >
@@ -142,6 +143,7 @@ export default function SkillsPage() {
                 {suggestions.map((s) => (
                   <button
                     key={s}
+                    type="button"
                     onClick={() => addSkill(s)}
                     className="w-full text-left px-4 py-2.5 text-sm text-slate-700 hover:bg-blue-50 hover:text-blue-700 transition-colors flex items-center gap-2"
                   >
@@ -165,6 +167,7 @@ export default function SkillsPage() {
             </span>
             {skills.length > 0 && (
               <button
+                type="button"
                 onClick={() => setSkills([])}
                 className="text-xs text-red-400 hover:text-red-600 transition-colors"
               >
@@ -182,6 +185,7 @@ export default function SkillsPage() {
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_SKILLS.filter((s) => !skills.includes(s)).map((s) => (
               <button
+                type="button"
                 key={s}
                 onClick={() => addSkill(s)}
                 className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-slate-600 bg-slate-50 border border-slate-200 rounded-full hover:border-blue-400 hover:bg-blue-50 hover:text-blue-700 transition-all group"

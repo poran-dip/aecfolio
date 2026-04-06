@@ -9,7 +9,6 @@ import { Navbar } from "@/components/dashboard/ui/Navbar";
 
 export default function GenCVPage() {
   const [generating, setGenerating] = useState(false);
-  const [iframeKey, setIframeKey] = useState(0); // Using this to force iframe refresh if needed later
 
   const handleDownload = async () => {
     setGenerating(true);
@@ -49,9 +48,7 @@ export default function GenCVPage() {
 
           <div className="space-y-6">
             <div className="space-y-3">
-              <label className="text-sm font-medium text-slate-700">
-                Template
-              </label>
+              <p className="text-sm font-medium text-slate-700">Template</p>
               <div className="border-2 border-blue-500 rounded-xl p-4 bg-blue-50 relative overflow-hidden cursor-pointer">
                 <div className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full z-10">
                   ACTIVE
@@ -103,11 +100,7 @@ export default function GenCVPage() {
           {/* Visual representation of an A4 paper for preview state before PDF generated */}
           <div className="w-full max-w-200 aspect-[1/1.4] bg-white shadow-xl rounded flex flex-col items-center justify-center text-center p-8 border border-slate-200 relative group overflow-hidden">
             <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 flex items-center justify-center backdrop-blur-sm z-10 transition-all duration-300">
-              <Button
-                onClick={() => setIframeKey((k) => k + 1)}
-                variant="secondary"
-                icon={<Eye size={16} />}
-              >
+              <Button variant="secondary" icon={<Eye size={16} />}>
                 Preview PDF Data
               </Button>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Menu } from "lucide-react";
+import { Bell } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NavbarProps {
@@ -28,6 +28,7 @@ export function Navbar({ title, subtitle, actions, className }: NavbarProps) {
       <div className="flex items-center gap-3">
         {actions}
         <button
+          type="button"
           className="relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 hover:text-slate-700 transition-colors"
           title="Notifications"
           id="navbar-notifications-btn"

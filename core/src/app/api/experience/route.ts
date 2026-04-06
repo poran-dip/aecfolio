@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import type { ExperienceType } from "@/generated/prisma/enums";
 import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
@@ -28,7 +29,7 @@ export async function GET(req: NextRequest) {
     where: {
       deletedAt: null,
       ...(studentId && { studentId }),
-      ...(type && { type: type as any }),
+      ...(type && { type: type as ExperienceType }),
     },
   });
 

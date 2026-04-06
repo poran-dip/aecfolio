@@ -5,12 +5,12 @@ import {
   ChevronsUpDown,
   FileText,
   GraduationCap,
-  LayoutDashboard,
   LogOut,
   Settings,
   Trophy,
   User,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
@@ -172,11 +172,12 @@ export function AppSidebar({
                   size="lg"
                   className="data-state-open:bg-sidebar-accent data-state-open:text-sidebar-accent-foreground"
                 >
-                  <div className="flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 overflow-hidden">
-                    <img
+                  <div className="relative flex aspect-square size-8 shrink-0 items-center justify-center rounded-lg bg-white p-0.5 overflow-hidden">
+                    <Image
                       src={activeTeam.logo}
                       alt="Logo"
-                      className="size-full object-contain"
+                      fill
+                      className="object-contain"
                     />
                   </div>
                   <div className="grid flex-1 text-left text-sm leading-tight">
@@ -198,11 +199,12 @@ export function AppSidebar({
                   Applications
                 </DropdownMenuLabel>
                 <DropdownMenuItem className="gap-2 p-2">
-                  <div className="flex size-6 shrink-0 items-center justify-center rounded-sm border bg-white overflow-hidden p-0.5">
-                    <img
+                  <div className="relative flex size-6 shrink-0 items-center justify-center rounded-sm border bg-white overflow-hidden p-0.5">
+                    <Image
                       src={activeTeam.logo}
                       alt="Logo"
-                      className="size-full object-contain"
+                      fill
+                      className="object-contain"
                     />
                   </div>
                   AEC Profiles

@@ -9,31 +9,31 @@ import { auth } from "@/lib/auth";
 
 const steps = [
   {
-    icon: <Mail className="w-5 h-5" />,
+    icon: Mail,
     title: "Get your college email",
     description:
       "You'll need an active @aec.ac.in email address. Only accounts on the college domain are permitted to access AECFolio.",
   },
   {
-    icon: <UserPlus className="w-5 h-5" />,
+    icon: UserPlus,
     title: "Wait for your account to be created",
     description:
       "Your department faculty advisor will create your AECFolio account. You'll receive an email notification once it's ready — no action needed on your end.",
   },
   {
-    icon: <LogIn className="w-5 h-5" />,
+    icon: LogIn,
     title: "Sign in with Google",
     description:
       "Once your account is set up, sign in using your @aec.ac.in email via Google. No passwords to remember.",
   },
   {
-    icon: <FileText className="w-5 h-5" />,
+    icon: FileText,
     title: "Build your profile",
     description:
       "Fill in your academic history, projects, skills, and internship experience. Your CGPA and academic records will be verified and locked by your faculty advisor.",
   },
   {
-    icon: <Download className="w-5 h-5" />,
+    icon: Download,
     title: "Download your CV in one click",
     description:
       "Pick the sections you want to include, select your experiences and projects, choose a format, and download a clean, department-branded PDF resume.",
@@ -114,7 +114,7 @@ const Home = async () => {
 
         <div className="flex flex-col w-full max-w-md gap-0">
           {steps.map((step, index) => (
-            <div key={index} className="flex gap-4">
+            <div key={step.title} className="flex gap-4">
               {/* Left: number + connector line */}
               <div className="flex flex-col items-center">
                 <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
@@ -129,7 +129,7 @@ const Home = async () => {
               <Card className="bg-background/40 backdrop-blur-sm border-border mb-6 flex-1">
                 <CardContent className="px-3 py-1 flex flex-col gap-2">
                   <div className="flex items-center gap-2 text-foreground">
-                    {step.icon}
+                    <step.icon className="w-5 h-5" />
                     <p className="text-sm font-semibold">{step.title}</p>
                   </div>
                   <p className="text-sm text-foreground/70">
@@ -160,7 +160,7 @@ const Home = async () => {
 
         <div className="flex flex-col w-full max-w-md gap-0">
           {faqs.map((faq, index) => (
-            <div key={index}>
+            <div key={faq.question}>
               <div className="py-5 flex flex-col gap-2">
                 <p className="text-sm font-semibold text-foreground">
                   {faq.question}

@@ -1,11 +1,9 @@
 "use client";
 
 import {
-  BookOpen,
   Camera,
   ExternalLink,
   Link as LinkIcon,
-  Phone,
   Plus,
   Save,
   Trash2,
@@ -21,7 +19,6 @@ import { PageLoader } from "@/components/dashboard/ui/Spinner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
-const BRANCHES = ["CSE", "ETE", "EE", "IE", "ME", "CE", "IPE", "CHE", "CA"];
 const SOCIAL_TYPES = ["LINKEDIN", "GITHUB", "LEETCODE", "CODEFORCES", "OTHER"];
 
 interface ProfileData {
@@ -208,6 +205,7 @@ export default function ProfilePage() {
                 </AvatarFallback>
               </Avatar>
               <button
+                type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
               >
@@ -256,10 +254,14 @@ export default function ProfilePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
             {/* Name (read-only from Google) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="name"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Full Name
               </label>
               <input
+                id="name"
                 type="text"
                 value={data?.name ?? ""}
                 disabled
@@ -272,10 +274,14 @@ export default function ProfilePage() {
 
             {/* Email (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="email"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Email Address
               </label>
               <input
+                id="email"
                 type="email"
                 value={data?.email ?? ""}
                 disabled
@@ -285,10 +291,14 @@ export default function ProfilePage() {
 
             {/* Roll No (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="roll-no"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Roll Number
               </label>
               <input
+                id="roll-no"
                 type="text"
                 value={data?.student?.rollNo ?? "Not assigned"}
                 disabled
@@ -301,10 +311,14 @@ export default function ProfilePage() {
 
             {/* Phone */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="phone"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Phone Number
               </label>
               <input
+                id="phone"
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
@@ -315,9 +329,9 @@ export default function ProfilePage() {
 
             {/* Course (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <p className="block text-sm font-medium text-slate-700 mb-1.5">
                 Course
-              </label>
+              </p>
               <div className="flex gap-2">
                 {COURSES.map((c) => (
                   <span
@@ -336,10 +350,14 @@ export default function ProfilePage() {
 
             {/* Branch (read-only) */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="branch"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Branch
               </label>
               <input
+                id="branch"
                 type="text"
                 value={data?.student?.branch ?? "Not assigned"}
                 disabled
@@ -349,10 +367,14 @@ export default function ProfilePage() {
 
             {/* Current Semester */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="semester"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Current Semester
               </label>
               <select
+                id="semester"
                 value={semester}
                 onChange={(e) => setSemester(Number(e.target.value))}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition bg-white"
@@ -367,10 +389,14 @@ export default function ProfilePage() {
 
             {/* Enrollment enrolled */}
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="enrollment-status"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Enrollment enrolled
               </label>
               <select
+                id="enrollment-status"
                 value={enrolled}
                 onChange={(e) => setEnrolled(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition bg-white"
@@ -382,10 +408,14 @@ export default function ProfilePage() {
 
             {/* Address */}
             <div className="sm:col-span-2">
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="current-address"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Current Address
               </label>
               <textarea
+                id="current-address"
                 value={address}
                 onChange={(e) => setAddress(e.target.value)}
                 rows={2}
@@ -397,10 +427,14 @@ export default function ProfilePage() {
 
           {/* Bio */}
           <div className="mt-5">
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="bio"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Bio / Objective Statement
             </label>
             <textarea
+              id="bio"
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               rows={4}
@@ -430,7 +464,7 @@ export default function ProfilePage() {
             ) : (
               socials.map((s, i) => (
                 <div
-                  key={i}
+                  key={`${s.type}-${s.url}`}
                   className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
                 >
                   <span className="text-slate-400 shrink-0">
@@ -443,6 +477,7 @@ export default function ProfilePage() {
                     {s.url}
                   </span>
                   <button
+                    type="button"
                     className="text-slate-300 hover:text-red-400 transition-colors"
                     onClick={async () => {
                       // Update state immediately for functional UI
@@ -465,10 +500,14 @@ export default function ProfilePage() {
           {/* Add new social */}
           <div className="flex items-end gap-3">
             <div className="w-36">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+              <label
+                htmlFor="platform"
+                className="block text-xs font-medium text-slate-600 mb-1.5"
+              >
                 Platform
               </label>
               <select
+                id="platform"
                 value={newSocialType}
                 onChange={(e) => setNewSocialType(e.target.value)}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm outline-none bg-white focus:border-blue-400"
@@ -481,10 +520,14 @@ export default function ProfilePage() {
               </select>
             </div>
             <div className="flex-1">
-              <label className="block text-xs font-medium text-slate-600 mb-1.5">
+              <label
+                htmlFor="url"
+                className="block text-xs font-medium text-slate-600 mb-1.5"
+              >
                 URL
               </label>
               <input
+                id="url"
                 type="url"
                 value={newSocialUrl}
                 onChange={(e) => setNewSocialUrl(e.target.value)}

@@ -8,7 +8,7 @@ import {
   Trophy,
 } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
 import { Button } from "@/components/dashboard/ui/Button";
@@ -48,6 +48,10 @@ interface FullStudentProfile {
   }[];
 }
 
+type AchievementOrCert =
+  | FullStudentProfile["achievements"][number]
+  | FullStudentProfile["certifications"][number];
+
 export default function FacultyStudentReviewPage({
   params,
 }: {
@@ -63,19 +67,18 @@ export default function FacultyStudentReviewPage({
   } | null>(null);
   const [verifying, setVerifying] = useState(false);
 
-  // Use unwrap to access dynamic params in App Router properly (React.use(params)) if needed, but since we are simple we will just use as is for now. Assuming params is resolvable.
   const studentId = params.studentId;
 
-  const loadData = () => {
+  const loadData = useCallback(() => {
     fetch(`/api/faculty/students/${studentId}`)
       .then((r) => r.json())
       .then((d) => setData(d.student))
       .finally(() => setLoading(false));
-  };
+  }, [studentId]);
 
   useEffect(() => {
     loadData();
-  }, [studentId]);
+  }, [loadData]);
 
   const handleVerify = async () => {
     if (!verifyTarget) return;
@@ -193,48 +196,50 @@ export default function FacultyStudentReviewPage({
             description="Review student credentials"
           />
           <div className="space-y-4">
-            {[...data.achievements, ...data.certifications].map((item: any) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50"
-              >
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {item.title || item.name}
-                  </p>
-                  <p className="text-sm text-slate-500">
-                    {item.description || item.issuer}
-                  </p>
-                </div>
-                <div className="flex items-center gap-4">
-                  {item.proofImage ? (
-                    <a
-                      href={item.proofImage}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-sm text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      <ExternalLink size={14} /> View Proof
-                    </a>
-                  ) : (
-                    <span className="text-sm text-slate-400">
-                      No proof provided
-                    </span>
-                  )}
+            {[...data.achievements, ...data.certifications].map(
+              (item: AchievementOrCert) => (
+                <div
+                  key={item.id}
+                  className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50"
+                >
+                  <div>
+                    <p className="font-medium text-slate-900">
+                      {"title" in item ? item.title : item.name}
+                    </p>
+                    <p className="text-sm text-slate-500">
+                      {"description" in item ? item.description : item.issuer}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-4">
+                    {item.proofImage ? (
+                      <a
+                        href={item.proofImage}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-sm text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <ExternalLink size={14} /> View Proof
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-400">
+                        No proof provided
+                      </span>
+                    )}
 
-                  {/* For MVP we only implemented result verification API, achievement verification can be added similarly */}
-                  {item.verified ? (
-                    <Badge variant="success" icon>
-                      Verified
-                    </Badge>
-                  ) : (
-                    <Badge variant="warning" dot>
-                      Pending
-                    </Badge>
-                  )}
+                    {/* For MVP we only implemented result verification API, achievement verification can be added similarly */}
+                    {item.verified ? (
+                      <Badge variant="success" icon>
+                        Verified
+                      </Badge>
+                    ) : (
+                      <Badge variant="warning" dot>
+                        Pending
+                      </Badge>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ),
+            )}
             {data.achievements.length === 0 &&
               data.certifications.length === 0 && (
                 <p className="text-sm text-slate-500 text-center py-4">

@@ -12,9 +12,8 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
+import { VerificationBadge } from "@/components/dashboard/ui/Badge";
 import { Button } from "@/components/dashboard/ui/Button";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
 import { ConfirmModal, Modal } from "@/components/dashboard/ui/Modal";
 import { Navbar } from "@/components/dashboard/ui/Navbar";
 import { PageLoader } from "@/components/dashboard/ui/Spinner";
@@ -27,6 +26,24 @@ interface Achievement {
   description: string;
   issuer?: string;
   date: string | null;
+  proofImage: string | null;
+  verified: boolean;
+}
+
+interface AchievementResponse {
+  id: string;
+  title: string;
+  date: string | null;
+  proofImage: string | null;
+  verified: boolean;
+  description: string;
+}
+
+interface CertificationResponse {
+  id: string;
+  name: string;
+  issuer: string;
+  issueDate: string | null;
   proofImage: string | null;
   verified: boolean;
 }
@@ -56,20 +73,24 @@ export default function AchievementsPage() {
       fetch("/api/student/certifications").then((r) => r.json()),
     ])
       .then(([achData, certData]) => {
-        const achs = (achData.achievements || []).map((a: any) => ({
-          ...a,
-          type: "achievement",
-        }));
-        const certs = (certData.certifications || []).map((c: any) => ({
-          id: c.id,
-          type: "certification",
-          title: c.name,
-          issuer: c.issuer,
-          date: c.issueDate,
-          proofImage: c.proofImage,
-          verified: c.verified,
-          description: "",
-        }));
+        const achs = (achData.achievements || []).map(
+          (a: AchievementResponse) => ({
+            ...a,
+            type: "achievement",
+          }),
+        );
+        const certs = (certData.certifications || []).map(
+          (c: CertificationResponse) => ({
+            id: c.id,
+            type: "certification",
+            title: c.name,
+            issuer: c.issuer,
+            date: c.issueDate,
+            proofImage: c.proofImage,
+            verified: c.verified,
+            description: "",
+          }),
+        );
         setItems(
           [...achs, ...certs].sort((a, b) => {
             if (!a.date) return 1;
@@ -240,12 +261,14 @@ export default function AchievementsPage() {
                     </h3>
                     <div className="flex gap-1">
                       <button
+                        type="button"
                         onClick={() => openEdit(item)}
                         className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
+                        type="button"
                         onClick={() => setDeleteId(item.id)}
                         className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg"
                       >
@@ -320,12 +343,14 @@ export default function AchievementsPage() {
                     </div>
                     <div className="flex gap-1 shrink-0">
                       <button
+                        type="button"
                         onClick={() => openEdit(item)}
                         className="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg"
                       >
                         <Pencil size={14} />
                       </button>
                       <button
+                        type="button"
                         onClick={() => setDeleteId(item.id)}
                         className="p-1.5 text-slate-400 hover:text-red-500 rounded-lg"
                       >
@@ -375,12 +400,16 @@ export default function AchievementsPage() {
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="entry-title"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               {form.type === "achievement"
                 ? "Achievement Title *"
                 : "Certification Name *"}
             </label>
             <input
+              id="entry-title"
               type="text"
               value={form.title}
               onChange={(e) =>
@@ -398,10 +427,14 @@ export default function AchievementsPage() {
           {form.type === "certification" && (
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="issuer"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Issuer *
                 </label>
                 <input
+                  id="issuer"
                   type="text"
                   value={form.issuer}
                   onChange={(e) =>
@@ -412,10 +445,14 @@ export default function AchievementsPage() {
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-1.5">
+                <label
+                  htmlFor="issue-date"
+                  className="block text-sm font-medium text-slate-700 mb-1.5"
+                >
                   Issue Date
                 </label>
                 <input
+                  id="issue-date"
                   type="date"
                   value={form.date}
                   onChange={(e) =>
@@ -429,10 +466,14 @@ export default function AchievementsPage() {
 
           {form.type === "achievement" && (
             <div>
-              <label className="block text-sm font-medium text-slate-700 mb-1.5">
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-slate-700 mb-1.5"
+              >
                 Description *
               </label>
               <textarea
+                id="description"
                 value={form.description}
                 onChange={(e) =>
                   setForm((f) => ({ ...f, description: e.target.value }))
@@ -445,10 +486,14 @@ export default function AchievementsPage() {
           )}
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 mb-1.5">
+            <label
+              htmlFor="proof-link"
+              className="block text-sm font-medium text-slate-700 mb-1.5"
+            >
               Proof Link / Credential URL
             </label>
             <input
+              id="proof-link"
               type="url"
               value={form.proofImage}
               onChange={(e) =>

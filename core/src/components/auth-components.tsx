@@ -1,6 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { handleSignIn } from "@/lib/actions";
-import { signOut } from "@/lib/auth";
+import { handleSignIn, handleSignOut } from "@/lib/actions";
 
 interface SignInProps {
   extended?: boolean;
@@ -18,12 +17,7 @@ export function SignIn({ extended = false }: SignInProps) {
 
 export function SignOut() {
   return (
-    <form
-      action={async () => {
-        "use server";
-        await signOut();
-      }}
-    >
+    <form action={handleSignOut}>
       <Button type="submit">Sign Out</Button>
     </form>
   );
