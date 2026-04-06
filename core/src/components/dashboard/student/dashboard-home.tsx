@@ -1,24 +1,24 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
-import { Button } from "@/components/dashboard/ui/Button";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
 import {
-  User,
-  Phone,
   BookOpen,
-  Link as LinkIcon,
-  ExternalLink,
-  Save,
-  Plus,
-  Trash2,
   Camera,
+  ExternalLink,
+  Link as LinkIcon,
+  Phone,
+  Plus,
+  Save,
+  Trash2,
+  User,
 } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
 const BRANCHES = ["CSE", "ETE", "EE", "IE", "ME", "CE", "IPE", "CHE", "CA"];

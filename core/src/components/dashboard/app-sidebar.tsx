@@ -1,19 +1,20 @@
 "use client";
-import * as React from "react";
-import { signOut } from "next-auth/react";
 import {
+  Briefcase,
   ChevronRight,
   ChevronsUpDown,
-  LogOut,
-  GraduationCap,
-  Briefcase,
   FileText,
-  User,
+  GraduationCap,
   LayoutDashboard,
-  Trophy,
+  LogOut,
   Settings,
+  Trophy,
+  User,
 } from "lucide-react";
-
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import * as React from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Collapsible,
@@ -44,8 +45,6 @@ import {
   SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
 
 const data = {
   studentNav: [

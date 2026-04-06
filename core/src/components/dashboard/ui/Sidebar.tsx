@@ -1,26 +1,26 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { cn } from "@/lib/utils";
 import {
-  LayoutDashboard,
-  User,
-  GraduationCap,
-  Code2,
-  FolderGit2,
-  Briefcase,
-  Trophy,
-  FileText,
-  Users,
-  Search,
   BarChart3,
+  Briefcase,
   ChevronLeft,
   ChevronRight,
+  Code2,
+  FileText,
+  FolderGit2,
+  GraduationCap,
+  LayoutDashboard,
   LogOut,
+  Search,
+  Trophy,
+  User,
+  Users,
 } from "lucide-react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 type NavItem = {
   label: string;

@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Card } from "@/components/dashboard/ui/Card";
-import { Spinner } from "@/components/ui/spinner";
-import { Badge } from "@/components/dashboard/ui/Badge";
-import { Search, Dot } from "lucide-react";
+import { Dot, Search } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/dashboard/ui/Badge";
+import { Card } from "@/components/dashboard/ui/Card";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 interface StudentListDetails {
   id: string;

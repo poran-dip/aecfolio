@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Button } from "@/components/dashboard/ui/Button";
-import { Modal, ConfirmModal } from "@/components/dashboard/ui/Modal";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Badge } from "@/components/dashboard/ui/Badge";
 import {
   Briefcase,
-  Plus,
-  Pencil,
-  Trash2,
   Building2,
   Calendar,
+  Pencil,
+  Plus,
+  Trash2,
 } from "lucide-react";
-import { formatDate, formatExpType } from "@/lib/utils";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Badge } from "@/components/dashboard/ui/Badge";
+import { Button } from "@/components/dashboard/ui/Button";
+import { ConfirmModal, Modal } from "@/components/dashboard/ui/Modal";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
+import { formatDate, formatExpType } from "@/lib/utils";
 
 interface Experience {
   id: string;

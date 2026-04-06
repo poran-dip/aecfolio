@@ -1,7 +1,3 @@
-import Link from "next/link";
-import Image from "next/image";
-import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import {
   BadgeCheck,
   Briefcase,
@@ -12,6 +8,10 @@ import {
   LogIn,
   Phone,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
 import { SignIn } from "../auth-components";
 
 export function MarketingFooter() {

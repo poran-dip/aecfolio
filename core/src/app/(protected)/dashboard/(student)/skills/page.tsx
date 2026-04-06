@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState, KeyboardEvent } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
-import { Button } from "@/components/dashboard/ui/Button";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Code2, X, Plus, Info } from "lucide-react";
+import { Code2, Info, Plus, X } from "lucide-react";
+import { type KeyboardEvent, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
 
 const SUGGESTED_SKILLS = [
   "Python",

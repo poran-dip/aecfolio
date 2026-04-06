@@ -1,12 +1,12 @@
-import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
+import { SessionProvider } from "next-auth/react";
 import { AppSidebar } from "@/components/dashboard/app-sidebar";
 import {
-  SidebarProvider,
   SidebarInset,
+  SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { SessionProvider } from "next-auth/react";
+import { auth } from "@/lib/auth";
 
 export default async function DashboardLayout({
   children,

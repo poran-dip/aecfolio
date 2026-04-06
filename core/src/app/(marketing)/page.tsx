@@ -1,10 +1,10 @@
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Download, FileText, LogIn, Mail, UserPlus } from "lucide-react";
-import { Separator } from "@/components/ui/separator";
+import Link from "next/link";
 import { SignIn } from "@/components/auth-components";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import { auth } from "@/lib/auth";
 
 const steps = [

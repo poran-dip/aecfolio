@@ -1,20 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card } from "@/components/dashboard/ui/Card";
-import { Button } from "@/components/dashboard/ui/Button";
-import { Modal, ConfirmModal } from "@/components/dashboard/ui/Modal";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
 import {
-  FolderGit2,
-  Plus,
-  Pencil,
-  Trash2,
   ExternalLink,
+  FolderGit2,
+  Pencil,
+  Plus,
+  Trash2,
   X,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Card } from "@/components/dashboard/ui/Card";
+import { ConfirmModal, Modal } from "@/components/dashboard/ui/Modal";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
 
 interface Project {
   id: string;

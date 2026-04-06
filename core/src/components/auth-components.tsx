@@ -1,6 +1,6 @@
-import { signOut } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import { handleSignIn } from "@/lib/actions";
+import { signOut } from "@/lib/auth";
 
 interface SignInProps {
   extended?: boolean;

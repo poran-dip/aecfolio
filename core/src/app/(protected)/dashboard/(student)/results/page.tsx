@@ -1,14 +1,14 @@
 "use client";
 
+import { GraduationCap, Info, Lock, Plus, TrendingUp } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
-import { Button } from "@/components/dashboard/ui/Button";
-import { VerificationBadge } from "@/components/dashboard/ui/Badge";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { GraduationCap, Plus, Lock, TrendingUp, Info } from "lucide-react";
-import { calculateCGPA } from "@/lib/utils";
 import { toast } from "sonner";
+import { VerificationBadge } from "@/components/dashboard/ui/Badge";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
+import { calculateCGPA } from "@/lib/utils";
 
 interface Result {
   id: string;

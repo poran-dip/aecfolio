@@ -1,8 +1,8 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
 import { getStudentForUser } from "@/lib/student";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(
   _req: NextRequest,

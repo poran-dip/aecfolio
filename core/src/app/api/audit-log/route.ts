@@ -1,6 +1,6 @@
+import { type NextRequest, NextResponse } from "next/server";
 import { requireRole } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const { error } = await requireRole(["FACULTY"]);

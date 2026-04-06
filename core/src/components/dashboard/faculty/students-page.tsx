@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card } from "@/components/dashboard/ui/Card";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Badge } from "@/components/dashboard/ui/Badge";
-import { Search, Filter, BookOpen } from "lucide-react";
+import { BookOpen, Filter, Search } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/dashboard/ui/Badge";
+import { Card } from "@/components/dashboard/ui/Card";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
 
 interface StudentListDetails {
   id: string;

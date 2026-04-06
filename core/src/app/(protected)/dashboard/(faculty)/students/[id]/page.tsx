@@ -1,21 +1,21 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Button } from "@/components/dashboard/ui/Button";
-import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
-import { ConfirmModal } from "@/components/dashboard/ui/Modal";
 import {
   ArrowLeft,
   CheckCircle,
+  ExternalLink,
   GraduationCap,
   Trophy,
-  ExternalLink,
 } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { ConfirmModal } from "@/components/dashboard/ui/Modal";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
+import { PageLoader } from "@/components/dashboard/ui/Spinner";
 
 interface FullStudentProfile {
   id: string;

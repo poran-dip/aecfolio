@@ -1,11 +1,11 @@
 "use client";
 
+import { Download, Eye, FileOutput, FileText } from "lucide-react";
 import { useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { Card } from "@/components/dashboard/ui/Card";
-import { Button } from "@/components/dashboard/ui/Button";
-import { FileText, Download, Eye, FileOutput } from "lucide-react";
 import { toast } from "sonner";
+import { Button } from "@/components/dashboard/ui/Button";
+import { Card } from "@/components/dashboard/ui/Card";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
 
 export default function GenCVPage() {
   const [generating, setGenerating] = useState(false);

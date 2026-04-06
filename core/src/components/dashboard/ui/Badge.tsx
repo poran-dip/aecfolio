@@ -1,5 +1,5 @@
+import { AlertCircle, CheckCircle, Clock, Lock, XCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { CheckCircle, Clock, Lock, AlertCircle, XCircle } from "lucide-react";
 
 type BadgeVariant =
   | "success"

@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { SignIn } from "@/components/auth-components";
-import { auth } from "@/lib/auth";
 import ThemeToggle from "@/components/theme-toggle";
+import { Button } from "@/components/ui/button";
+import { auth } from "@/lib/auth";
 
 export const MarketingNavbar = async () => {
   const session = await auth();

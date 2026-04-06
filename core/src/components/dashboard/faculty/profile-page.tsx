@@ -1,10 +1,10 @@
 "use client";
 
+import { Award, Briefcase, Mail, User } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
 import { Card, CardHeader } from "@/components/dashboard/ui/Card";
+import { Navbar } from "@/components/dashboard/ui/Navbar";
 import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { User, Mail, Briefcase, Award } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface FacultyProfile {
