@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { closeBrowser } from "@/lib/puppeteer";
+import { closeBrowser, getBrowser } from "@/lib/puppeteer";
 import cv from "@/routes/cv";
 
 const isProd = process.env.NODE_ENV === "production";
@@ -8,6 +8,12 @@ const isProd = process.env.NODE_ENV === "production";
 const app = new Hono();
 
 app.get("/", (c) => c.text("CV service running"));
+
+app.get("/health", async (c) => {
+  await getBrowser();
+  return c.json({ status: "ok" });
+});
+
 app.route("/cv", cv);
 
 const server = serve(
