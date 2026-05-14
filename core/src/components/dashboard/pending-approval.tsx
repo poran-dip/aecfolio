@@ -14,7 +14,10 @@ export default function PendingApprovalScreen() {
   const [submitted, setSubmitted] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({
-    rollNo: "", course: "", branch: "", semester: "",
+    rollNo: "",
+    course: "",
+    branch: "",
+    semester: "",
   });
 
   const set = (field: string, value: string) =>
@@ -48,9 +51,12 @@ export default function PendingApprovalScreen() {
       <div className="flex min-h-[80vh] items-center justify-center px-4">
         <div className="text-center space-y-4">
           <Badge variant="secondary">Details submitted</Badge>
-          <h1 className="text-2xl font-bold tracking-wide text-foreground">Awaiting approval</h1>
+          <h1 className="text-2xl font-bold tracking-wide text-foreground">
+            Awaiting approval
+          </h1>
           <p className="text-foreground/70">
-            Your details have been submitted. A faculty member will review and approve your account shortly.
+            Your details have been submitted. A faculty member will review and
+            approve your account shortly.
           </p>
         </div>
       </div>
@@ -62,7 +68,9 @@ export default function PendingApprovalScreen() {
       <Card className="w-full p-6 space-y-6">
         <div className="space-y-1">
           <Badge variant="secondary">One last step</Badge>
-          <h1 className="text-xl font-bold text-foreground">Complete your profile</h1>
+          <h1 className="text-xl font-bold text-foreground">
+            Complete your profile
+          </h1>
           <p className="text-sm text-foreground/70">
             Fill in your academic details so faculty can verify your account.
           </p>
@@ -86,7 +94,11 @@ export default function PendingApprovalScreen() {
               className="w-full py-2 px-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition"
             >
               <option value="">Select</option>
-              {COURSES.map((c) => <option key={c} value={c}>{c}</option>)}
+              {COURSES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
             </select>
           </div>
           <div className="space-y-1.5">
@@ -97,7 +109,11 @@ export default function PendingApprovalScreen() {
               className="w-full py-2 px-3 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none transition"
             >
               <option value="">Select</option>
-              {BRANCHES.map((b) => <option key={b} value={b}>{b}</option>)}
+              {BRANCHES.map((b) => (
+                <option key={b} value={b}>
+                  {b}
+                </option>
+              ))}
             </select>
           </div>
           <div className="col-span-2 space-y-1.5">
@@ -109,7 +125,9 @@ export default function PendingApprovalScreen() {
             >
               <option value="">Select</option>
               {Array.from({ length: 8 }, (_, i) => i + 1).map((s) => (
-                <option key={s} value={s}>Semester {s}</option>
+                <option key={s} value={s}>
+                  Semester {s}
+                </option>
               ))}
             </select>
           </div>

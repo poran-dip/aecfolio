@@ -17,23 +17,23 @@ export async function GET(_req: NextRequest) {
           user: true,
           experiences: {
             where: {
-              deletedAt: null
-            }
+              deletedAt: null,
+            },
           },
           projects: {
             where: {
-              deletedAt: null
-            }
+              deletedAt: null,
+            },
           },
           achievements: {
             where: {
-              deletedAt: null
-            }
+              deletedAt: null,
+            },
           },
           certifications: {
             where: {
-              deletedAt: null
-            }
+              deletedAt: null,
+            },
           },
           socials: true,
           results: true,
@@ -45,7 +45,7 @@ export async function GET(_req: NextRequest) {
   if (!user?.student) {
     return NextResponse.json(
       { error: "Student profile not found" },
-      { status: 404 }
+      { status: 404 },
     );
   }
 

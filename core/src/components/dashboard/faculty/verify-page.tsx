@@ -30,9 +30,12 @@ const SINGLE_ENDPOINTS: Record<string, string> = {
 };
 
 const getTypeIcon = (type: string) => {
-  if (type === "Result") return <FileText size={18} className="text-blue-500" />;
-  if (type === "Achievement") return <Award size={18} className="text-purple-500" />;
-  if (type === "Certification") return <FileBadge size={18} className="text-green-500" />;
+  if (type === "Result")
+    return <FileText size={18} className="text-blue-500" />;
+  if (type === "Achievement")
+    return <Award size={18} className="text-purple-500" />;
+  if (type === "Certification")
+    return <FileBadge size={18} className="text-green-500" />;
 };
 
 export default function VerificationPage() {
@@ -56,19 +59,37 @@ export default function VerificationPage() {
 
   const filtered = items.filter((item) => {
     const s = search.toLowerCase();
-    if (s && !(item.student.name ?? "").toLowerCase().includes(s) && !item.student.rollNo.toLowerCase().includes(s)) return false;
+    if (
+      s &&
+      !(item.student.name ?? "").toLowerCase().includes(s) &&
+      !item.student.rollNo.toLowerCase().includes(s)
+    )
+      return false;
     if (typeFilter !== "ALL" && item.type !== typeFilter) return false;
-    if (branchFilter !== "ALL" && item.student.branch !== branchFilter) return false;
+    if (branchFilter !== "ALL" && item.student.branch !== branchFilter)
+      return false;
     return true;
   });
 
-  const branches = Array.from(new Set(items.map((i) => i.student.branch))).sort();
+  const branches = Array.from(
+    new Set(items.map((i) => i.student.branch)),
+  ).sort();
 
   const handleSingleApprove = async (item: PendingItem) => {
-    const res = await fetch(`/api/${SINGLE_ENDPOINTS[item.type]}/${item.id}/verify`, { method: "PATCH" });
-    if (!res.ok) { toast.error("Verification failed"); return; }
+    const res = await fetch(
+      `/api/${SINGLE_ENDPOINTS[item.type]}/${item.id}/verify`,
+      { method: "PATCH" },
+    );
+    if (!res.ok) {
+      toast.error("Verification failed");
+      return;
+    }
     setItems((prev) => prev.filter((i) => i.id !== item.id));
-    setSelected((prev) => { const next = new Set(prev); next.delete(item.id); return next; });
+    setSelected((prev) => {
+      const next = new Set(prev);
+      next.delete(item.id);
+      return next;
+    });
     toast.success("Item verified");
   };
 
@@ -76,7 +97,11 @@ export default function VerificationPage() {
     setBatchVerifying(true);
     try {
       // Group selected ids by type
-      const byType: Record<string, string[]> = { Achievement: [], Certification: [], Result: [] };
+      const byType: Record<string, string[]> = {
+        Achievement: [],
+        Certification: [],
+        Result: [],
+      };
       for (const id of selected) {
         const item = items.find((i) => i.id === id);
         if (item) byType[item.type].push(id);
@@ -90,8 +115,8 @@ export default function VerificationPage() {
               method: "PATCH",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ ids }),
-            })
-          )
+            }),
+          ),
       );
 
       setItems((prev) => prev.filter((i) => !selected.has(i.id)));
@@ -106,7 +131,8 @@ export default function VerificationPage() {
 
   if (loading) return <Spinner />;
 
-  const allFilteredSelected = filtered.length > 0 && filtered.every((i) => selected.has(i.id));
+  const allFilteredSelected =
+    filtered.length > 0 && filtered.every((i) => selected.has(i.id));
 
   return (
     <div className="space-y-6">
@@ -120,20 +146,34 @@ export default function VerificationPage() {
           className="flex-1 pl-4 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
         />
         <div className="flex items-center gap-3">
-          <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}
-            className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+          <select
+            value={typeFilter}
+            onChange={(e) => setTypeFilter(e.target.value)}
+            className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none"
+          >
             <option value="ALL">All Types</option>
             <option value="Result">Results</option>
             <option value="Achievement">Achievements</option>
             <option value="Certification">Certifications</option>
           </select>
-          <select value={branchFilter} onChange={(e) => setBranchFilter(e.target.value)}
-            className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none">
+          <select
+            value={branchFilter}
+            onChange={(e) => setBranchFilter(e.target.value)}
+            className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none"
+          >
             <option value="ALL">All Branches</option>
-            {branches.map((b) => <option key={b} value={b}>{b}</option>)}
+            {branches.map((b) => (
+              <option key={b} value={b}>
+                {b}
+              </option>
+            ))}
           </select>
           {selected.size > 0 && (
-            <Button onClick={handleBatchVerify} disabled={batchVerifying} size="sm">
+            <Button
+              onClick={handleBatchVerify}
+              disabled={batchVerifying}
+              size="sm"
+            >
               {batchVerifying ? <Spinner /> : `Verify (${selected.size})`}
             </Button>
           )}
@@ -144,7 +184,9 @@ export default function VerificationPage() {
         <Card className="text-center py-12">
           <Check className="mx-auto h-12 w-12 text-emerald-500 mb-4" />
           <h3 className="text-lg font-medium text-slate-900">All caught up!</h3>
-          <p className="text-slate-500 mt-2">There are no pending items to verify.</p>
+          <p className="text-slate-500 mt-2">
+            There are no pending items to verify.
+          </p>
         </Card>
       ) : (
         <Card className="overflow-hidden">
@@ -153,8 +195,17 @@ export default function VerificationPage() {
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
                 <tr>
                   <th className="px-6 py-4">
-                    <input type="checkbox" checked={allFilteredSelected}
-                      onChange={(e) => setSelected(e.target.checked ? new Set(filtered.map((i) => i.id)) : new Set())} />
+                    <input
+                      type="checkbox"
+                      checked={allFilteredSelected}
+                      onChange={(e) =>
+                        setSelected(
+                          e.target.checked
+                            ? new Set(filtered.map((i) => i.id))
+                            : new Set(),
+                        )
+                      }
+                    />
                   </th>
                   <th className="px-6 py-4">Item Details</th>
                   <th className="px-6 py-4">Student</th>
@@ -166,12 +217,19 @@ export default function VerificationPage() {
                 {filtered.map((item) => (
                   <tr key={item.id} className="hover:bg-slate-50/50 transition">
                     <td className="px-6 py-4">
-                      <input type="checkbox" checked={selected.has(item.id)}
-                        onChange={(e) => setSelected((prev) => {
-                          const next = new Set(prev);
-                          e.target.checked ? next.add(item.id) : next.delete(item.id);
-                          return next;
-                        })} />
+                      <input
+                        type="checkbox"
+                        checked={selected.has(item.id)}
+                        onChange={(e) =>
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            e.target.checked
+                              ? next.add(item.id)
+                              : next.delete(item.id);
+                            return next;
+                          })
+                        }
+                      />
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-start gap-3">
@@ -179,24 +237,44 @@ export default function VerificationPage() {
                           {getTypeIcon(item.type)}
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900">{item.name}</p>
+                          <p className="font-semibold text-slate-900">
+                            {item.name}
+                          </p>
                           <div className="flex items-center gap-2 mt-1">
-                            <Badge variant={item.type === "Result" ? "default" : "outline"}>{item.type}</Badge>
-                            <span className="text-xs text-slate-500">{item.student.branch}</span>
+                            <Badge
+                              variant={
+                                item.type === "Result" ? "default" : "outline"
+                              }
+                            >
+                              {item.type}
+                            </Badge>
+                            <span className="text-xs text-slate-500">
+                              {item.student.branch}
+                            </span>
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="font-medium text-slate-700 block">{item.student.name}</span>
-                      <span className="text-xs text-slate-500">{item.student.rollNo}</span>
+                      <span className="font-medium text-slate-700 block">
+                        {item.student.name}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {item.student.rollNo}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-slate-600">{new Date(item.createdAt).toLocaleDateString()}</span>
+                      <span className="text-slate-600">
+                        {new Date(item.createdAt).toLocaleDateString()}
+                      </span>
                     </td>
                     <td className="px-6 py-4 text-right">
-                      <button type="button" onClick={() => handleSingleApprove(item)}
-                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition" title="Approve">
+                      <button
+                        type="button"
+                        onClick={() => handleSingleApprove(item)}
+                        className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-lg transition"
+                        title="Approve"
+                      >
                         <Check size={18} />
                       </button>
                     </td>

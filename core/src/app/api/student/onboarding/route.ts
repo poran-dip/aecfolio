@@ -9,19 +9,28 @@ export async function POST(req: NextRequest) {
   const { rollNo, course, branch, semester } = await req.json();
 
   if (!rollNo || !course || !branch || !semester) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 },
+    );
   }
 
   const existing = await prisma.student.findFirst({
     where: { userId: session.user.id },
   });
   if (existing) {
-    return NextResponse.json({ error: "Onboarding already completed" }, { status: 409 });
+    return NextResponse.json(
+      { error: "Onboarding already completed" },
+      { status: 409 },
+    );
   }
 
   const rollConflict = await prisma.student.findUnique({ where: { rollNo } });
   if (rollConflict) {
-    return NextResponse.json({ error: "Roll number already in use" }, { status: 409 });
+    return NextResponse.json(
+      { error: "Roll number already in use" },
+      { status: 409 },
+    );
   }
 
   const student = await prisma.student.create({

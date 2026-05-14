@@ -2,15 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/ui/button";
-import { ProfessionalTemplate } from "@/components/templates/professional/Template";
-import { StudentWithRelations } from "@/types/cv";
 import { templates } from "@/components/templates";
+import { Button } from "@/components/ui/button";
+import type { StudentWithRelations } from "@/types/cv";
 
 export default function GenerateCVPage() {
   const [loading, setLoading] = useState(true);
   const [data, setData] = useState<StudentWithRelations | null>(null);
-  const [templateKey, setTemplateKey] = useState<keyof typeof templates>("professional");
+  const [templateKey, setTemplateKey] =
+    useState<keyof typeof templates>("professional");
   const [generating, setGenerating] = useState(false);
 
   const TemplateComponent = templates[templateKey];
@@ -66,7 +66,7 @@ export default function GenerateCVPage() {
   }
 
   if (!data) {
-    return <div>Error</div>
+    return <div>Error</div>;
   }
 
   return (
@@ -81,37 +81,40 @@ export default function GenerateCVPage() {
           <div className="space-y-3">
             <p className="text-sm font-medium text-slate-700">Template</p>
 
-            {(Object.keys(templates) as Array<keyof typeof templates>).map((key) => {
-              const isActive = key === templateKey;
-              return (
-                <div
-                  key={key}
-                  onClick={() => setTemplateKey(key)}
-                  className={`relative border-2 rounded-xl p-4 cursor-pointer transition
-                    ${isActive
-                      ? "border-blue-500 bg-blue-50"
-                      : "border-slate-200 hover:border-slate-300"
+            {(Object.keys(templates) as Array<keyof typeof templates>).map(
+              (key) => {
+                const isActive = key === templateKey;
+                return (
+                  <div
+                    key={key}
+                    onClick={() => setTemplateKey(key)}
+                    className={`relative border-2 rounded-xl p-4 cursor-pointer transition
+                    ${
+                      isActive
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-slate-200 hover:border-slate-300"
                     }`}
-                >
-                  {isActive && (
-                    <div className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                      ACTIVE
-                    </div>
-                  )}
-                  <div className="flex gap-3 mb-2">
-                    <div className="w-10 h-10 bg-slate-200 rounded border" />
-                    <div>
-                      <h3 className="font-semibold text-sm capitalize">
-                        {key}
-                      </h3>
-                      <p className="text-xs text-slate-600">
-                        {key === "professional" && "Official college layout"}
-                      </p>
+                  >
+                    {isActive && (
+                      <div className="absolute top-2 right-2 bg-blue-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+                        ACTIVE
+                      </div>
+                    )}
+                    <div className="flex gap-3 mb-2">
+                      <div className="w-10 h-10 bg-slate-200 rounded border" />
+                      <div>
+                        <h3 className="font-semibold text-sm capitalize">
+                          {key}
+                        </h3>
+                        <p className="text-xs text-slate-600">
+                          {key === "professional" && "Official college layout"}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              },
+            )}
           </div>
 
           <div className="pt-4 mt-auto border-t border-slate-100">
@@ -121,7 +124,7 @@ export default function GenerateCVPage() {
               onClick={handleDownload}
               disabled={generating}
             >
-              { generating ? "Generating..." : "Download PDF" }
+              {generating ? "Generating..." : "Download PDF"}
             </Button>
           </div>
         </div>

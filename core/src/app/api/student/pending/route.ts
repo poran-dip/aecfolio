@@ -8,7 +8,9 @@ export async function GET() {
 
   const students = await prisma.student.findMany({
     where: { deletedAt: null, user: { role: "PENDING" } },
-    include: { user: { select: { id: true, name: true, email: true, createdAt: true } } },
+    include: {
+      user: { select: { id: true, name: true, email: true, createdAt: true } },
+    },
   });
 
   return NextResponse.json({ students });

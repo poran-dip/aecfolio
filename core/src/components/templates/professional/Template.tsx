@@ -7,9 +7,9 @@ import {
   faMapPin,
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
-import { formatDate } from "@/utils/date";
-import { Props } from "@/types/cv";
 import { iconSvg } from "@/lib/cv-icon";
+import type { Props } from "@/types/cv";
+import { formatDate } from "@/utils/date";
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
@@ -302,7 +302,6 @@ export function ProfessionalTemplate({ data }: Props) {
     <div className="cv-page">
       <style>{css}</style>
       <div className="cv-root">
-
         {/* Header */}
         <div className="cv-header">
           {data.user.image && (
@@ -316,13 +315,18 @@ export function ProfessionalTemplate({ data }: Props) {
           <div className="cv-header-info">
             <h1 className="cv-name">{data.user.name}</h1>
             <div className="cv-subtitle">
-              <span>{data.course} {data.branch}</span>
+              <span>
+                {data.course} {data.branch}
+              </span>
               <span className="cv-dot">·</span>
               <span>Assam Engineering College, Guwahati</span>
             </div>
             <div className="cv-contacts">
               {data.user.email && (
-                <a href={`mailto:${data.user.email}`} className="cv-contact-link">
+                <a
+                  href={`mailto:${data.user.email}`}
+                  className="cv-contact-link"
+                >
                   <span
                     className="cv-contact-icon"
                     dangerouslySetInnerHTML={{
@@ -405,7 +409,10 @@ export function ProfessionalTemplate({ data }: Props) {
               {data.projects.map((project) => (
                 <div key={project.id} className="cv-item">
                   <div className="cv-item-header">
-                    <a href={project.link ?? "#"} className="cv-item-title-link">
+                    <a
+                      href={project.link ?? "#"}
+                      className="cv-item-title-link"
+                    >
                       <span>{project.title}</span>
                       {project.link && (
                         <span
@@ -419,7 +426,9 @@ export function ProfessionalTemplate({ data }: Props) {
                   </div>
                   <p className="cv-item-desc">{project.description}</p>
                   {project.techStack.length > 0 && (
-                    <p className="cv-item-tech">{project.techStack.join(", ")}</p>
+                    <p className="cv-item-tech">
+                      {project.techStack.join(", ")}
+                    </p>
                   )}
                 </div>
               ))}
@@ -557,7 +566,6 @@ export function ProfessionalTemplate({ data }: Props) {
             </div>
           </div>
         )}
-
       </div>
     </div>
   );

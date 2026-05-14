@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import type { Branch, Course } from "@/generated/prisma/client";
 import { requireRole } from "@/lib/api-auth";
 import { createAuditLog } from "@/lib/audit";
 import { prisma } from "@/lib/prisma";
-import type { Branch, Course } from "@/generated/prisma/client";
 
 interface ImportRow {
   name: string;
@@ -18,9 +18,12 @@ export async function POST(req: NextRequest) {
   const { session, error } = await requireRole(["FACULTY"]);
   if (error) return error;
 
-  const { students } = await req.json() as { students: ImportRow[] };
+  const { students } = (await req.json()) as { students: ImportRow[] };
   if (!Array.isArray(students) || students.length === 0)
-    return NextResponse.json({ error: "No students provided" }, { status: 400 });
+    return NextResponse.json(
+      { error: "No students provided" },
+      { status: 400 },
+    );
 
   const results = await Promise.allSettled(
     students.map(async (row) => {
@@ -31,7 +34,8 @@ export async function POST(req: NextRequest) {
       ]);
 
       if (existingUser) throw new Error(`Email already exists: ${row.email}`);
-      if (existingRoll) throw new Error(`Roll number already exists: ${row.rollNo}`);
+      if (existingRoll)
+        throw new Error(`Roll number already exists: ${row.rollNo}`);
 
       const result = await prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
@@ -65,7 +69,7 @@ export async function POST(req: NextRequest) {
       });
 
       return { email: row.email, rollNo: row.rollNo };
-    })
+    }),
   );
 
   const created: string[] = [];

@@ -85,7 +85,12 @@ export default function FacultyDashboard() {
       result = result.filter((stu) => stu.batch === batchFilter);
     if (courseFilter !== "ALL")
       result = result.filter((stu) => stu.course === courseFilter);
-    if (minCgpa) result = result.filter((stu) => stu.cgpa !== null && parseFloat(String(stu.cgpa)) >= parseFloat(minCgpa));
+    if (minCgpa)
+      result = result.filter(
+        (stu) =>
+          stu.cgpa !== null &&
+          parseFloat(String(stu.cgpa)) >= parseFloat(minCgpa),
+      );
     setFiltered(result);
   }, [search, batchFilter, courseFilter, data, minCgpa]);
 
@@ -200,11 +205,15 @@ export default function FacultyDashboard() {
                   <th className="px-6 py-4">
                     <input
                       type="checkbox"
-                      checked={filtered.length > 0 && filtered.every((s) => selected.has(s.id))}
+                      checked={
+                        filtered.length > 0 &&
+                        filtered.every((s) => selected.has(s.id))
+                      }
                       onChange={(e) => {
-                        setSelected(e.target.checked
-                          ? new Set(filtered.map((s) => s.id))
-                          : new Set()
+                        setSelected(
+                          e.target.checked
+                            ? new Set(filtered.map((s) => s.id))
+                            : new Set(),
                         );
                       }}
                     />
@@ -232,19 +241,21 @@ export default function FacultyDashboard() {
                       key={stu.id}
                       className="hover:bg-slate-50/50 transition"
                     >
-                    <td className="px-6 py-4">
-                      <input
-                        type="checkbox"
-                        checked={selected.has(stu.id)}
-                        onChange={(e) => {
-                          setSelected((prev) => {
-                            const next = new Set(prev);
-                            e.target.checked ? next.add(stu.id) : next.delete(stu.id);
-                            return next;
-                          });
-                        }}
-                      />
-                    </td>
+                      <td className="px-6 py-4">
+                        <input
+                          type="checkbox"
+                          checked={selected.has(stu.id)}
+                          onChange={(e) => {
+                            setSelected((prev) => {
+                              const next = new Set(prev);
+                              e.target.checked
+                                ? next.add(stu.id)
+                                : next.delete(stu.id);
+                              return next;
+                            });
+                          }}
+                        />
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="font-semibold text-slate-900">

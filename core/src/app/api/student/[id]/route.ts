@@ -71,7 +71,9 @@ export async function PATCH(
       ...(semester !== undefined && { semester: parseInt(semester, 10) }),
       ...(bio !== undefined && { bio }),
       ...(skills !== undefined && { skills }),
-      ...(cgpa !== undefined && { cgpa: cgpa === "" ? null : parseFloat(cgpa) }),
+      ...(cgpa !== undefined && {
+        cgpa: cgpa === "" ? null : parseFloat(cgpa),
+      }),
     },
   });
 

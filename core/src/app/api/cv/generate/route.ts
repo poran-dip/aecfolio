@@ -6,7 +6,8 @@ import { requireRole } from "@/lib/api-auth";
 const ReactDOMServer = await import("react-dom/server");
 export const runtime = "nodejs";
 
-const PDF_SERVICE_URL = process.env.CV_SERVICE_URL ?? "http://localhost:3001/cv";
+const PDF_SERVICE_URL =
+  process.env.CV_SERVICE_URL ?? "http://localhost:3001/cv";
 
 export async function POST(req: NextRequest) {
   try {
@@ -49,7 +50,7 @@ export async function POST(req: NextRequest) {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${session.user.name}_resume.pdf"`
+        "Content-Disposition": `attachment; filename="${session.user.name}_resume.pdf"`,
       },
     });
   } catch (e) {

@@ -2,15 +2,14 @@ import { type NextRequest, NextResponse } from "next/server";
 import React from "react";
 import { templates } from "@/components/templates";
 import { requireRole } from "@/lib/api-auth";
-import { StudentWithRelations } from "@/types/cv";
+import type { StudentWithRelations } from "@/types/cv";
 
 const ReactDOMServer = await import("react-dom/server");
 export const runtime = "nodejs";
 
-const PDF_SERVICE_BULK_URL =
-  process.env.CV_SERVICE_URL
-    ? `${process.env.CV_SERVICE_URL}/bulk`
-    : "http://localhost:3001/cv/bulk";
+const PDF_SERVICE_BULK_URL = process.env.CV_SERVICE_URL
+  ? `${process.env.CV_SERVICE_URL}/bulk`
+  : "http://localhost:3001/cv/bulk";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +17,10 @@ export async function POST(req: NextRequest) {
     if (error) return error;
 
     const body = await req.json();
-    const { template, data } = body as { template: string; data: StudentWithRelations[] };
+    const { template, data } = body as {
+      template: string;
+      data: StudentWithRelations[];
+    };
 
     const Template = templates[template as keyof typeof templates];
     if (!Template) {
@@ -26,7 +28,10 @@ export async function POST(req: NextRequest) {
     }
 
     if (!Array.isArray(data) || data.length === 0) {
-      return NextResponse.json({ error: "Missing or empty data" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing or empty data" },
+        { status: 400 },
+      );
     }
 
     const entries = data.map((d) => {
@@ -45,7 +50,10 @@ export async function POST(req: NextRequest) {
     });
 
     if (!pdfResponse.ok) {
-      return NextResponse.json({ error: "Failed to generate PDFs" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Failed to generate PDFs" },
+        { status: 500 },
+      );
     }
 
     const zipBuffer = await pdfResponse.arrayBuffer();
@@ -59,6 +67,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (e) {
     console.error(e);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 },
+    );
   }
 }

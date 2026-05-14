@@ -73,7 +73,7 @@ const data = {
       icon: Briefcase,
       items: [
         { title: "Pending Users", url: "/faculty/users" },
-        { title: "Bulk Import", url: "/faculty/import" }
+        { title: "Bulk Import", url: "/faculty/import" },
       ],
     },
     {

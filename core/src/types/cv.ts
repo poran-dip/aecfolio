@@ -1,4 +1,13 @@
-import { Achievement, Certification, Experience, Project, Result, Social, Student, User } from "@/generated/prisma/client";
+import type {
+  Achievement,
+  Certification,
+  Experience,
+  Project,
+  Result,
+  Social,
+  Student,
+  User,
+} from "@/generated/prisma/client";
 
 export type CVTemplate = "professional-theme";
 

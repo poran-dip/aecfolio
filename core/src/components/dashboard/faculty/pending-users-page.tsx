@@ -7,8 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 import {
-  Table, TableBody, TableCell, TableHead,
-  TableHeader, TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 
 interface PendingStudent {
@@ -26,8 +30,14 @@ type EditableField = "rollNo" | "course" | "branch" | "semester" | "cgpa";
 const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
 const BRANCHES = ["CSE", "ETE", "EE", "IE", "ME", "CE", "IPE", "CHE", "CA"];
 
-function InlineSelect({ value, options, onChange }: {
-  value: string; options: string[]; onChange: (v: string) => void;
+function InlineSelect({
+  value,
+  options,
+  onChange,
+}: {
+  value: string;
+  options: string[];
+  onChange: (v: string) => void;
 }) {
   return (
     <select
@@ -35,13 +45,23 @@ function InlineSelect({ value, options, onChange }: {
       onChange={(e) => onChange(e.target.value)}
       className="w-full py-1 px-2 border border-slate-200 rounded text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none"
     >
-      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+      {options.map((o) => (
+        <option key={o} value={o}>
+          {o}
+        </option>
+      ))}
     </select>
   );
 }
 
-function InlineInput({ value, type = "text", onChange }: {
-  value: string; type?: string; onChange: (v: string) => void;
+function InlineInput({
+  value,
+  type = "text",
+  onChange,
+}: {
+  value: string;
+  type?: string;
+  onChange: (v: string) => void;
 }) {
   return (
     <input
@@ -55,7 +75,9 @@ function InlineInput({ value, type = "text", onChange }: {
 
 export default function PendingUsersPage() {
   const [students, setStudents] = useState<PendingStudent[]>([]);
-  const [edits, setEdits] = useState<Record<string, Partial<Record<EditableField, string>>>>({});
+  const [edits, setEdits] = useState<
+    Record<string, Partial<Record<EditableField, string>>>
+  >({});
   const [saving, setSaving] = useState<Record<string, boolean>>({});
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [approving, setApproving] = useState(false);
@@ -73,17 +95,26 @@ export default function PendingUsersPage() {
 
   const filtered = students.filter((s) => {
     const q = search.toLowerCase();
-    return !q ||
+    return (
+      !q ||
       (s.user.name ?? "").toLowerCase().includes(q) ||
       s.user.email.toLowerCase().includes(q) ||
-      s.rollNo.toLowerCase().includes(q);
+      s.rollNo.toLowerCase().includes(q)
+    );
   });
 
   const getField = (s: PendingStudent, field: EditableField): string => {
-    return edits[s.id]?.[field] ?? String(field === "cgpa" ? (s.cgpa ?? "") : s[field]);
+    return (
+      edits[s.id]?.[field] ??
+      String(field === "cgpa" ? (s.cgpa ?? "") : s[field])
+    );
   };
 
-  const handleEdit = (studentId: string, field: EditableField, value: string) => {
+  const handleEdit = (
+    studentId: string,
+    field: EditableField,
+    value: string,
+  ) => {
     setEdits((prev) => ({
       ...prev,
       [studentId]: { ...prev[studentId], [field]: value },
@@ -114,7 +145,10 @@ export default function PendingUsersPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ids: Array.from(selected) }),
       });
-      if (!res.ok) { toast.error("Approval failed"); return; }
+      if (!res.ok) {
+        toast.error("Approval failed");
+        return;
+      }
       setStudents((prev) => prev.filter((s) => !selected.has(s.id)));
       setSelected(new Set());
       toast.success(`${selected.size} student(s) approved`);
@@ -123,7 +157,8 @@ export default function PendingUsersPage() {
     }
   };
 
-  const allSelected = filtered.length > 0 && filtered.every((s) => selected.has(s.id));
+  const allSelected =
+    filtered.length > 0 && filtered.every((s) => selected.has(s.id));
 
   if (loading) return <Spinner />;
 
@@ -132,7 +167,10 @@ export default function PendingUsersPage() {
       {/* Toolbar */}
       <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={18}
+          />
           <input
             type="text"
             placeholder="Search by name, email or roll number..."
@@ -158,7 +196,11 @@ export default function PendingUsersPage() {
                     type="checkbox"
                     checked={allSelected}
                     onChange={(e) =>
-                      setSelected(e.target.checked ? new Set(filtered.map((s) => s.id)) : new Set())
+                      setSelected(
+                        e.target.checked
+                          ? new Set(filtered.map((s) => s.id))
+                          : new Set(),
+                      )
                     }
                   />
                 </TableHead>
@@ -175,50 +217,84 @@ export default function PendingUsersPage() {
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="py-12 text-center text-slate-500">
+                  <TableCell
+                    colSpan={9}
+                    className="py-12 text-center text-slate-500"
+                  >
                     No pending students.
                   </TableCell>
                 </TableRow>
-              ) : filtered.map((s) => (
-                <TableRow key={s.id}>
-                  <TableCell>
-                    <input
-                      type="checkbox"
-                      checked={selected.has(s.id)}
-                      onChange={(e) => setSelected((prev) => {
-                        const next = new Set(prev);
-                        e.target.checked ? next.add(s.id) : next.delete(s.id);
-                        return next;
+              ) : (
+                filtered.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell>
+                      <input
+                        type="checkbox"
+                        checked={selected.has(s.id)}
+                        onChange={(e) =>
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            e.target.checked
+                              ? next.add(s.id)
+                              : next.delete(s.id);
+                            return next;
+                          })
+                        }
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <span className="font-medium text-slate-900 block">
+                        {s.user.name ?? "—"}
+                      </span>
+                      <span className="text-xs text-slate-500">
+                        {s.user.email}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <InlineInput
+                        value={getField(s, "rollNo")}
+                        onChange={(v) => handleEdit(s.id, "rollNo", v)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <InlineSelect
+                        value={getField(s, "course")}
+                        options={COURSES}
+                        onChange={(v) => handleEdit(s.id, "course", v)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <InlineSelect
+                        value={getField(s, "branch")}
+                        options={BRANCHES}
+                        onChange={(v) => handleEdit(s.id, "branch", v)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <InlineInput
+                        type="number"
+                        value={getField(s, "semester")}
+                        onChange={(v) => handleEdit(s.id, "semester", v)}
+                      />
+                    </TableCell>
+                    <TableCell>
+                      <InlineInput
+                        type="number"
+                        value={getField(s, "cgpa")}
+                        onChange={(v) => handleEdit(s.id, "cgpa", v)}
+                      />
+                    </TableCell>
+                    <TableCell className="text-slate-500 text-xs">
+                      {new Date(s.user.createdAt).toLocaleDateString("en-IN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
                       })}
-                    />
-                  </TableCell>
-                  <TableCell>
-                    <span className="font-medium text-slate-900 block">{s.user.name ?? "—"}</span>
-                    <span className="text-xs text-slate-500">{s.user.email}</span>
-                  </TableCell>
-                  <TableCell>
-                    <InlineInput value={getField(s, "rollNo")} onChange={(v) => handleEdit(s.id, "rollNo", v)} />
-                  </TableCell>
-                  <TableCell>
-                    <InlineSelect value={getField(s, "course")} options={COURSES} onChange={(v) => handleEdit(s.id, "course", v)} />
-                  </TableCell>
-                  <TableCell>
-                    <InlineSelect value={getField(s, "branch")} options={BRANCHES} onChange={(v) => handleEdit(s.id, "branch", v)} />
-                  </TableCell>
-                  <TableCell>
-                    <InlineInput type="number" value={getField(s, "semester")} onChange={(v) => handleEdit(s.id, "semester", v)} />
-                  </TableCell>
-                  <TableCell>
-                    <InlineInput type="number" value={getField(s, "cgpa")} onChange={(v) => handleEdit(s.id, "cgpa", v)} />
-                  </TableCell>
-                  <TableCell className="text-slate-500 text-xs">
-                    {new Date(s.user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                  </TableCell>
-                  <TableCell>
-                    {saving[s.id] && <Spinner />}
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>{saving[s.id] && <Spinner />}</TableCell>
+                  </TableRow>
+                ))
+              )}
             </TableBody>
           </Table>
         </CardContent>

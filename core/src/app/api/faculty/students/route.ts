@@ -43,7 +43,7 @@ export async function POST(req: Request) {
   const { error } = await requireRole(["FACULTY"]);
   if (error) return error;
 
-  const { ids } = await req.json() as { ids: string[] };
+  const { ids } = (await req.json()) as { ids: string[] };
   if (!Array.isArray(ids) || ids.length === 0)
     return NextResponse.json({ error: "Missing ids" }, { status: 400 });
 
@@ -63,6 +63,9 @@ export async function POST(req: Request) {
     return NextResponse.json({ students });
   } catch (err) {
     console.error(err);
-    return NextResponse.json({ error: "Failed to fetch students" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch students" },
+      { status: 500 },
+    );
   }
 }
