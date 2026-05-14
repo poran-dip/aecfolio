@@ -8,9 +8,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   providers: [Google],
   session: { strategy: "jwt" },
   callbacks: {
+    /*
     async signIn({ user }) {
       return user.email?.endsWith("@aec.ac.in") ?? false;
     },
+    */
     async jwt({ token, user }) {
       if (user) {
         token.name = user.name;
