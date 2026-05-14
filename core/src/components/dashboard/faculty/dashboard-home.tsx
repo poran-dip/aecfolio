@@ -3,8 +3,8 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Badge } from "@/components/dashboard/ui/Badge";
-import { Card } from "@/components/dashboard/ui/Card";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 
@@ -145,7 +145,7 @@ export default function FacultyDashboard() {
         </div>
 
         {/* Student List */}
-        <Card padding="none" className="overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
@@ -200,18 +200,18 @@ export default function FacultyDashboard() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {stu.unverifiedResults > 0 && (
-                            <Badge variant="warning" dot>
+                            <Badge>
                               {stu.unverifiedResults} Res
                             </Badge>
                           )}
                           {stu.unverifiedAchievements > 0 && (
-                            <Badge variant="warning" dot>
+                            <Badge>
                               {stu.unverifiedAchievements} Achv
                             </Badge>
                           )}
                           {stu.unverifiedResults === 0 &&
                             stu.unverifiedAchievements === 0 && (
-                              <Badge variant="success" icon>
+                              <Badge variant="secondary">
                                 Up to date
                               </Badge>
                             )}

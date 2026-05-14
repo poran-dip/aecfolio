@@ -1,12 +1,12 @@
 "use client";
 
-import { Badge } from "./ui/Badge";
+import { Badge } from "@/components/ui/badge";
 
 export default function PendingApprovalScreen() {
   return (
     <div className="flex min-h-[80vh] items-center justify-center px-4">
       <div className="max-w-md text-center space-y-4">
-        <Badge variant="warning">Awaiting approval</Badge>
+        <Badge variant="secondary">Awaiting approval</Badge>
 
         <h1 className="text-2xl font-bold tracking-wide text-foreground">
           Pending account approval

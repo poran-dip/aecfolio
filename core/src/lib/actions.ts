@@ -3,7 +3,9 @@
 import { signIn, signOut } from "@/lib/auth";
 
 export async function handleSignIn() {
-  await signIn("google");
+  await signIn("google", {
+    redirectTo: "/dashboard",
+  });
 }
 
 export async function handleSignOut() {
