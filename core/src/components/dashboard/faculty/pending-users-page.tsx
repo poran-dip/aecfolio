@@ -1,9 +1,9 @@
 "use client";
 
-import { Clock, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -70,7 +70,7 @@ const INITIAL_FACULTY: FacultyForm = {
   department: "",
 };
 
-export default function PendingApprovalsPage() {
+export default function PendingUsersPage() {
   const [data, setData] = useState<PendingUser[]>([]);
   const [filtered, setFiltered] = useState<PendingUser[]>([]);
   const [loading, setLoading] = useState(true);
@@ -175,41 +175,21 @@ export default function PendingApprovalsPage() {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-slate-900">Pending Approvals</h1>
-        <p className="text-sm text-slate-500 mt-1">
-          Assign roles to newly registered users
-        </p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-slate-500">
-              Awaiting Assignment
-            </CardTitle>
-            <Clock size={18} className="text-yellow-500" />
-          </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold text-slate-900">{data.length}</p>
-          </CardContent>
-        </Card>
-      </div>
-
+    <div className="space-y-6">
       {/* Search */}
-      <div className="relative">
-        <Search
-          className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-          size={16}
-        />
-        <Input
-          placeholder="Search by name or email..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+      <div className="flex flex-col sm:flex-row gap-4 mb-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="relative flex-1">
+          <Search
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+            size={18}
+          />
+          <Input
+            placeholder="Search by name or roll number..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10 bg-muted/50 focus:bg-background transition-colors"
+          />
+        </div>
       </div>
 
       {/* Table */}

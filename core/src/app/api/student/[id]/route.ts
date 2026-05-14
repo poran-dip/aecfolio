@@ -14,7 +14,20 @@ export async function GET(
 
   const student = await prisma.student.findFirst({
     where: { id, deletedAt: null },
-    include: { user: true },
+    include: {
+      user: { select: { name: true, email: true, image: true } },
+      results: {
+        orderBy: { semester: "asc" },
+      },
+      achievements: {
+        where: { deletedAt: null },
+        orderBy: { createdAt: "desc" },
+      },
+      certifications: {
+        where: { deletedAt: null },
+        orderBy: { createdAt: "desc" },
+      },
+    },
   });
 
   if (!student) {

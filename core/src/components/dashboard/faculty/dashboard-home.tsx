@@ -65,7 +65,7 @@ export default function FacultyDashboard() {
 
   return (
     <div>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="relative p-4">
             {pendingOverall > 0 && (
@@ -81,7 +81,7 @@ export default function FacultyDashboard() {
             <div className="flex items-end justify-between">
               <p className="text-2xl font-bold">{pendingOverall}</p>
               <Button variant="secondary" size="sm" asChild>
-                <Link href="/dashboard/verify/results">Review & Verify</Link>
+                <Link href="/faculty/verify">Review & Verify</Link>
               </Button>
             </div>
           </Card>
@@ -99,7 +99,7 @@ export default function FacultyDashboard() {
             <div className="flex items-end justify-between">
               <p className="text-2xl font-bold">{pendingUsers}</p>
               <Button variant="secondary" size="sm" asChild>
-                <Link href="/dashboard/pending">Review & Approve</Link>
+                <Link href="/faculty/users">Review & Approve</Link>
               </Button>
             </div>
           </Card>

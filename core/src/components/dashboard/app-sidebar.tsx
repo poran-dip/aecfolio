@@ -7,7 +7,6 @@ import {
   GraduationCap,
   LogOut,
   Settings,
-  Trophy,
   User,
 } from "lucide-react";
 import Image from "next/image";
@@ -79,36 +78,27 @@ const data = {
   facultyNav: [
     {
       title: "Students",
-      url: "/dashboard",
+      url: "/faculty",
       icon: GraduationCap,
       isActive: true,
-      items: [{ title: "All Students", url: "/dashboard" }],
-    },
-    {
-      title: "Verify",
-      url: "/dashboard/verify",
-      icon: Trophy,
-      isActive: true,
       items: [
-        { title: "Results", url: "/dashboard/verify/results" },
-        { title: "Achievements", url: "/dashboard/verify/achievements" },
-        { title: "Certifications", url: "/dashboard/verify/certifications" },
+        { title: "All Students", url: "/faculty" },
+        { title: "Verification Queue", url: "/faculty/verify" }
       ],
     },
     {
-      title: "Administration",
-      url: "/dashboard/faculty",
+      title: "Users",
+      url: "/faculty/users",
       icon: Briefcase,
       items: [
-        { title: "Faculty", url: "/dashboard/faculty" },
-        { title: "Pending Users", url: "/dashboard/pending" },
+        { title: "Pending Users", url: "/faculty/users" },
       ],
     },
     {
       title: "Account",
-      url: "/dashboard/settings",
+      url: "/faculty/profile",
       icon: Settings,
-      items: [{ title: "Edit Profile", url: "/dashboard/settings" }],
+      items: [{ title: "Profile", url: "/faculty/profile" }],
     },
   ],
 };
@@ -223,7 +213,7 @@ export function AppSidebar({
               <Collapsible
                 key={item.title}
                 asChild
-                defaultOpen={item.isActive}
+                defaultOpen={item.items?.some((subItem) => pathname === subItem.url)}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>

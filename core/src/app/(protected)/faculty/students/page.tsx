@@ -1,5 +1,5 @@
-import StudentsDirectoryPage from "@/components/dashboard/faculty/students-page";
+import { useRouter } from "next/navigation";
 
-export default function Page() {
-  return <StudentsDirectoryPage />;
-}
+const router = useRouter();
+
+router.push("/dashboard");

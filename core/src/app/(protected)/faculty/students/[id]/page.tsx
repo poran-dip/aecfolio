@@ -2,29 +2,32 @@
 
 import {
   ArrowLeft,
-  CheckCircle,
+  Check,
+  Clock,
   ExternalLink,
-  GraduationCap,
-  Trophy,
 } from "lucide-react";
-import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { use, useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Badge, VerificationBadge } from "@/components/dashboard/ui/Badge";
-import { Button } from "@/components/dashboard/ui/Button";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
-import { ConfirmModal } from "@/components/dashboard/ui/Modal";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Spinner } from "@/components/ui/spinner";
+import Link from "next/link";
+import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from "@/components/ui/table";
 
 interface FullStudentProfile {
   id: string;
-  name: string;
   rollNo: string;
   course: string;
   branch: string;
   semester: number;
   cgpa: number;
+  user: {
+    name: string;
+    email: string;
+    image: string | null;
+  };
   results: {
     id: string;
     semester: number;
@@ -55,26 +58,25 @@ type AchievementOrCert =
 export default function FacultyStudentReviewPage({
   params,
 }: {
-  params: { studentId: string };
+  params: Promise<{ id: string }>;
 }) {
   const [data, setData] = useState<FullStudentProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Verification states
   const [verifyTarget, setVerifyTarget] = useState<{
     id: string;
     type: "result" | "achievement" | "cert";
   } | null>(null);
   const [verifying, setVerifying] = useState(false);
 
-  const studentId = params.studentId;
+  const { id } = use(params);
 
   const loadData = useCallback(() => {
-    fetch(`/api/faculty/students/${studentId}`)
+    fetch(`/api/student/${id}`)
       .then((r) => r.json())
-      .then((d) => setData(d.student))
+      .then((d) => setData(d))
       .finally(() => setLoading(false));
-  }, [studentId]);
+  }, [id]);
 
   useEffect(() => {
     loadData();
@@ -86,16 +88,16 @@ export default function FacultyStudentReviewPage({
 
     let url = "";
     if (verifyTarget.type === "result")
-      url = `/api/faculty/results/${verifyTarget.id}/verify`;
+      url = `/api/faculty/result/${verifyTarget.id}/verify`;
     else if (verifyTarget.type === "achievement")
-      url = `/api/faculty/achievements/${verifyTarget.id}/verify`; // Future expansion
-    else url = `/api/faculty/cert/${verifyTarget.id}/verify`; // Future expansion
+      url = `/api/faculty/achievement/${verifyTarget.id}/verify`;
+    else url = `/api/faculty/certification/${verifyTarget.id}/verify`;
 
     try {
       const res = await fetch(url, { method: "POST" });
       if (res.ok) {
         toast.success("Record verified and locked successfully!");
-        loadData(); // Reload to reflect changes
+        loadData();
       } else {
         toast.error("Failed to verify record.");
       }
@@ -107,100 +109,103 @@ export default function FacultyStudentReviewPage({
     }
   };
 
-  if (loading || !data) return <PageLoader />;
+  if (loading || !data) return <Spinner />;
 
   return (
     <div>
-      <Navbar
-        title={`Reviewing: ${data.name}`}
-        subtitle={`${data.rollNo} · ${data.course} ${data.branch} · Sem ${data.semester}`}
-        actions={
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center gap-4">
           <Link href="/faculty">
-            <Button variant="outline" size="sm" icon={<ArrowLeft size={16} />}>
-              Back to Student List
+            <Button variant="outline" size="sm">
+              <ArrowLeft size={16} />
             </Button>
           </Link>
-        }
-      />
+          <div>
+            <h1 className="font-semibold text-slate-800">
+              {data.user.name}
+            </h1>
+            <p className="text-sm text-slate-500">
+              {data.rollNo} · {data.course} {data.branch} · Sem {data.semester}
+            </p>
+          </div>
+        </div>
 
-      <div className="p-6 max-w-4xl mx-auto space-y-8">
+        {/* Results */}
         <Card>
-          <CardHeader
-            title="Academic Results"
-            icon={<GraduationCap size={18} />}
-            description="Review and lock SGPA records"
-          />
-          <div className="border border-slate-200 rounded-xl overflow-hidden">
-            <table className="w-full text-sm text-left">
-              <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
-                <tr>
-                  <th className="px-6 py-3">Semester</th>
-                  <th className="px-6 py-3">Reported SGPA</th>
-                  <th className="px-6 py-3">Status</th>
-                  <th className="px-6 py-3 text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
+          <CardHeader>
+            <CardTitle>Academic Results</CardTitle>
+            <CardDescription>Review and lock SGPA records</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Semester</TableHead>
+                  <TableHead>Reported SGPA</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {data.results.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={4}
-                      className="px-6 py-8 text-center text-slate-500"
-                    >
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center text-slate-500 py-8">
                       No results reported yet.
-                    </td>
-                  </tr>
+                    </TableCell>
+                  </TableRow>
                 ) : (
                   data.results.map((res) => (
-                    <tr key={res.id}>
-                      <td className="px-6 py-4 font-medium">
-                        Semester {res.semester}
-                      </td>
-                      <td className="px-6 py-4 text-lg font-bold">
-                        {res.sgpa.toFixed(2)}
-                      </td>
-                      <td className="px-6 py-4">
-                        <VerificationBadge verified={res.verified} />
-                      </td>
-                      <td className="px-6 py-4 text-right">
+                    <TableRow key={res.id}>
+                      <TableCell className="font-medium">Semester {res.semester}</TableCell>
+                      <TableCell className="text-lg font-bold">{res.sgpa.toFixed(2)}</TableCell>
+                      <TableCell>
+                        {res.verified ? (
+                          <Badge variant="default" className="gap-1">
+                            <Check size={11} /> Verified
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="gap-1">
+                            <Clock size={11} /> Pending
+                          </Badge>
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right">
                         {res.verified ? (
                           <span className="text-xs text-slate-400">
-                            Locked on{" "}
-                            {new Date(res.verifiedAt).toLocaleDateString()}
+                            Locked on {new Date(res.verifiedAt).toLocaleDateString()}
                           </span>
                         ) : (
                           <Button
                             size="sm"
-                            variant="primary"
-                            onClick={() =>
-                              setVerifyTarget({ id: res.id, type: "result" })
-                            }
-                            icon={<CheckCircle size={14} />}
+                            onClick={() => setVerifyTarget({ id: res.id, type: "result" })}
                           >
                             Verify & Lock
                           </Button>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   ))
                 )}
-              </tbody>
-            </table>
-          </div>
+              </TableBody>
+            </Table>
+          </CardContent>
         </Card>
 
+        {/* Achievements & Certifications */}
         <Card>
-          <CardHeader
-            title="Achievements & Certifications"
-            icon={<Trophy size={18} />}
-            description="Review student credentials"
-          />
-          <div className="space-y-4">
-            {[...data.achievements, ...data.certifications].map(
-              (item: AchievementOrCert) => (
+          <CardHeader>
+            <CardTitle>Achievements & Certifications</CardTitle>
+            <CardDescription>Review student credentials</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {data.achievements.length === 0 && data.certifications.length === 0 ? (
+              <p className="text-sm text-slate-500 text-center py-4">No achievements logged.</p>
+            ) : (
+              [...data.achievements, ...data.certifications].map((item: AchievementOrCert) => (
                 <div
                   key={item.id}
-                  className="flex items-center justify-between p-4 border border-slate-200 rounded-xl bg-slate-50/50"
+                  className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-slate-50/50"
                 >
                   <div>
                     <p className="font-medium text-slate-900">
@@ -210,7 +215,7 @@ export default function FacultyStudentReviewPage({
                       {"description" in item ? item.description : item.issuer}
                     </p>
                   </div>
-                  <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-3">
                     {item.proofImage ? (
                       <a
                         href={item.proofImage}
@@ -221,45 +226,43 @@ export default function FacultyStudentReviewPage({
                         <ExternalLink size={14} /> View Proof
                       </a>
                     ) : (
-                      <span className="text-sm text-slate-400">
-                        No proof provided
-                      </span>
+                      <span className="text-sm text-slate-400">No proof</span>
                     )}
-
-                    {/* For MVP we only implemented result verification API, achievement verification can be added similarly */}
                     {item.verified ? (
-                      <Badge variant="success" icon>
-                        Verified
+                      <Badge variant="default" className="gap-1">
+                        <Check size={11} /> Verified
                       </Badge>
                     ) : (
-                      <Badge variant="warning" dot>
-                        Pending
+                      <Badge variant="secondary" className="gap-1">
+                        <Clock size={11} /> Pending
                       </Badge>
                     )}
                   </div>
                 </div>
-              ),
+              ))
             )}
-            {data.achievements.length === 0 &&
-              data.certifications.length === 0 && (
-                <p className="text-sm text-slate-500 text-center py-4">
-                  No achievements logged.
-                </p>
-              )}
-          </div>
+          </CardContent>
         </Card>
       </div>
 
-      <ConfirmModal
-        open={!!verifyTarget}
-        onClose={() => setVerifyTarget(null)}
-        onConfirm={handleVerify}
-        title="Confirm Verification"
-        message="Are you sure you want to verify and lock this record? Once locked, the student will no longer be able to edit or delete it. Please ensure you have cross-checked the data."
-        confirmLabel="Yes, Verify & Lock"
-        confirmVariant="primary"
-        loading={verifying}
-      />
+      <Dialog open={!!verifyTarget} onOpenChange={(open) => !open && setVerifyTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Verification</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to verify and lock this record? Once locked, the student will no longer be able to edit or delete it. Please ensure you have cross-checked the data.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setVerifyTarget(null)} disabled={verifying}>
+              Cancel
+            </Button>
+            <Button onClick={handleVerify} disabled={verifying}>
+              {verifying ? "Verifying..." : "Yes, Verify & Lock"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
