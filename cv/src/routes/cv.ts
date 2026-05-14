@@ -1,7 +1,8 @@
 import { Hono } from "hono";
+import JSZip from "jszip";
 import { generateCV } from "@/lib/generator";
 import { queue } from "@/lib/queue";
-import type { Payload } from "@/types";
+import type { BulkPayload, Payload } from "@/types";
 
 const cv = new Hono();
 
@@ -40,6 +41,47 @@ cv.post("/", async (c) => {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="resume.pdf"`,
+    },
+  });
+});
+
+cv.post("/bulk", async (c) => {
+  let body: BulkPayload;
+  try {
+    body = await c.req.json<BulkPayload>();
+  } catch {
+    return c.json({ error: "Invalid JSON" }, 400);
+  }
+
+  if (!Array.isArray(body.entries) || body.entries.length === 0) {
+    return c.json({ error: "Missing or empty entries" }, 400);
+  }
+
+  let pdfs: { name: string; buffer: Buffer }[];
+  try {
+    pdfs = await Promise.all(
+      body.entries.map((entry) =>
+        queue.add(async () => ({
+          name: entry.name,
+          buffer: await generateCV(entry.html),
+        }))
+      )
+    ) as { name: string; buffer: Buffer }[];
+  } catch (err) {
+    console.error("[cv/bulk] PDF generation failed:", err);
+    return c.json({ error: "Failed to generate PDFs" }, 500);
+  }
+
+  const zip = new JSZip();
+  for (const { name, buffer } of pdfs) {
+    zip.file(`${name}_resume.pdf`, buffer);
+  }
+  const zipBuffer = await zip.generateAsync({ type: "nodebuffer" });
+
+  return new Response(zipBuffer, {
+    headers: {
+      "Content-Type": "application/zip",
+      "Content-Disposition": `attachment; filename="resumes.zip"`,
     },
   });
 });

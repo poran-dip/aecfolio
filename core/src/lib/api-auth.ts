@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 
-type Role = "FACULTY" | "STUDENT";
+type Role = "FACULTY" | "STUDENT" | "PENDING";
 
 export async function requireRole(roles: Role[]) {
   const session = await auth();

@@ -1,439 +1,228 @@
 "use client";
 
 import { Search } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table, TableBody, TableCell, TableHead,
+  TableHeader, TableRow,
 } from "@/components/ui/table";
 
-interface PendingUser {
+interface PendingStudent {
   id: string;
-  name: string | null;
-  email: string;
-  createdAt: string;
-}
-
-type AccountType = "STUDENT" | "FACULTY";
-
-interface StudentForm {
   rollNo: string;
   course: string;
   branch: string;
-  semester: string;
-  cgpa: string;
-  bio: string;
-  skills: string; // comma-separated
+  semester: number;
+  cgpa: number | null;
+  user: { id: string; name: string | null; email: string; createdAt: string };
 }
 
-interface FacultyForm {
-  employeeId: string;
-  designation: string;
-  department: string;
+type EditableField = "rollNo" | "course" | "branch" | "semester" | "cgpa";
+
+const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
+const BRANCHES = ["CSE", "ETE", "EE", "IE", "ME", "CE", "IPE", "CHE", "CA"];
+
+function InlineSelect({ value, options, onChange }: {
+  value: string; options: string[]; onChange: (v: string) => void;
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full py-1 px-2 border border-slate-200 rounded text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none"
+    >
+      {options.map((o) => <option key={o} value={o}>{o}</option>)}
+    </select>
+  );
 }
 
-const INITIAL_STUDENT: StudentForm = {
-  rollNo: "",
-  course: "",
-  branch: "",
-  semester: "",
-  cgpa: "",
-  bio: "",
-  skills: "",
-};
-
-const INITIAL_FACULTY: FacultyForm = {
-  employeeId: "",
-  designation: "",
-  department: "",
-};
+function InlineInput({ value, type = "text", onChange }: {
+  value: string; type?: string; onChange: (v: string) => void;
+}) {
+  return (
+    <input
+      type={type}
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="w-full py-1 px-2 border border-slate-200 rounded text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none"
+    />
+  );
+}
 
 export default function PendingUsersPage() {
-  const [data, setData] = useState<PendingUser[]>([]);
-  const [filtered, setFiltered] = useState<PendingUser[]>([]);
+  const [students, setStudents] = useState<PendingStudent[]>([]);
+  const [edits, setEdits] = useState<Record<string, Partial<Record<EditableField, string>>>>({});
+  const [saving, setSaving] = useState<Record<string, boolean>>({});
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [approving, setApproving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
-  // Modal state
-  const [selectedUser, setSelectedUser] = useState<PendingUser | null>(null);
-  const [accountType, setAccountType] = useState<AccountType>("STUDENT");
-  const [studentForm, setStudentForm] = useState<StudentForm>(INITIAL_STUDENT);
-  const [facultyForm, setFacultyForm] = useState<FacultyForm>(INITIAL_FACULTY);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
+  const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
-    fetch("/api/user?pending=true")
+    fetch("/api/student/pending")
       .then((r) => r.json())
-      .then((d) => {
-        const users = Array.isArray(d) ? d : [];
-        setData(users);
-        setFiltered(users);
-      })
+      .then((d) => setStudents(d.students ?? []))
+      .catch(() => toast.error("Failed to load pending students"))
       .finally(() => setLoading(false));
   }, []);
 
-  useEffect(() => {
-    const s = search.toLowerCase();
-    setFiltered(
-      data.filter(
-        (u) =>
-          (u.name || "").toLowerCase().includes(s) ||
-          u.email.toLowerCase().includes(s),
-      ),
-    );
-  }, [search, data]);
+  const filtered = students.filter((s) => {
+    const q = search.toLowerCase();
+    return !q ||
+      (s.user.name ?? "").toLowerCase().includes(q) ||
+      s.user.email.toLowerCase().includes(q) ||
+      s.rollNo.toLowerCase().includes(q);
+  });
 
-  const openModal = (user: PendingUser) => {
-    setSelectedUser(user);
-    setAccountType("STUDENT");
-    setStudentForm(INITIAL_STUDENT);
-    setFacultyForm(INITIAL_FACULTY);
-    setFormError(null);
+  const getField = (s: PendingStudent, field: EditableField): string => {
+    return edits[s.id]?.[field] ?? String(field === "cgpa" ? (s.cgpa ?? "") : s[field]);
   };
 
-  const closeModal = () => {
-    setSelectedUser(null);
-    setFormError(null);
+  const handleEdit = (studentId: string, field: EditableField, value: string) => {
+    setEdits((prev) => ({
+      ...prev,
+      [studentId]: { ...prev[studentId], [field]: value },
+    }));
+
+    // Debounced save
+    clearTimeout(saveTimers.current[studentId]);
+    saveTimers.current[studentId] = setTimeout(async () => {
+      setSaving((prev) => ({ ...prev, [studentId]: true }));
+      try {
+        const res = await fetch(`/api/student/${studentId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...edits[studentId], [field]: value }),
+        });
+        if (!res.ok) toast.error("Failed to save changes");
+      } finally {
+        setSaving((prev) => ({ ...prev, [studentId]: false }));
+      }
+    }, 800);
   };
 
-  const handleSubmit = async () => {
-    if (!selectedUser) return;
-    setSubmitting(true);
-    setFormError(null);
-
+  const handleBulkApprove = async () => {
+    setApproving(true);
     try {
-      let body: Record<string, unknown>;
-      let endpoint: string;
-
-      if (accountType === "STUDENT") {
-        endpoint = "/api/student";
-        body = {
-          userId: selectedUser.id,
-          rollNo: studentForm.rollNo,
-          course: studentForm.course,
-          branch: studentForm.branch,
-          semester: parseInt(studentForm.semester, 10),
-          cgpa: studentForm.cgpa ? parseFloat(studentForm.cgpa) : null,
-          bio: studentForm.bio || null,
-          skills: studentForm.skills
-            ? studentForm.skills
-                .split(",")
-                .map((s) => s.trim())
-                .filter(Boolean)
-            : [],
-        };
-      } else {
-        endpoint = "/api/faculty";
-        body = {
-          userId: selectedUser.id,
-          employeeId: facultyForm.employeeId,
-          designation: facultyForm.designation,
-          department: facultyForm.department,
-        };
-      }
-
-      const res = await fetch(endpoint, {
-        method: "POST",
+      const res = await fetch("/api/student/bulk", {
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({ ids: Array.from(selected) }),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        setFormError(err.error || "Something went wrong.");
-        return;
-      }
-
-      setData((prev) => prev.filter((u) => u.id !== selectedUser.id));
-      closeModal();
+      if (!res.ok) { toast.error("Approval failed"); return; }
+      setStudents((prev) => prev.filter((s) => !selected.has(s.id)));
+      setSelected(new Set());
+      toast.success(`${selected.size} student(s) approved`);
     } finally {
-      setSubmitting(false);
+      setApproving(false);
     }
   };
 
+  const allSelected = filtered.length > 0 && filtered.every((s) => selected.has(s.id));
+
+  if (loading) return <Spinner />;
+
   return (
     <div className="space-y-6">
-      {/* Search */}
-      <div className="flex flex-col sm:flex-row gap-4 mb-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+      {/* Toolbar */}
+      <div className="flex flex-col sm:flex-row gap-4 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
         <div className="relative flex-1">
-          <Search
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
-            size={18}
-          />
-          <Input
-            placeholder="Search by name or roll number..."
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+          <input
+            type="text"
+            placeholder="Search by name, email or roll number..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="pl-10 bg-muted/50 focus:bg-background transition-colors"
+            className="w-full pl-10 pr-4 py-2 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none transition"
           />
         </div>
+        {selected.size > 0 && (
+          <Button onClick={handleBulkApprove} disabled={approving} size="sm">
+            {approving ? <Spinner /> : `Approve (${selected.size})`}
+          </Button>
+        )}
       </div>
 
-      {/* Table */}
       <Card>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead className="w-10">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={(e) =>
+                      setSelected(e.target.checked ? new Set(filtered.map((s) => s.id)) : new Set())
+                    }
+                  />
+                </TableHead>
+                <TableHead>Student</TableHead>
+                <TableHead>Roll No</TableHead>
+                <TableHead>Course</TableHead>
+                <TableHead>Branch</TableHead>
+                <TableHead>Sem</TableHead>
+                <TableHead>CGPA</TableHead>
                 <TableHead>Registered</TableHead>
-                <TableHead className="text-right">Action</TableHead>
+                <TableHead className="w-8" />
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {filtered.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="py-12 text-center text-slate-500"
-                  >
-                    Loading...
+                  <TableCell colSpan={9} className="py-12 text-center text-slate-500">
+                    No pending students.
                   </TableCell>
                 </TableRow>
-              ) : filtered.length === 0 ? (
-                <TableRow>
-                  <TableCell
-                    colSpan={4}
-                    className="py-12 text-center text-slate-500"
-                  >
-                    No pending users.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                filtered.map((user) => (
-                  <TableRow key={user.id}>
-                    <TableCell className="font-semibold text-slate-900">
-                      {user.name || "—"}
-                    </TableCell>
-                    <TableCell className="text-slate-500 text-sm">
-                      {user.email}
-                    </TableCell>
-                    <TableCell className="text-slate-500 text-xs">
-                      {new Date(user.createdAt).toLocaleDateString("en-IN", {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
+              ) : filtered.map((s) => (
+                <TableRow key={s.id}>
+                  <TableCell>
+                    <input
+                      type="checkbox"
+                      checked={selected.has(s.id)}
+                      onChange={(e) => setSelected((prev) => {
+                        const next = new Set(prev);
+                        e.target.checked ? next.add(s.id) : next.delete(s.id);
+                        return next;
                       })}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button size="sm" onClick={() => openModal(user)}>
-                        Assign Role
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
+                    />
+                  </TableCell>
+                  <TableCell>
+                    <span className="font-medium text-slate-900 block">{s.user.name ?? "—"}</span>
+                    <span className="text-xs text-slate-500">{s.user.email}</span>
+                  </TableCell>
+                  <TableCell>
+                    <InlineInput value={getField(s, "rollNo")} onChange={(v) => handleEdit(s.id, "rollNo", v)} />
+                  </TableCell>
+                  <TableCell>
+                    <InlineSelect value={getField(s, "course")} options={COURSES} onChange={(v) => handleEdit(s.id, "course", v)} />
+                  </TableCell>
+                  <TableCell>
+                    <InlineSelect value={getField(s, "branch")} options={BRANCHES} onChange={(v) => handleEdit(s.id, "branch", v)} />
+                  </TableCell>
+                  <TableCell>
+                    <InlineInput type="number" value={getField(s, "semester")} onChange={(v) => handleEdit(s.id, "semester", v)} />
+                  </TableCell>
+                  <TableCell>
+                    <InlineInput type="number" value={getField(s, "cgpa")} onChange={(v) => handleEdit(s.id, "cgpa", v)} />
+                  </TableCell>
+                  <TableCell className="text-slate-500 text-xs">
+                    {new Date(s.user.createdAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
+                  </TableCell>
+                  <TableCell>
+                    {saving[s.id] && <Spinner />}
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
-
-      {/* Assign Role Modal */}
-      <Dialog
-        open={!!selectedUser}
-        onOpenChange={(open) => !open && closeModal()}
-      >
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Assign Role</DialogTitle>
-            <p className="text-sm text-slate-500">
-              {selectedUser?.name || selectedUser?.email}
-            </p>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            {/* Account Type Toggle */}
-            <div className="space-y-1.5">
-              <Label>Account Type</Label>
-              <Select
-                value={accountType}
-                onValueChange={(v: AccountType) => setAccountType(v)}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="STUDENT">Student</SelectItem>
-                  <SelectItem value="FACULTY">Faculty</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {accountType === "STUDENT" ? (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Roll No *</Label>
-                  <Input
-                    value={studentForm.rollNo}
-                    onChange={(e) =>
-                      setStudentForm((p) => ({
-                        ...p,
-                        rollNo: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. CSE23001"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Course *</Label>
-                  <Select
-                    value={studentForm.course}
-                    onValueChange={(v: string) =>
-                      setStudentForm((p) => ({ ...p, course: v }))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="BTECH">B.Tech</SelectItem>
-                      <SelectItem value="MTECH">M.Tech</SelectItem>
-                      <SelectItem value="MCA">MCA</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Branch *</Label>
-                  <Input
-                    value={studentForm.branch}
-                    onChange={(e) =>
-                      setStudentForm((p) => ({
-                        ...p,
-                        branch: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. CSE"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Semester *</Label>
-                  <Input
-                    type="number"
-                    min={1}
-                    max={12}
-                    value={studentForm.semester}
-                    onChange={(e) =>
-                      setStudentForm((p) => ({
-                        ...p,
-                        semester: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. 5"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>CGPA</Label>
-                  <Input
-                    type="number"
-                    step="0.01"
-                    min={0}
-                    max={10}
-                    value={studentForm.cgpa}
-                    onChange={(e) =>
-                      setStudentForm((p) => ({ ...p, cgpa: e.target.value }))
-                    }
-                    placeholder="e.g. 8.5"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Skills</Label>
-                  <Input
-                    value={studentForm.skills}
-                    onChange={(e) =>
-                      setStudentForm((p) => ({
-                        ...p,
-                        skills: e.target.value,
-                      }))
-                    }
-                    placeholder="React, Python, ..."
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5">
-                  <Label>Employee ID *</Label>
-                  <Input
-                    value={facultyForm.employeeId}
-                    onChange={(e) =>
-                      setFacultyForm((p) => ({
-                        ...p,
-                        employeeId: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. FAC001"
-                  />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Designation *</Label>
-                  <Input
-                    value={facultyForm.designation}
-                    onChange={(e) =>
-                      setFacultyForm((p) => ({
-                        ...p,
-                        designation: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. Assistant Professor"
-                  />
-                </div>
-                <div className="col-span-2 space-y-1.5">
-                  <Label>Department *</Label>
-                  <Input
-                    value={facultyForm.department}
-                    onChange={(e) =>
-                      setFacultyForm((p) => ({
-                        ...p,
-                        department: e.target.value,
-                      }))
-                    }
-                    placeholder="e.g. Computer Science"
-                  />
-                </div>
-              </div>
-            )}
-
-            {formError && <p className="text-sm text-red-600">{formError}</p>}
-          </div>
-
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={closeModal}
-              disabled={submitting}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleSubmit} disabled={submitting}>
-              {submitting ? "Saving..." : "Confirm & Assign"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }

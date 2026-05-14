@@ -68,10 +68,10 @@ export async function PATCH(
       ...(rollNo !== undefined && { rollNo }),
       ...(course !== undefined && { course }),
       ...(branch !== undefined && { branch }),
-      ...(semester !== undefined && { semester }),
+      ...(semester !== undefined && { semester: parseInt(semester, 10) }),
       ...(bio !== undefined && { bio }),
       ...(skills !== undefined && { skills }),
-      ...(cgpa !== undefined && { cgpa }),
+      ...(cgpa !== undefined && { cgpa: cgpa === "" ? null : parseFloat(cgpa) }),
     },
   });
 

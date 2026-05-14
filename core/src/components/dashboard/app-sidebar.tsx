@@ -68,10 +68,13 @@ const data = {
       ],
     },
     {
-      title: "User Approvals",
+      title: "Access",
       url: "/faculty/users",
       icon: Briefcase,
-      items: [{ title: "Pending Users", url: "/faculty/users" }],
+      items: [
+        { title: "Pending Users", url: "/faculty/users" },
+        { title: "Bulk Import", url: "/faculty/import" }
+      ],
     },
     {
       title: "Account",

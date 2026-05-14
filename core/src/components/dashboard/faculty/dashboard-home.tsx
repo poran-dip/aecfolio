@@ -27,7 +27,38 @@ export default function FacultyDashboard() {
   const [filtered, setFiltered] = useState<StudentListDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [minCgpa, setMinCgpa] = useState("");
   const [pendingUsers, setPendingUsers] = useState(0);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [exporting, setExporting] = useState(false);
+
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const idsRes = await fetch("/api/faculty/students", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids: Array.from(selected) }),
+      });
+      const { students } = await idsRes.json();
+
+      const zipRes = await fetch("/api/cv/generate/bulk", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template: "professional", data: students }),
+      });
+
+      const blob = await zipRes.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "resumes.zip";
+      a.click();
+      URL.revokeObjectURL(url);
+    } finally {
+      setExporting(false);
+    }
+  }
 
   useEffect(() => {
     fetch("/api/faculty/dashboard")
@@ -54,8 +85,9 @@ export default function FacultyDashboard() {
       result = result.filter((stu) => stu.batch === batchFilter);
     if (courseFilter !== "ALL")
       result = result.filter((stu) => stu.course === courseFilter);
+    if (minCgpa) result = result.filter((stu) => stu.cgpa !== null && parseFloat(String(stu.cgpa)) >= parseFloat(minCgpa));
     setFiltered(result);
-  }, [search, batchFilter, courseFilter, data]);
+  }, [search, batchFilter, courseFilter, data, minCgpa]);
 
   if (loading) return <Spinner />;
 
@@ -106,7 +138,7 @@ export default function FacultyDashboard() {
         </div>
 
         {/* Action / Search Bar */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+        <div className="flex flex-col sm:flex-row items-center gap-4 mb-2 bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
           <div className="relative flex-1">
             <Search
               className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
@@ -141,7 +173,22 @@ export default function FacultyDashboard() {
               <option value="MTECH">MTECH</option>
               <option value="MCA">MCA</option>
             </select>
+            <input
+              type="number"
+              min={0}
+              max={10}
+              step={0.1}
+              placeholder="Min CGPA"
+              value={minCgpa}
+              onChange={(e) => setMinCgpa(e.target.value)}
+              className="py-2 pl-3 pr-3 w-28 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none"
+            />
           </div>
+          {selected.size > 0 && (
+            <Button onClick={handleExport} disabled={exporting} size="sm">
+              {exporting ? <Spinner /> : `Export CVs (${selected.size})`}
+            </Button>
+          )}
         </div>
 
         {/* Student List */}
@@ -150,6 +197,18 @@ export default function FacultyDashboard() {
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
                 <tr>
+                  <th className="px-6 py-4">
+                    <input
+                      type="checkbox"
+                      checked={filtered.length > 0 && filtered.every((s) => selected.has(s.id))}
+                      onChange={(e) => {
+                        setSelected(e.target.checked
+                          ? new Set(filtered.map((s) => s.id))
+                          : new Set()
+                        );
+                      }}
+                    />
+                  </th>
                   <th className="px-6 py-4">Student</th>
                   <th className="px-6 py-4">Course & Sem</th>
                   <th className="px-6 py-4 text-center">CGPA</th>
@@ -161,7 +220,7 @@ export default function FacultyDashboard() {
                 {filtered.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={5}
+                      colSpan={6}
                       className="px-6 py-12 text-center text-slate-500"
                     >
                       No students found matching your criteria.
@@ -173,6 +232,19 @@ export default function FacultyDashboard() {
                       key={stu.id}
                       className="hover:bg-slate-50/50 transition"
                     >
+                    <td className="px-6 py-4">
+                      <input
+                        type="checkbox"
+                        checked={selected.has(stu.id)}
+                        onChange={(e) => {
+                          setSelected((prev) => {
+                            const next = new Set(prev);
+                            e.target.checked ? next.add(stu.id) : next.delete(stu.id);
+                            return next;
+                          });
+                        }}
+                      />
+                    </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col">
                           <span className="font-semibold text-slate-900">
