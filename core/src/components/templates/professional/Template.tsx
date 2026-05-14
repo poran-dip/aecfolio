@@ -7,151 +7,381 @@ import {
   faMapPin,
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type {
-  Achievement,
-  Certification,
-  Experience,
-  Project,
-  Result,
-  Social,
-  Student,
-  User,
-} from "@/generated/prisma/client";
-import type { CVOptions, CVSections } from "@/types/cv";
-import "./styles.css";
-import Image from "next/image";
+import { formatDate } from "@/utils/date";
+import { Props } from "@/types/cv";
+import { iconSvg } from "@/lib/cv-icon";
 
-type StudentWithRelations = Student & {
-  user: User;
-  experiences: Experience[];
-  projects: Project[];
-  achievements: Achievement[];
-  certifications: Certification[];
-  socials: Social[];
-  results: Result[];
-};
+const css = `
+  .cv-page * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
 
-type Props = {
-  data: {
-    student: StudentWithRelations;
-    sections: CVSections;
-    options: CVOptions;
-  };
-};
+  .cv-page {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 10mm 12mm;
+    --surface: #ffffff;
+    --border: #d6d3d1;
+    --accent: #054e16;
+    --text-primary: #1c1917;
+    --text-secondary: #2c2b29;
+    --text-muted: #a8a29e;
+    --verified: #16a34a;
+    --tag-bg: #e7e5e4;
+    --tag-text: #292524;
 
-function formatDate(date: Date | null | undefined): string {
-  if (!date) return "Present";
-  return date
-    .toLocaleDateString("en-GB", { month: "2-digit", year: "numeric" })
-    .replace("/", "/");
-}
+    background: var(--surface);
+    color: var(--text-primary);
+    font-family: Arial;
+
+    background: var(--surface);
+    color: var(--text-primary);
+    font-size: 11px;
+    font-family: Arial, sans-serif;
+    line-height: 1.4;
+  }
+
+  .cv-root {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  /* Header */
+  .cv-header {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    break-inside: avoid;
+  }
+
+  .cv-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .cv-header-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cv-name {
+    color: var(--accent);
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    font-size: 16px;
+    line-height: 1;
+  }
+
+  .cv-subtitle {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .cv-dot {
+    padding: 0 4px;
+  }
+
+  .cv-contacts {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 3px 8px;
+    font-size: 11px;
+  }
+
+  .cv-contact-link {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-primary);
+    text-decoration: none;
+    transition: color 0.15s;
+  }
+
+  .cv-contact-link:hover {
+    color: var(--text-secondary);
+  }
+
+  .cv-contact-icon,
+  .cv-badge-icon,
+  .cv-link-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cv-contact-icon svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+  }
+
+  .cv-link-icon svg {
+    width: 10px;
+    height: 10px;
+    display: block;
+  }
+
+  .cv-badge-icon svg {
+    width: 9px;
+    height: 9px;
+    display: block;
+  }
+
+  /* Section */
+  .cv-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    break-inside: avoid;
+  }
+
+  .cv-section-title {
+    font-size: 11px;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 800;
+    border-bottom: 2px solid var(--accent);
+    padding-bottom: 2px;
+    margin-bottom: 2px;
+  }
+
+  /* Bio */
+  .cv-bio {
+    font-size: 11px;
+    line-height: 1.6;
+    color: var(--text-primary);
+  }
+
+  /* Items list (projects, experience, achievements, certs) */
+  .cv-items {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .cv-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .cv-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cv-item-title-link {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .cv-item-title {
+    font-weight: 700;
+    font-size: 11px;
+  }
+
+  .cv-item-org {
+    font-style: italic;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+
+  .cv-item-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1px;
+  }
+
+  .cv-item-date {
+    font-size: 11px;
+    color: var(--text-secondary);
+    font-style: italic;
+  }
+
+  .cv-item-type {
+    font-size: 11px;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+  }
+
+  .cv-item-desc {
+    font-size: 11px;
+    color: var(--text-primary);
+    line-height: 1.5;
+  }
+
+  .cv-item-tech {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  /* Skills */
+  .cv-skills-text {
+    font-size: 11px;
+    color: var(--text-primary);
+  }
+
+  /* Education */
+  .cv-edu-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+  }
+
+  .cv-edu-left {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11px;
+  }
+
+  .cv-edu-cgpa {
+    list-style: disc;
+    padding-left: 16px;
+  }
+
+  .cv-edu-cgpa li {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  .cv-verified {
+    color: var(--verified);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+  }
+
+  /* Certs */
+  .cv-cert-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    flex-wrap: wrap;
+  }
+
+  .cv-cert-sep {
+    padding: 0 6px;
+  }
+`;
 
 export function ProfessionalTemplate({ data }: Props) {
-  const { student, sections, options } = data;
-
-  const user = student.user;
-  const linkedin = student.socials.find((s) => s.type === "LINKEDIN");
-  const github = student.socials.find((s) => s.type === "GITHUB");
-  const otherSocials = sections.socials
-    ? student.socials.filter(
-        (s) => sections.socials?.includes(s.id) && s.type === "OTHER",
-      )
-    : [];
-
-  const selectedProjects = sections.projects
-    ? student.projects.filter((p) => sections.projects?.includes(p.id))
-    : [];
-  const selectedExperience = sections.experience
-    ? student.experiences.filter((e) => sections.experience?.includes(e.id))
-    : [];
-  const selectedAchievements = sections.achievements
-    ? student.achievements.filter((a) => sections.achievements?.includes(a.id))
-    : [];
-  const selectedCertifications = sections.certifications
-    ? student.certifications.filter((c) =>
-        sections.certifications?.includes(c.id),
-      )
-    : [];
+  const linkedin = data.socials.find((s) => s.type === "LINKEDIN");
+  const github = data.socials.find((s) => s.type === "GITHUB");
+  const otherSocials = data.socials.filter((s) => s.type === "OTHER");
 
   return (
-    <div className="page">
-      <div className="flex flex-col gap-6">
+    <div className="cv-page">
+      <style>{css}</style>
+      <div className="cv-root">
+
         {/* Header */}
-        <div
-          data-section
-          className="flex gap-6 items-center break-inside-avoid"
-        >
-          {sections.image && user.image && (
-            <div className="w-22 h-22 shrink-0">
-              <Image
-                alt={user.name ?? "Profile photo"}
-                src={user.image}
-                fill
-                className="object-cover rounded-full"
-              />
-            </div>
+        <div className="cv-header">
+          {data.user.image && (
+            // biome-ignore lint/performance/noImgElement: static markup, Next image not applicable
+            <img
+              alt={data.user.name ?? "Profile photo"}
+              src={data.user.image}
+              className="cv-avatar"
+            />
           )}
-          <div className="flex-1 flex flex-col gap-2">
-            <h1 className="text-accent font-extrabold tracking-wide text-lg leading-none">
-              {user.name}
-            </h1>
-            <div className="flex items-center text-xs">
-              <span>
-                {student.course} {student.branch}
-              </span>
-              <span className="px-1.5">·</span>
+          <div className="cv-header-info">
+            <h1 className="cv-name">{data.user.name}</h1>
+            <div className="cv-subtitle">
+              <span>{data.course} {data.branch}</span>
+              <span className="cv-dot">·</span>
               <span>Assam Engineering College, Guwahati</span>
             </div>
-            <div className="grid grid-cols-3 text-xs gap-1">
-              {user.email && (
-                <a
-                  href={`mailto:${user.email}`}
-                  className="flex items-center gap-1.5 hover:text-slate-600 transition-all"
-                >
-                  <FontAwesomeIcon icon={faEnvelope} size="sm" />
-                  <span>{user.email}</span>
+            <div className="cv-contacts">
+              {data.user.email && (
+                <a href={`mailto:${data.user.email}`} className="cv-contact-link">
+                  <span
+                    className="cv-contact-icon"
+                    dangerouslySetInnerHTML={{
+                      __html: iconSvg(faEnvelope),
+                    }}
+                  />
+                  <span>{data.user.email}</span>
                 </a>
               )}
-              {user.phone && (
-                <a
-                  href={`tel:${user.phone}`}
-                  className="flex items-center gap-1.5 hover:text-slate-600 transition-all"
-                >
-                  <FontAwesomeIcon icon={faPhone} size="sm" />
-                  <span>{user.phone}</span>
+              {data.user.phone && (
+                <a href={`tel:${data.user.phone}`} className="cv-contact-link">
+                  <span
+                    className="cv-contact-icon"
+                    dangerouslySetInnerHTML={{
+                      __html: iconSvg(faPhone),
+                    }}
+                  />
+                  <span>{data.user.phone}</span>
                 </a>
               )}
-              {sections.socials && linkedin && (
-                <a
-                  href={linkedin.url}
-                  className="flex items-center gap-1.5 hover:text-slate-600 transition-all"
-                >
-                  <FontAwesomeIcon icon={faLinkedin} className="w-3 h-3" />
+              {linkedin && (
+                <a href={linkedin.url} className="cv-contact-link">
+                  <span
+                    className="cv-contact-icon"
+                    dangerouslySetInnerHTML={{
+                      __html: iconSvg(faLinkedin),
+                    }}
+                  />
                   <span>{linkedin.url.replace("https://", "")}</span>
                 </a>
               )}
-              {sections.socials && github && (
-                <a
-                  href={github.url}
-                  className="flex items-center gap-1.5 hover:text-slate-600 transition-all"
-                >
-                  <FontAwesomeIcon icon={faGithub} className="w-3 h-3" />
+              {github && (
+                <a href={github.url} className="cv-contact-link">
+                  <span
+                    className="cv-contact-icon"
+                    dangerouslySetInnerHTML={{
+                      __html: iconSvg(faGithub),
+                    }}
+                  />
                   <span>{github.url.replace("https://", "")}</span>
                 </a>
               )}
               {otherSocials.map((s) => (
-                <a
-                  key={s.id}
-                  href={s.url}
-                  className="flex items-center gap-1.5 hover:text-slate-600 transition-all"
-                >
-                  <FontAwesomeIcon icon={faLink} className="w-3 h-3" />
+                <a key={s.id} href={s.url} className="cv-contact-link">
+                  <span
+                    className="cv-contact-icon"
+                    dangerouslySetInnerHTML={{
+                      __html: iconSvg(faLink),
+                    }}
+                  />
                   <span>{s.url.replace("https://", "")}</span>
                 </a>
               ))}
-              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-all">
-                <FontAwesomeIcon icon={faMapPin} size="sm" />
+              <span className="cv-contact-link">
+                <span
+                  className="cv-contact-icon"
+                  dangerouslySetInnerHTML={{
+                    __html: iconSvg(faMapPin),
+                  }}
+                />
                 <span>Guwahati, Assam, India</span>
               </span>
             </div>
@@ -159,48 +389,37 @@ export function ProfessionalTemplate({ data }: Props) {
         </div>
 
         {/* Bio */}
-        {sections.bio && student.bio && (
-          <div
-            data-section
-            className="flex flex-col gap-2.5 break-inside-avoid"
-          >
-            <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-              Summary
-            </h2>
-            <p className="text-xs-plus leading-relaxed">{student.bio}</p>
+        {data.bio && (
+          <div className="cv-section">
+            <h2 className="cv-section-title">Summary</h2>
+            <p className="cv-bio">{data.bio}</p>
           </div>
         )}
 
         {/* Projects */}
-        {selectedProjects.length > 0 && (
-          <div data-section className="flex flex-col gap-3 break-inside-avoid">
-            <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-              Projects
-            </h2>
-            <div className="flex flex-col gap-5">
-              {selectedProjects.map((project) => (
-                <div key={project.id} className="flex flex-col">
-                  <div className="flex justify-between">
-                    <a
-                      href={project.link ?? "#"}
-                      className="flex items-center gap-1 self-start"
-                    >
-                      <span className="text-xs-plus font-bold">
-                        {project.title}
-                      </span>
+        {data.projects.length > 0 && (
+          <div className="cv-section">
+            <h2 className="cv-section-title">Projects</h2>
+            <div className="cv-items">
+              {data.projects.map((project) => (
+                <div key={project.id} className="cv-item">
+                  <div className="cv-item-header">
+                    <a href={project.link ?? "#"} className="cv-item-title-link">
+                      <span>{project.title}</span>
                       {project.link && (
-                        <FontAwesomeIcon icon={faExternalLink} size="2xs" />
+                        <span
+                          className="cv-link-icon"
+                          dangerouslySetInnerHTML={{
+                            __html: iconSvg(faExternalLink),
+                          }}
+                        />
                       )}
                     </a>
                   </div>
-                  <div className="text-xs-plus">
-                    <p>{project.description}</p>
-                    {project.techStack.length > 0 && (
-                      <p className="text-muted">
-                        {project.techStack.join(", ")}
-                      </p>
-                    )}
-                  </div>
+                  <p className="cv-item-desc">{project.description}</p>
+                  {project.techStack.length > 0 && (
+                    <p className="cv-item-tech">{project.techStack.join(", ")}</p>
+                  )}
                 </div>
               ))}
             </div>
@@ -208,36 +427,25 @@ export function ProfessionalTemplate({ data }: Props) {
         )}
 
         {/* Experience */}
-        {selectedExperience.length > 0 && (
-          <div
-            data-section
-            className="flex flex-col gap-2.5 break-inside-avoid"
-          >
-            <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-              Experience
-            </h2>
-            <div className="flex flex-col gap-5">
-              {selectedExperience.map((exp) => (
-                <div key={exp.id} className="flex flex-col">
-                  <div className="flex justify-between">
-                    <div className="flex flex-col">
-                      <span className="text-xs-plus font-bold">
-                        {exp.title}
-                      </span>
-                      <span className="text-xs-plus italic">
-                        {exp.organization}
-                      </span>
+        {data.experiences.length > 0 && (
+          <div className="cv-section">
+            <h2 className="cv-section-title">Experience</h2>
+            <div className="cv-items">
+              {data.experiences.map((exp) => (
+                <div key={exp.id} className="cv-item">
+                  <div className="cv-item-header">
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span className="cv-item-title">{exp.title}</span>
+                      <span className="cv-item-org">{exp.organization}</span>
                     </div>
-                    <div className="flex flex-col items-end">
-                      <p className="text-xs text-secondary italic">
+                    <div className="cv-item-meta">
+                      <span className="cv-item-date">
                         {formatDate(exp.startDate)} - {formatDate(exp.endDate)}
-                      </p>
-                      <p className="text-xs text-secondary uppercase">
-                        {exp.type}
-                      </p>
+                      </span>
+                      <span className="cv-item-type">{exp.type}</span>
                     </div>
                   </div>
-                  <p className="text-xs-plus">{exp.description}</p>
+                  <p className="cv-item-desc">{exp.description}</p>
                 </div>
               ))}
             </div>
@@ -245,77 +453,67 @@ export function ProfessionalTemplate({ data }: Props) {
         )}
 
         {/* Skills */}
-        {sections.skills && student.skills.length > 0 && (
-          <div
-            data-section
-            className="flex flex-col gap-2.5 break-inside-avoid"
-          >
-            <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-              Skills
-            </h2>
-            <p className="text-xs-plus">{student.skills.join(", ")}</p>
+        {data.skills.length > 0 && (
+          <div className="cv-section">
+            <h2 className="cv-section-title">Skills</h2>
+            <p className="cv-skills-text">{data.skills.join(", ")}</p>
           </div>
         )}
 
         {/* Education */}
-        <div data-section className="flex flex-col gap-2.5 break-inside-avoid">
-          <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-            Education
-          </h2>
-          <div className="flex justify-between">
-            <div className="flex flex-col text-xs-plus">
-              <p>B.Tech in {student.branch}</p>
-              <p>Assam Engineering College</p>
-              {options.showCGPA && student.cgpa && (
-                <ul className="list-disc pl-4">
-                  <li className="flex items-center gap-1">
-                    <span>CGPA: {student.cgpa.toFixed(2)}</span>
-                    {options.showVerificationTick && (
-                      <>
-                        <FontAwesomeIcon
-                          icon={faCheck}
-                          size="2xs"
-                          className="mx-2"
-                        />
-                        <span className="text-green-500 uppercase font-bold tracking-wide">
-                          Verified
-                        </span>
-                      </>
-                    )}
+        <div className="cv-section">
+          <h2 className="cv-section-title">Education</h2>
+          <div className="cv-edu-row">
+            <div className="cv-edu-left">
+              <span>B.Tech in {data.branch}</span>
+              <span>Assam Engineering College</span>
+              {data.cgpa && (
+                <ul className="cv-edu-cgpa">
+                  <li>
+                    <span>CGPA: {data.cgpa.toFixed(2)}</span>
+                    <span className="cv-verified">
+                      <span
+                        className="cv-badge-icon"
+                        dangerouslySetInnerHTML={{
+                          __html: iconSvg(faCheck),
+                        }}
+                      />
+                      Verified
+                    </span>
                   </li>
                 </ul>
               )}
             </div>
-            <div className="flex flex-col items-end">
-              <p className="text-xs text-secondary italic">
-                {new Date(student.createdAt).getFullYear()} - Present
-              </p>
+            <div className="cv-item-meta">
+              <span className="cv-item-date">
+                {new Date(data.createdAt).getFullYear()} - Present
+              </span>
             </div>
           </div>
         </div>
 
         {/* Achievements */}
-        {selectedAchievements.length > 0 && (
-          <div
-            data-section
-            className="flex flex-col gap-2.5 break-inside-avoid"
-          >
-            <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-              Achievements
-            </h2>
-            <div className="flex flex-col gap-5">
-              {selectedAchievements.map((a) => (
-                <div key={a.id} className="flex flex-col">
-                  <div className="flex justify-between">
-                    <span className="text-xs-plus font-bold">{a.title}</span>
-                    {options.showVerificationTick && a.verified && (
-                      <span className="text-green-500 uppercase font-bold tracking-wide text-xs flex items-center gap-1">
-                        <FontAwesomeIcon icon={faCheck} size="2xs" />
+        {data.achievements.length > 0 && (
+          <div className="cv-section">
+            <h2 className="cv-section-title">Achievements</h2>
+            <div className="cv-items">
+              {data.achievements.map((a) => (
+                <div key={a.id} className="cv-item">
+                  <div className="cv-item-header">
+                    <span className="cv-item-title">{a.title}</span>
+                    {a.verified && (
+                      <span className="cv-verified">
+                        <span
+                          className="cv-badge-icon"
+                          dangerouslySetInnerHTML={{
+                            __html: iconSvg(faCheck),
+                          }}
+                        />
                         Verified
                       </span>
                     )}
                   </div>
-                  <p className="text-xs-plus">{a.description}</p>
+                  <p className="cv-item-desc">{a.description}</p>
                 </div>
               ))}
             </div>
@@ -323,31 +521,31 @@ export function ProfessionalTemplate({ data }: Props) {
         )}
 
         {/* Certifications */}
-        {selectedCertifications.length > 0 && (
-          <div
-            data-section
-            className="flex flex-col gap-2.5 break-inside-avoid"
-          >
-            <h2 className="text-sm text-accent uppercase tracking-wide font-extrabold border-b-2 border-accent">
-              Certifications
-            </h2>
-            <div className="flex flex-col gap-5">
-              {selectedCertifications.map((cert) => (
-                <div key={cert.id} className="flex flex-col">
-                  <span className="text-xs-plus font-bold">{cert.name}</span>
-                  <div className="text-xs-plus text-secondary">
+        {data.certifications.length > 0 && (
+          <div className="cv-section">
+            <h2 className="cv-section-title">Certifications</h2>
+            <div className="cv-items">
+              {data.certifications.map((cert) => (
+                <div key={cert.id} className="cv-item">
+                  <span className="cv-item-title">{cert.name}</span>
+                  <div className="cv-cert-meta">
                     <span>{cert.issuer}</span>
                     {cert.issueDate && (
                       <>
-                        <span className="px-2">·</span>
+                        <span className="cv-cert-sep">·</span>
                         <span>Issued {formatDate(cert.issueDate)}</span>
                       </>
                     )}
-                    {options.showVerificationTick && cert.verified && (
+                    {cert.verified && (
                       <>
-                        <span className="px-2">·</span>
-                        <span className="text-green-500 uppercase font-bold tracking-wide items-center gap-1 inline-flex">
-                          <FontAwesomeIcon icon={faCheck} size="2xs" />
+                        <span className="cv-cert-sep">·</span>
+                        <span className="cv-verified">
+                          <span
+                            className="cv-badge-icon"
+                            dangerouslySetInnerHTML={{
+                              __html: iconSvg(faCheck),
+                            }}
+                          />
                           Verified
                         </span>
                       </>
@@ -358,6 +556,7 @@ export function ProfessionalTemplate({ data }: Props) {
             </div>
           </div>
         )}
+
       </div>
     </div>
   );

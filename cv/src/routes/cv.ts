@@ -24,12 +24,6 @@ cv.post("/", async (c) => {
     return c.json({ error: "Missing html" }, 400);
   }
 
-  if (!body.name) {
-    return c.json({ error: "Missing name" }, 400);
-  }
-
-  const filename = body.name.trim().replace(/\s+/g, "_") + ".pdf";
-
   let pdf: Buffer | undefined;
   try {
     pdf = await queue.add(() => generateCV(body.html));
@@ -45,7 +39,7 @@ cv.post("/", async (c) => {
   return new Response(pdf, {
     headers: {
       "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${filename}"`,
+      "Content-Disposition": `attachment; filename="resume.pdf"`,
     },
   });
 });

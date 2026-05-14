@@ -1,28 +1,18 @@
+import { Achievement, Certification, Experience, Project, Result, Social, Student, User } from "@/generated/prisma/client";
+
 export type CVTemplate = "professional-theme";
-export type CVTheme = "light" | "dark";
 
-export type CVSections = {
-  bio?: true;
-  skills?: true;
-  image?: true;
-  projects?: string[];
-  experience?: string[];
-  achievements?: string[];
-  certifications?: string[];
-  socials?: string[];
+export type StudentWithRelations = Student & {
+  user: User;
+  experiences: Experience[];
+  projects: Project[];
+  achievements: Achievement[];
+  certifications: Certification[];
+  socials: Social[];
+  results: Result[];
 };
 
-export type CVOptions = {
-  showVerificationTick: boolean;
-  showCGPA: boolean;
-};
-
-export type CVRequest = {
-  template: CVTemplate;
-  theme: CVTheme;
-  sections: CVSections;
-  options: CVOptions;
-};
+export type Props = { data: StudentWithRelations };
 
 // What gets passed to the PDF microservice
 export type CVPayload = {
