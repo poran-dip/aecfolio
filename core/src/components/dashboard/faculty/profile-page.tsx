@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Spinner } from "@/components/ui/spinner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Spinner } from "@/components/ui/spinner";
 
 interface FacultyProfile {
   id: string;
@@ -38,13 +38,24 @@ export default function FacultyProfilePage() {
       <Card className="p-5">
         <div className="flex items-center gap-3.5">
           <Avatar className="h-13 w-13 shrink-0">
-            {data.image && <AvatarImage src={data.image} alt={data.name} className="object-cover" />}
+            {data.image && (
+              <AvatarImage
+                src={data.image}
+                alt={data.name}
+                className="object-cover"
+              />
+            )}
             <AvatarFallback className="text-base bg-blue-50 text-blue-600 font-medium">
-              {data.name.split(" ").map((n) => n[0]).join("")}
+              {data.name
+                .split(" ")
+                .map((n) => n[0])
+                .join("")}
             </AvatarFallback>
           </Avatar>
           <div>
-            <span className="text-[15px] font-medium text-slate-800">{data.name}</span>
+            <span className="text-[15px] font-medium text-slate-800">
+              {data.name}
+            </span>
             <p className="text-[13px] text-slate-500 mt-0.5">
               {data.faculty.designation} · {data.faculty.department}
             </p>

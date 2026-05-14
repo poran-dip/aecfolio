@@ -39,7 +39,9 @@ export default function CertificationForm({
           <Input
             className="h-8 text-xs"
             value={draft.issuer}
-            onChange={(e) => setDraft((d) => ({ ...d, issuer: e.target.value }))}
+            onChange={(e) =>
+              setDraft((d) => ({ ...d, issuer: e.target.value }))
+            }
           />
         </div>
       </div>
@@ -49,7 +51,9 @@ export default function CertificationForm({
           type="date"
           className="h-8 text-xs"
           value={draft.issueDate?.slice(0, 10) ?? ""}
-          onChange={(e) => setDraft((d) => ({ ...d, issueDate: e.target.value || null }))}
+          onChange={(e) =>
+            setDraft((d) => ({ ...d, issueDate: e.target.value || null }))
+          }
         />
       </div>
       <div className="space-y-1">
@@ -57,7 +61,9 @@ export default function CertificationForm({
         <Input
           className="h-8 text-xs"
           value={draft.proofImage ?? ""}
-          onChange={(e) => setDraft((d) => ({ ...d, proofImage: e.target.value || null }))}
+          onChange={(e) =>
+            setDraft((d) => ({ ...d, proofImage: e.target.value || null }))
+          }
         />
       </div>
       <FormActions onSave={() => onSave(draft)} onCancel={onCancel} />

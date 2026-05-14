@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import FormActions from "./form-actions";
 
 const SOCIAL_TYPES = ["GITHUB", "LINKEDIN", "TWITTER", "PORTFOLIO", "OTHER"];
@@ -29,10 +35,19 @@ export default function SocialForm({
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label className="text-xs">Platform</Label>
-          <Select value={draft.type} onValueChange={(v) => setDraft((d) => ({ ...d, type: v }))}>
-            <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+          <Select
+            value={draft.type}
+            onValueChange={(v) => setDraft((d) => ({ ...d, type: v }))}
+          >
+            <SelectTrigger className="h-8 text-xs">
+              <SelectValue />
+            </SelectTrigger>
             <SelectContent>
-              {SOCIAL_TYPES.map((t) => <SelectItem key={t} value={t} className="text-xs">{t}</SelectItem>)}
+              {SOCIAL_TYPES.map((t) => (
+                <SelectItem key={t} value={t} className="text-xs">
+                  {t}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

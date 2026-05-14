@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
+import type { Student } from "@/generated/prisma/client";
 import { requireRole } from "@/lib/api-auth";
 import { prisma } from "@/lib/prisma";
-import { Student } from "@/generated/prisma/client";
 
 interface StudentFull extends Student {
   user: { name: string | null };
@@ -50,10 +50,19 @@ export async function GET(_req: NextRequest) {
       }),
     ]);
 
-    const shape = (type: string, id: string, name: string, proofImage: string | null | undefined, student: StudentFull | null, createdAt: Date) => {
+    const shape = (
+      type: string,
+      id: string,
+      name: string,
+      proofImage: string | null | undefined,
+      student: StudentFull | null,
+      createdAt: Date,
+    ) => {
       if (!student) return null;
       return {
-        type, id, name,
+        type,
+        id,
+        name,
         proofImage: proofImage ?? null,
         createdAt: createdAt.toISOString(),
         student: {
@@ -66,9 +75,36 @@ export async function GET(_req: NextRequest) {
     };
 
     const pending = [
-      ...results.map((r) => shape("Result", r.id, `Semester ${r.semester} Result`, null, r.student, r.createdAt)),
-      ...achievements.map((a) => shape("Achievement", a.id, a.title, a.proofImage, a.student, a.createdAt)),
-      ...certifications.map((c) => shape("Certification", c.id, c.name, c.proofImage, c.student, c.createdAt)),
+      ...results.map((r) =>
+        shape(
+          "Result",
+          r.id,
+          `Semester ${r.semester} Result`,
+          null,
+          r.student,
+          r.createdAt,
+        ),
+      ),
+      ...achievements.map((a) =>
+        shape(
+          "Achievement",
+          a.id,
+          a.title,
+          a.proofImage,
+          a.student,
+          a.createdAt,
+        ),
+      ),
+      ...certifications.map((c) =>
+        shape(
+          "Certification",
+          c.id,
+          c.name,
+          c.proofImage,
+          c.student,
+          c.createdAt,
+        ),
+      ),
     ].filter(Boolean);
 
     return NextResponse.json({ pending, total: pending.length });

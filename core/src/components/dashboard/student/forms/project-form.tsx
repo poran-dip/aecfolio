@@ -1,10 +1,10 @@
 "use client";
 
+import { X } from "lucide-react";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { X } from "lucide-react";
 import FormActions from "./form-actions";
 
 type ProjectDraft = {
@@ -42,7 +42,9 @@ export default function ProjectForm({
           className="text-xs resize-none"
           rows={3}
           value={draft.description}
-          onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+          onChange={(e) =>
+            setDraft((d) => ({ ...d, description: e.target.value }))
+          }
         />
       </div>
       <div className="space-y-1">
@@ -55,7 +57,10 @@ export default function ProjectForm({
           onKeyDown={(e) => {
             if (e.key === "Enter" && techInput.trim()) {
               e.preventDefault();
-              setDraft((d) => ({ ...d, techStack: [...d.techStack, techInput.trim()] }));
+              setDraft((d) => ({
+                ...d,
+                techStack: [...d.techStack, techInput.trim()],
+              }));
               setTechInput("");
             }
           }}
@@ -63,9 +68,20 @@ export default function ProjectForm({
         {draft.techStack.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-1">
             {draft.techStack.map((t) => (
-              <span key={t} className="inline-flex items-center gap-1 text-xs bg-secondary px-2 py-0.5 rounded-full">
+              <span
+                key={t}
+                className="inline-flex items-center gap-1 text-xs bg-secondary px-2 py-0.5 rounded-full"
+              >
                 {t}
-                <button onClick={() => setDraft((d) => ({ ...d, techStack: d.techStack.filter((x) => x !== t) }))}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setDraft((d) => ({
+                      ...d,
+                      techStack: d.techStack.filter((x) => x !== t),
+                    }))
+                  }
+                >
                   <X className="h-2.5 w-2.5" />
                 </button>
               </span>
@@ -78,7 +94,9 @@ export default function ProjectForm({
         <Input
           className="h-8 text-xs"
           value={draft.link ?? ""}
-          onChange={(e) => setDraft((d) => ({ ...d, link: e.target.value || null }))}
+          onChange={(e) =>
+            setDraft((d) => ({ ...d, link: e.target.value || null }))
+          }
         />
       </div>
       <FormActions onSave={() => onSave(draft)} onCancel={onCancel} />

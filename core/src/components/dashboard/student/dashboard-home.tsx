@@ -1,8 +1,9 @@
 "use client";
 
+import { Check, FileText, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import {
   Accordion,
   AccordionContent,
@@ -12,17 +13,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
-import { Pencil, Trash2, Plus, X, Check, FileText } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import AchievementForm from "./forms/achievement-form";
+import CertificationForm from "./forms/certification-form";
 import ExperienceForm from "./forms/experience-form";
 import ProjectForm from "./forms/project-form";
-import AchievementForm from "./forms/achievement-form";
 import ResultForm from "./forms/result-form";
-import CertificationForm from "./forms/certification-form";
 import SocialForm from "./forms/social-form";
-import { Achievement, Certification, Experience, Project, Result, Social, User, UserDraft } from "./student-dashboard.types";
+import type {
+  Achievement,
+  Certification,
+  Experience,
+  Project,
+  Result,
+  Social,
+  User,
+  UserDraft,
+} from "./student-dashboard.types";
 
 export default function StudentPage() {
   const router = useRouter();
@@ -49,18 +58,24 @@ export default function StudentPage() {
   useEffect(() => {
     async function load() {
       try {
-        const [usrRes, expRes, projRes, achRes, certRes, socRes, resRes] = await Promise.all([
-          fetch("/api/me"),
-          fetch("/api/experience"),
-          fetch("/api/project"),
-          fetch("/api/achievement"),
-          fetch("/api/certification"),
-          fetch("/api/social"),
-          fetch("/api/result"),
-        ]);
+        const [usrRes, expRes, projRes, achRes, certRes, socRes, resRes] =
+          await Promise.all([
+            fetch("/api/me"),
+            fetch("/api/experience"),
+            fetch("/api/project"),
+            fetch("/api/achievement"),
+            fetch("/api/certification"),
+            fetch("/api/social"),
+            fetch("/api/result"),
+          ]);
         const [usr, exp, proj, ach, cert, soc, res] = await Promise.all([
-          usrRes.json(), expRes.json(), projRes.json(), achRes.json(),
-          certRes.json(), socRes.json(), resRes.json(),
+          usrRes.json(),
+          expRes.json(),
+          projRes.json(),
+          achRes.json(),
+          certRes.json(),
+          socRes.json(),
+          resRes.json(),
         ]);
         setUser(usr);
         setExperiences(exp);
@@ -82,15 +97,25 @@ export default function StudentPage() {
         fetch("/api/me", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: userDraft.name, phone: userDraft.phone }),
+          body: JSON.stringify({
+            name: userDraft.name,
+            phone: userDraft.phone,
+          }),
         }).then((r) => r.json()),
-        fetch(`/api/student/${user!.student.id}`, {
+        fetch(`/api/student/${user?.student.id}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bio: userDraft.bio, skills: userDraft.skills }),
+          body: JSON.stringify({
+            bio: userDraft.bio,
+            skills: userDraft.skills,
+          }),
         }).then((r) => r.json()),
       ]);
-      setUser((prev) => ({ ...prev!, ...updatedUser, student: { ...prev!.student, ...updatedStudent } }));
+      setUser((prev) => ({
+        ...prev,
+        ...updatedUser,
+        student: { ...prev?.student, ...updatedStudent },
+      }));
       setEditingProfile(false);
       toast.success("Profile updated");
     } catch {
@@ -156,17 +181,23 @@ export default function StudentPage() {
   }
 
   if (!user) {
-    return <div className="flex items-center justify-center h-64 text-sm text-muted-foreground">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center h-64 text-sm text-muted-foreground">
+        Loading...
+      </div>
+    );
   }
 
   return (
     <div className="space-y-6">
-
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-xl font-semibold">{user.student.rollNo}</h1>
-          <p className="text-sm text-muted-foreground">{user.student.course} · {user.student.branch} · Semester {user.student.semester}</p>
+          <p className="text-sm text-muted-foreground">
+            {user.student.course} · {user.student.branch} · Semester{" "}
+            {user.student.semester}
+          </p>
         </div>
         <Button onClick={() => router.push("/student/cv")}>
           <FileText className="h-4 w-4 mr-2" /> Generate CV
@@ -180,12 +211,30 @@ export default function StudentPage() {
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-medium">Basic Info</h2>
           {!editingProfile ? (
-            <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => { setUserDraft({ name: user.name, phone: user.phone, bio: user.student.bio, skills: user.student.skills }); setEditingProfile(true); }}>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs"
+              onClick={() => {
+                setUserDraft({
+                  name: user.name,
+                  phone: user.phone,
+                  bio: user.student.bio,
+                  skills: user.student.skills,
+                });
+                setEditingProfile(true);
+              }}
+            >
               <Pencil className="h-3 w-3 mr-1" /> Edit
             </Button>
           ) : (
             <div className="flex gap-2">
-              <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditingProfile(false)}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                onClick={() => setEditingProfile(false)}
+              >
                 <X className="h-3 w-3 mr-1" /> Cancel
               </Button>
               <Button size="sm" className="h-7 text-xs" onClick={saveProfile}>
@@ -197,16 +246,25 @@ export default function StudentPage() {
 
         {!editingProfile ? (
           <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">{user.student.bio ?? "No bio yet."}</p>
+            <p className="text-sm text-muted-foreground">
+              {user.student.bio ?? "No bio yet."}
+            </p>
             {user.student.skills?.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {user.student.skills.map((s) => (
-                  <span key={s} className="text-xs bg-secondary px-2 py-0.5 rounded-full">{s}</span>
+                  <span
+                    key={s}
+                    className="text-xs bg-secondary px-2 py-0.5 rounded-full"
+                  >
+                    {s}
+                  </span>
                 ))}
               </div>
             )}
             {user.student.cgpa !== null && (
-              <p className="text-xs text-muted-foreground">CGPA: {user.student.cgpa}</p>
+              <p className="text-xs text-muted-foreground">
+                CGPA: {user.student.cgpa}
+              </p>
             )}
           </div>
         ) : (
@@ -217,7 +275,9 @@ export default function StudentPage() {
                 className="text-xs resize-none"
                 rows={3}
                 value={userDraft.bio ?? ""}
-                onChange={(e) => setUserDraft((d) => ({ ...d, bio: e.target.value || null }))}
+                onChange={(e) =>
+                  setUserDraft((d) => ({ ...d, bio: e.target.value || null }))
+                }
               />
             </div>
             <div className="space-y-1">
@@ -231,7 +291,10 @@ export default function StudentPage() {
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && skillInput.trim()) {
                       e.preventDefault();
-                      setUserDraft((d) => ({ ...d, skills: [...(d.skills ?? []), skillInput.trim()] }));
+                      setUserDraft((d) => ({
+                        ...d,
+                        skills: [...(d.skills ?? []), skillInput.trim()],
+                      }));
                       setSkillInput("");
                     }
                   }}
@@ -240,9 +303,20 @@ export default function StudentPage() {
               {(userDraft.skills ?? []).length > 0 && (
                 <div className="flex flex-wrap gap-1 mt-1">
                   {(userDraft.skills ?? []).map((s) => (
-                    <span key={s} className="inline-flex items-center gap-1 text-xs bg-secondary px-2 py-0.5 rounded-full">
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1 text-xs bg-secondary px-2 py-0.5 rounded-full"
+                    >
                       {s}
-                      <button onClick={() => setUserDraft((d) => ({ ...d, skills: (d.skills ?? []).filter((x) => x !== s) }))}>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUserDraft((d) => ({
+                            ...d,
+                            skills: (d.skills ?? []).filter((x) => x !== s),
+                          }))
+                        }
+                      >
                         <X className="h-2.5 w-2.5" />
                       </button>
                     </span>
@@ -258,7 +332,6 @@ export default function StudentPage() {
 
       {/* Accordion sections */}
       <Accordion type="multiple" className="space-y-2">
-
         {/* Results */}
         <Card>
           <CardContent className="pt-4 space-y-2">
@@ -266,18 +339,37 @@ export default function StudentPage() {
             <Separator />
             <Accordion type="single" collapsible className="space-y-2">
               {results.map((r) => (
-                <AccordionItem key={r.id} value={r.id} className="border rounded-md px-3">
+                <AccordionItem
+                  key={r.id}
+                  value={r.id}
+                  className="border rounded-md px-3"
+                >
                   <AccordionTrigger className="hover:no-underline py-2">
-                    <span className="text-sm font-medium">Semester {r.semester}</span>
+                    <span className="text-sm font-medium">
+                      Semester {r.semester}
+                    </span>
                   </AccordionTrigger>
                   <AccordionContent className="pb-3 space-y-2">
                     <ResultForm
-                      initial={{ semester: r.semester, pendingSgpa: r.pendingSgpa }}
-                      onSave={(data) => updateEntry("/api/result", r.id, data, setResults, () => setEditingRes(null))}
+                      initial={{
+                        semester: r.semester,
+                        pendingSgpa: r.pendingSgpa,
+                      }}
+                      onSave={(data) =>
+                        updateEntry("/api/result", r.id, data, setResults, () =>
+                          setEditingRes(null),
+                        )
+                      }
                       onCancel={() => setEditingRes(null)}
                     />
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry("/api/student/results", r.id, setResults)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/student/results", r.id, setResults)
+                      }
+                    >
                       <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </AccordionContent>
@@ -287,12 +379,22 @@ export default function StudentPage() {
             {editingRes === "new" ? (
               <ResultForm
                 initial={{ semester: 0, pendingSgpa: 0.0 }}
-                onSave={(data) => createEntry("/api/result", data, setResults, () => setEditingRes(null))}
+                onSave={(data) =>
+                  createEntry("/api/result", data, setResults, () =>
+                    setEditingRes(null),
+                  )
+                }
                 onCancel={() => setEditingRes(null)}
               />
             ) : (
-              <Button size="sm" variant="outline" className="w-full h-8 text-xs"
-                onClick={() => { setEditingRes("new"); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingRes("new");
+                }}
+              >
                 <Plus className="h-3 w-3 mr-1" /> Add Result
               </Button>
             )}
@@ -306,21 +408,48 @@ export default function StudentPage() {
             <Separator />
             <Accordion type="single" collapsible className="space-y-2">
               {experiences.map((e) => (
-                <AccordionItem key={e.id} value={e.id} className="border rounded-md px-3">
+                <AccordionItem
+                  key={e.id}
+                  value={e.id}
+                  className="border rounded-md px-3"
+                >
                   <AccordionTrigger className="hover:no-underline py-2">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-medium">{e.title}</span>
-                      <span className="text-xs text-muted-foreground">· {e.organization}</span>
+                      <span className="text-xs text-muted-foreground">
+                        · {e.organization}
+                      </span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-3 space-y-2">
                     <ExperienceForm
-                      initial={{ type: e.type, title: e.title, organization: e.organization, description: e.description, startDate: e.startDate, endDate: e.endDate }}
-                      onSave={(data) => updateEntry("/api/experience", e.id, data, setExperiences, () => {})}
+                      initial={{
+                        type: e.type,
+                        title: e.title,
+                        organization: e.organization,
+                        description: e.description,
+                        startDate: e.startDate,
+                        endDate: e.endDate,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/experience",
+                          e.id,
+                          data,
+                          setExperiences,
+                          () => {},
+                        )
+                      }
                       onCancel={() => {}}
                     />
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry("/api/experience", e.id, setExperiences)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/experience", e.id, setExperiences)
+                      }
+                    >
                       <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </AccordionContent>
@@ -329,13 +458,30 @@ export default function StudentPage() {
             </Accordion>
             {editingExp === "new" ? (
               <ExperienceForm
-                initial={{ type: "INTERNSHIP", title: "", organization: "", description: "", startDate: null, endDate: null }}
-                onSave={(data) => createEntry("/api/experience", data, setExperiences, () => setEditingExp(null))}
+                initial={{
+                  type: "INTERNSHIP",
+                  title: "",
+                  organization: "",
+                  description: "",
+                  startDate: null,
+                  endDate: null,
+                }}
+                onSave={(data) =>
+                  createEntry("/api/experience", data, setExperiences, () =>
+                    setEditingExp(null),
+                  )
+                }
                 onCancel={() => setEditingExp(null)}
               />
             ) : (
-              <Button size="sm" variant="outline" className="w-full h-8 text-xs"
-                onClick={() => { setEditingExp("new"); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingExp("new");
+                }}
+              >
                 <Plus className="h-3 w-3 mr-1" /> Add Experience
               </Button>
             )}
@@ -349,18 +495,41 @@ export default function StudentPage() {
             <Separator />
             <Accordion type="single" collapsible className="space-y-2">
               {projects.map((p) => (
-                <AccordionItem key={p.id} value={p.id} className="border rounded-md px-3">
+                <AccordionItem
+                  key={p.id}
+                  value={p.id}
+                  className="border rounded-md px-3"
+                >
                   <AccordionTrigger className="hover:no-underline py-2">
                     <span className="text-sm font-medium">{p.title}</span>
                   </AccordionTrigger>
                   <AccordionContent className="pb-3 space-y-2">
                     <ProjectForm
-                      initial={{ title: p.title, description: p.description, techStack: p.techStack, link: p.link }}
-                      onSave={(data) => updateEntry("/api/project", p.id, data, setProjects, () => {})}
+                      initial={{
+                        title: p.title,
+                        description: p.description,
+                        techStack: p.techStack,
+                        link: p.link,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/project",
+                          p.id,
+                          data,
+                          setProjects,
+                          () => {},
+                        )
+                      }
                       onCancel={() => {}}
                     />
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry("/api/student/projects", p.id, setProjects)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/student/projects", p.id, setProjects)
+                      }
+                    >
                       <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </AccordionContent>
@@ -369,13 +538,28 @@ export default function StudentPage() {
             </Accordion>
             {editingProj === "new" ? (
               <ProjectForm
-                initial={{ title: "", description: "", techStack: [], link: null }}
-                onSave={(data) => createEntry("/api/project", data, setProjects, () => setEditingProj(null))}
+                initial={{
+                  title: "",
+                  description: "",
+                  techStack: [],
+                  link: null,
+                }}
+                onSave={(data) =>
+                  createEntry("/api/project", data, setProjects, () =>
+                    setEditingProj(null),
+                  )
+                }
                 onCancel={() => setEditingProj(null)}
               />
             ) : (
-              <Button size="sm" variant="outline" className="w-full h-8 text-xs"
-                onClick={() => { setEditingProj("new"); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingProj("new");
+                }}
+              >
                 <Plus className="h-3 w-3 mr-1" /> Add Project
               </Button>
             )}
@@ -389,21 +573,51 @@ export default function StudentPage() {
             <Separator />
             <Accordion type="single" collapsible className="space-y-2">
               {achievements.map((a) => (
-                <AccordionItem key={a.id} value={a.id} className="border rounded-md px-3">
+                <AccordionItem
+                  key={a.id}
+                  value={a.id}
+                  className="border rounded-md px-3"
+                >
                   <AccordionTrigger className="hover:no-underline py-2">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-medium">{a.title}</span>
-                      {a.verified && <span className="text-xs text-green-600">· Verified</span>}
+                      {a.verified && (
+                        <span className="text-xs text-green-600">
+                          · Verified
+                        </span>
+                      )}
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-3 space-y-2">
                     <AchievementForm
-                      initial={{ title: a.title, description: a.description, proofImage: a.proofImage }}
-                      onSave={(data) => updateEntry("/api/achievement", a.id, data, setAchievements, () => setEditingAch(null))}
+                      initial={{
+                        title: a.title,
+                        description: a.description,
+                        proofImage: a.proofImage,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/achievement",
+                          a.id,
+                          data,
+                          setAchievements,
+                          () => setEditingAch(null),
+                        )
+                      }
                       onCancel={() => setEditingAch(null)}
                     />
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry("/api/student/achievements", a.id, setAchievements)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry(
+                          "/api/student/achievements",
+                          a.id,
+                          setAchievements,
+                        )
+                      }
+                    >
                       <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </AccordionContent>
@@ -413,12 +627,22 @@ export default function StudentPage() {
             {editingAch === "new" ? (
               <AchievementForm
                 initial={{ title: "", description: "", proofImage: null }}
-                onSave={(data) => createEntry("/api/achievement", data, setAchievements, () => setEditingAch(null))}
+                onSave={(data) =>
+                  createEntry("/api/achievement", data, setAchievements, () =>
+                    setEditingAch(null),
+                  )
+                }
                 onCancel={() => setEditingAch(null)}
               />
             ) : (
-              <Button size="sm" variant="outline" className="w-full h-8 text-xs"
-                onClick={() => { setEditingAch("new"); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingAch("new");
+                }}
+              >
                 <Plus className="h-3 w-3 mr-1" /> Add Achievement
               </Button>
             )}
@@ -432,21 +656,50 @@ export default function StudentPage() {
             <Separator />
             <Accordion type="single" collapsible className="space-y-2">
               {certifications.map((c) => (
-                <AccordionItem key={c.id} value={c.id} className="border rounded-md px-3">
+                <AccordionItem
+                  key={c.id}
+                  value={c.id}
+                  className="border rounded-md px-3"
+                >
                   <AccordionTrigger className="hover:no-underline py-2">
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-medium">{c.name}</span>
-                      <span className="text-xs text-muted-foreground">· {c.issuer}</span>
+                      <span className="text-xs text-muted-foreground">
+                        · {c.issuer}
+                      </span>
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-3 space-y-2">
                     <CertificationForm
-                      initial={{ name: c.name, issuer: c.issuer, issueDate: c.issueDate, proofImage: c.proofImage }}
-                      onSave={(data) => updateEntry("/api/certification", c.id, data, setCertifications, () => setEditingCert(null))}
+                      initial={{
+                        name: c.name,
+                        issuer: c.issuer,
+                        issueDate: c.issueDate,
+                        proofImage: c.proofImage,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/certification",
+                          c.id,
+                          data,
+                          setCertifications,
+                          () => setEditingCert(null),
+                        )
+                      }
                       onCancel={() => setEditingCert(null)}
                     />
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry("/api/student/certifications", c.id, setCertifications)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry(
+                          "/api/student/certifications",
+                          c.id,
+                          setCertifications,
+                        )
+                      }
+                    >
                       <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </AccordionContent>
@@ -455,13 +708,31 @@ export default function StudentPage() {
             </Accordion>
             {editingCert === "new" ? (
               <CertificationForm
-                initial={{ name: "", issuer: "", issueDate: null, proofImage: null }}
-                onSave={(data) => createEntry("/api/certification", data, setCertifications, () => setEditingCert(null))}
+                initial={{
+                  name: "",
+                  issuer: "",
+                  issueDate: null,
+                  proofImage: null,
+                }}
+                onSave={(data) =>
+                  createEntry(
+                    "/api/certification",
+                    data,
+                    setCertifications,
+                    () => setEditingCert(null),
+                  )
+                }
                 onCancel={() => setEditingCert(null)}
               />
             ) : (
-              <Button size="sm" variant="outline" className="w-full h-8 text-xs"
-                onClick={() => { setEditingCert("new"); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingCert("new");
+                }}
+              >
                 <Plus className="h-3 w-3 mr-1" /> Add Certification
               </Button>
             )}
@@ -475,18 +746,32 @@ export default function StudentPage() {
             <Separator />
             <Accordion type="single" collapsible className="space-y-2">
               {socials.map((s) => (
-                <AccordionItem key={s.id} value={s.id} className="border rounded-md px-3">
+                <AccordionItem
+                  key={s.id}
+                  value={s.id}
+                  className="border rounded-md px-3"
+                >
                   <AccordionTrigger className="hover:no-underline py-2">
                     <span className="text-sm font-medium">{s.type}</span>
                   </AccordionTrigger>
                   <AccordionContent className="pb-3 space-y-2">
                     <SocialForm
                       initial={{ type: s.type, url: s.url }}
-                      onSave={(data) => updateEntry("/api/social", s.id, data, setSocials, () => setEditingSoc(null))}
+                      onSave={(data) =>
+                        updateEntry("/api/social", s.id, data, setSocials, () =>
+                          setEditingSoc(null),
+                        )
+                      }
                       onCancel={() => setEditingSoc(null)}
                     />
-                    <Button size="sm" variant="outline" className="h-7 text-xs text-destructive hover:text-destructive"
-                      onClick={() => deleteEntry("/api/student/socials", s.id, setSocials)}>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/student/socials", s.id, setSocials)
+                      }
+                    >
                       <Trash2 className="h-3 w-3 mr-1" /> Delete
                     </Button>
                   </AccordionContent>
@@ -496,18 +781,27 @@ export default function StudentPage() {
             {editingSoc === "new" ? (
               <SocialForm
                 initial={{ type: "OTHER", url: "" }}
-                onSave={(data) => createEntry("/api/social", data, setSocials, () => setEditingSoc(null))}
+                onSave={(data) =>
+                  createEntry("/api/social", data, setSocials, () =>
+                    setEditingSoc(null),
+                  )
+                }
                 onCancel={() => setEditingSoc(null)}
               />
             ) : (
-              <Button size="sm" variant="outline" className="w-full h-8 text-xs"
-                onClick={() => { setEditingSoc("new"); }}>
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingSoc("new");
+                }}
+              >
                 <Plus className="h-3 w-3 mr-1" /> Add Social
               </Button>
             )}
           </CardContent>
         </Card>
-
       </Accordion>
     </div>
   );

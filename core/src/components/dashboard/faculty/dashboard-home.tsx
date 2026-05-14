@@ -4,8 +4,8 @@ import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
 interface StudentListDetails {
@@ -200,20 +200,14 @@ export default function FacultyDashboard() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {stu.unverifiedResults > 0 && (
-                            <Badge>
-                              {stu.unverifiedResults} Res
-                            </Badge>
+                            <Badge>{stu.unverifiedResults} Res</Badge>
                           )}
                           {stu.unverifiedAchievements > 0 && (
-                            <Badge>
-                              {stu.unverifiedAchievements} Achv
-                            </Badge>
+                            <Badge>{stu.unverifiedAchievements} Achv</Badge>
                           )}
                           {stu.unverifiedResults === 0 &&
                             stu.unverifiedAchievements === 0 && (
-                              <Badge variant="secondary">
-                                Up to date
-                              </Badge>
+                              <Badge variant="secondary">Up to date</Badge>
                             )}
                         </div>
                       </td>

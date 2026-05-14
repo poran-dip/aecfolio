@@ -1,5 +1,5 @@
-import { useRouter } from "next/navigation";
+import { redirect } from "next/navigation";
 
-const router = useRouter();
-
-router.push("/faculty");
+export default function FacultyStudentsPage() {
+  redirect("/faculty");
+}

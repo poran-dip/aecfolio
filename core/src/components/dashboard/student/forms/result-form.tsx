@@ -32,7 +32,9 @@ export default function ResultForm({
             max={8}
             className="h-8 text-xs"
             value={draft.semester ?? ""}
-            onChange={(e) => setDraft((d) => ({ ...d, semester: Number(e.target.value) }))}
+            onChange={(e) =>
+              setDraft((d) => ({ ...d, semester: Number(e.target.value) }))
+            }
           />
         </div>
         <div className="space-y-1">
@@ -44,7 +46,12 @@ export default function ResultForm({
             max={10}
             className="h-8 text-xs"
             value={draft.pendingSgpa ?? ""}
-            onChange={(e) => setDraft((d) => ({ ...d, pendingSgpa: e.target.value ? Number(e.target.value) : null }))}
+            onChange={(e) =>
+              setDraft((d) => ({
+                ...d,
+                pendingSgpa: e.target.value ? Number(e.target.value) : null,
+              }))
+            }
           />
         </div>
       </div>

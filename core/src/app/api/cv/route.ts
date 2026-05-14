@@ -1,8 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import React from "react";
-import { renderToStaticMarkup } from "react-dom/server";
 import { templates } from "@/components/templates";
 import { requireRole } from "@/lib/api-auth";
+
+const ReactDOMServer = await import("react-dom/server");
+export const runtime = "nodejs";
 
 const PDF_SERVICE_URL = "http://localhost:3001/cv";
 
@@ -20,7 +22,7 @@ export async function POST(req: NextRequest) {
     }
 
     const element = React.createElement(Template, { data });
-    const html = renderToStaticMarkup(element);
+    const html = ReactDOMServer.renderToStaticMarkup(element);
     const fullHtml = `<!doctype html><html><body>${html}</body></html>`;
 
     const pdfResponse = await fetch(PDF_SERVICE_URL, {

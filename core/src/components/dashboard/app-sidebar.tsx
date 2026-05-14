@@ -3,7 +3,6 @@ import {
   Briefcase,
   ChevronRight,
   ChevronsUpDown,
-  FileText,
   GraduationCap,
   LogOut,
   Settings,
@@ -65,16 +64,14 @@ const data = {
       isActive: true,
       items: [
         { title: "All Students", url: "/faculty" },
-        { title: "Verification Queue", url: "/faculty/verify" }
+        { title: "Verification Queue", url: "/faculty/verify" },
       ],
     },
     {
       title: "User Approvals",
       url: "/faculty/users",
       icon: Briefcase,
-      items: [
-        { title: "Pending Users", url: "/faculty/users" },
-      ],
+      items: [{ title: "Pending Users", url: "/faculty/users" }],
     },
     {
       title: "Account",
@@ -195,7 +192,9 @@ export function AppSidebar({
               <Collapsible
                 key={item.title}
                 asChild
-                defaultOpen={item.items?.some((subItem) => pathname === subItem.url)}
+                defaultOpen={item.items?.some(
+                  (subItem) => pathname === subItem.url,
+                )}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -286,7 +285,10 @@ export function AppSidebar({
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link href={`/${role?.toLowerCase()}/profile`} className="w-full cursor-pointer">
+                    <Link
+                      href={`/${role?.toLowerCase()}/profile`}
+                      className="w-full cursor-pointer"
+                    >
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </Link>

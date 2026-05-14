@@ -20,6 +20,7 @@ import type {
 } from "@/generated/prisma/client";
 import type { CVOptions, CVSections } from "@/types/cv";
 import "./styles.css";
+import Image from "next/image";
 
 type StudentWithRelations = Student & {
   user: User;
@@ -36,7 +37,7 @@ type Props = {
     student: StudentWithRelations;
     sections: CVSections;
     options: CVOptions;
-  }
+  };
 };
 
 function formatDate(date: Date | null | undefined): string {
@@ -54,22 +55,22 @@ export function ProfessionalTemplate({ data }: Props) {
   const github = student.socials.find((s) => s.type === "GITHUB");
   const otherSocials = sections.socials
     ? student.socials.filter(
-        (s) => sections.socials!.includes(s.id) && s.type === "OTHER",
+        (s) => sections.socials?.includes(s.id) && s.type === "OTHER",
       )
     : [];
 
   const selectedProjects = sections.projects
-    ? student.projects.filter((p) => sections.projects!.includes(p.id))
+    ? student.projects.filter((p) => sections.projects?.includes(p.id))
     : [];
   const selectedExperience = sections.experience
-    ? student.experiences.filter((e) => sections.experience!.includes(e.id))
+    ? student.experiences.filter((e) => sections.experience?.includes(e.id))
     : [];
   const selectedAchievements = sections.achievements
-    ? student.achievements.filter((a) => sections.achievements!.includes(a.id))
+    ? student.achievements.filter((a) => sections.achievements?.includes(a.id))
     : [];
   const selectedCertifications = sections.certifications
     ? student.certifications.filter((c) =>
-        sections.certifications!.includes(c.id),
+        sections.certifications?.includes(c.id),
       )
     : [];
 
@@ -83,7 +84,12 @@ export function ProfessionalTemplate({ data }: Props) {
         >
           {sections.image && user.image && (
             <div className="w-22 h-22 shrink-0">
-              <img src={user.image} className="object-cover rounded-full" />
+              <Image
+                alt={user.name ?? "Profile photo"}
+                src={user.image}
+                fill
+                className="object-cover rounded-full"
+              />
             </div>
           )}
           <div className="flex-1 flex flex-col gap-2">
@@ -144,13 +150,10 @@ export function ProfessionalTemplate({ data }: Props) {
                   <span>{s.url.replace("https://", "")}</span>
                 </a>
               ))}
-              <a
-                href="#"
-                className="flex items-center gap-1.5 hover:text-slate-600 transition-all"
-              >
+              <span className="flex items-center gap-1.5 hover:text-slate-600 transition-all">
                 <FontAwesomeIcon icon={faMapPin} size="sm" />
                 <span>Guwahati, Assam, India</span>
-              </a>
+              </span>
             </div>
           </div>
         </div>

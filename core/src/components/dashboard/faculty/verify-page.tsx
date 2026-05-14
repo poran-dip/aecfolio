@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Check, FileBadge, FileText, X } from "lucide-react";
+import { Award, Check, FileBadge, FileText } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
@@ -42,16 +42,22 @@ export default function VerificationPage() {
       .finally(() => setLoading(false));
   }, []);
 
-  const handleAction = async (item: PendingItem, action: "approve" | "reject") => {
+  const handleAction = async (
+    item: PendingItem,
+    action: "approve" | "reject",
+  ) => {
     if (action === "approve") {
       const resourceMap: Record<string, string> = {
         Result: "result",
         Achievement: "achievement",
         Certification: "certification",
       };
-      const res = await fetch(`/api/${resourceMap[item.type]}/${item.id}/verify`, {
-        method: "PATCH",
-      });
+      const res = await fetch(
+        `/api/${resourceMap[item.type]}/${item.id}/verify`,
+        {
+          method: "PATCH",
+        },
+      );
       if (!res.ok) {
         toast.error("Verification failed");
         return;
@@ -68,9 +74,7 @@ export default function VerificationPage() {
       {items.length === 0 ? (
         <Card className="text-center py-12">
           <Check className="mx-auto h-12 w-12 text-emerald-500 mb-4" />
-          <h3 className="text-lg font-medium text-slate-900">
-            All caught up!
-          </h3>
+          <h3 className="text-lg font-medium text-slate-900">All caught up!</h3>
           <p className="text-slate-500 mt-2">
             There are no pending items to verify.
           </p>
@@ -89,10 +93,7 @@ export default function VerificationPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {items.map((item) => (
-                  <tr
-                    key={item.id}
-                    className="hover:bg-slate-50/50 transition"
-                  >
+                  <tr key={item.id} className="hover:bg-slate-50/50 transition">
                     <td className="px-6 py-4">
                       <div className="flex items-start gap-3">
                         <div className="mt-1 bg-white p-2 rounded-lg border border-slate-100 shadow-sm">
@@ -105,9 +106,7 @@ export default function VerificationPage() {
                           <div className="flex items-center gap-2 mt-1">
                             <Badge
                               variant={
-                                item.type === "Result"
-                                  ? "default"
-                                  : "outline"
+                                item.type === "Result" ? "default" : "outline"
                               }
                             >
                               {item.type}

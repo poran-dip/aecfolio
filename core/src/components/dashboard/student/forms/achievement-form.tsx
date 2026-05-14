@@ -39,7 +39,9 @@ export default function AchievementForm({
           className="text-xs resize-none"
           rows={3}
           value={draft.description}
-          onChange={(e) => setDraft((d) => ({ ...d, description: e.target.value }))}
+          onChange={(e) =>
+            setDraft((d) => ({ ...d, description: e.target.value }))
+          }
         />
       </div>
       <div className="space-y-1">
@@ -47,7 +49,9 @@ export default function AchievementForm({
         <Input
           className="h-8 text-xs"
           value={draft.proofImage ?? ""}
-          onChange={(e) => setDraft((d) => ({ ...d, proofImage: e.target.value || null }))}
+          onChange={(e) =>
+            setDraft((d) => ({ ...d, proofImage: e.target.value || null }))
+          }
         />
       </div>
       <FormActions onSave={() => onSave(draft)} onCancel={onCancel} />

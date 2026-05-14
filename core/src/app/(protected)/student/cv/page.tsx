@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 export default function GenCVPage() {
-  const [generating, setGenerating] = useState(false);
+  const [_generating, setGenerating] = useState(false);
 
   const handleDownload = async () => {
     setGenerating(true);
@@ -82,9 +82,7 @@ export default function GenCVPage() {
         {/* Visual representation of an A4 paper for preview state before PDF generated */}
         <div className="w-full max-w-200 aspect-[1/1.4] bg-white shadow-xl rounded flex flex-col items-center justify-center text-center p-8 border border-slate-200 relative group overflow-hidden">
           <div className="absolute inset-0 bg-slate-50 opacity-0 group-hover:opacity-100 flex items-center justify-center backdrop-blur-sm z-10 transition-all duration-300">
-            <Button variant="secondary">
-              Preview PDF Data
-            </Button>
+            <Button variant="secondary">Preview PDF Data</Button>
           </div>
 
           <FileText size={48} className="text-slate-300 mb-4" />
@@ -95,10 +93,7 @@ export default function GenCVPage() {
             Your data will be instantly compiled into the official standard
             template. Information is pulled live from your profile.
           </p>
-          <Button
-            variant="outline"
-            onClick={handleDownload}
-          >
+          <Button variant="outline" onClick={handleDownload}>
             Download the PDF File
           </Button>
         </div>
