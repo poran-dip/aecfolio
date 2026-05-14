@@ -48,31 +48,13 @@ import {
 const data = {
   studentNav: [
     {
-      title: "Academics",
-      url: "/dashboard",
+      title: "Dashboard",
+      url: "/student",
       icon: GraduationCap,
-      isActive: true,
       items: [
-        { title: "Dashboard", url: "/dashboard" },
-        { title: "Results", url: "/dashboard/results" },
-        { title: "Achievements", url: "/dashboard/achievements" },
+        { title: "Profile", url: "/student" },
+        { title: "Generate CV", url: "/student/cv" },
       ],
-    },
-    {
-      title: "Portfolio",
-      url: "/dashboard/projects",
-      icon: Briefcase,
-      items: [
-        { title: "Skills", url: "/dashboard/skills" },
-        { title: "Projects", url: "/dashboard/projects" },
-        { title: "Experience", url: "/dashboard/experience" },
-      ],
-    },
-    {
-      title: "Documents",
-      url: "/dashboard/cv",
-      icon: FileText,
-      items: [{ title: "Generate CV", url: "/dashboard/cv" }],
     },
   ],
   facultyNav: [
@@ -87,7 +69,7 @@ const data = {
       ],
     },
     {
-      title: "Users",
+      title: "User Approvals",
       url: "/faculty/users",
       icon: Briefcase,
       items: [

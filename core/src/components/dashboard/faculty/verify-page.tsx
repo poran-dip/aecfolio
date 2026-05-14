@@ -16,7 +16,7 @@ interface PendingItem {
     id: string;
     name: string | null;
     rollNo: string;
-    department: string;
+    branch: string;
   };
   createdAt: string;
 }
@@ -113,7 +113,7 @@ export default function VerificationPage() {
                               {item.type}
                             </Badge>
                             <span className="text-xs text-slate-500">
-                              {item.student.department}
+                              {item.student.branch}
                             </span>
                           </div>
                         </div>

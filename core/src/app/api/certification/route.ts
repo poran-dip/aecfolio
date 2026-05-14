@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
   const { name, issuer, issueDate, proofImage } = body;
 
   const certification = await prisma.certification.create({
-    data: { studentId: student.id, name, issuer, issueDate, proofImage },
+    data: { studentId: student.id, name, issuer, issueDate: issueDate ? new Date(issueDate) : null, proofImage },
   });
 
   await createAuditLog({

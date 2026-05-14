@@ -57,8 +57,8 @@ export async function POST(req: NextRequest) {
       title,
       organization,
       description,
-      startDate,
-      endDate,
+      startDate: startDate ? new Date(startDate) : null,
+      endDate: endDate ? new Date(endDate) : null,
     },
   });
 
