@@ -12,6 +12,8 @@ import { Props } from "@/types/cv";
 import { iconSvg } from "@/lib/cv-icon";
 
 const css = `
+  @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap');
+
   .cv-page * {
     box-sizing: border-box;
     margin: 0;
@@ -34,12 +36,11 @@ const css = `
 
     background: var(--surface);
     color: var(--text-primary);
-    font-family: Arial;
 
     background: var(--surface);
     color: var(--text-primary);
     font-size: 11px;
-    font-family: Arial, sans-serif;
+    font-family: 'Outfit', Arial, sans-serif;
     line-height: 1.4;
   }
 
