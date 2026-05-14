@@ -3,9 +3,9 @@
 import { Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { Badge } from "@/components/dashboard/ui/Badge";
-import { Card } from "@/components/dashboard/ui/Card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
 
 interface StudentListDetails {
@@ -65,7 +65,7 @@ export default function FacultyDashboard() {
 
   return (
     <div>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
+      <div className="space-y-6">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <Card className="relative p-4">
             {pendingOverall > 0 && (
@@ -81,7 +81,7 @@ export default function FacultyDashboard() {
             <div className="flex items-end justify-between">
               <p className="text-2xl font-bold">{pendingOverall}</p>
               <Button variant="secondary" size="sm" asChild>
-                <Link href="/dashboard/verify/results">Review & Verify</Link>
+                <Link href="/faculty/verify">Review & Verify</Link>
               </Button>
             </div>
           </Card>
@@ -99,7 +99,7 @@ export default function FacultyDashboard() {
             <div className="flex items-end justify-between">
               <p className="text-2xl font-bold">{pendingUsers}</p>
               <Button variant="secondary" size="sm" asChild>
-                <Link href="/dashboard/pending">Review & Approve</Link>
+                <Link href="/faculty/users">Review & Approve</Link>
               </Button>
             </div>
           </Card>
@@ -145,7 +145,7 @@ export default function FacultyDashboard() {
         </div>
 
         {/* Student List */}
-        <Card padding="none" className="overflow-hidden">
+        <Card className="overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm text-left">
               <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase text-xs font-semibold">
@@ -200,20 +200,14 @@ export default function FacultyDashboard() {
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
                           {stu.unverifiedResults > 0 && (
-                            <Badge variant="warning" dot>
-                              {stu.unverifiedResults} Res
-                            </Badge>
+                            <Badge>{stu.unverifiedResults} Res</Badge>
                           )}
                           {stu.unverifiedAchievements > 0 && (
-                            <Badge variant="warning" dot>
-                              {stu.unverifiedAchievements} Achv
-                            </Badge>
+                            <Badge>{stu.unverifiedAchievements} Achv</Badge>
                           )}
                           {stu.unverifiedResults === 0 &&
                             stu.unverifiedAchievements === 0 && (
-                              <Badge variant="success" icon>
-                                Up to date
-                              </Badge>
+                              <Badge variant="secondary">Up to date</Badge>
                             )}
                         </div>
                       </td>

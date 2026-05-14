@@ -1,7 +1,7 @@
 import type { Prisma } from "@/generated/prisma/client";
 import { prisma } from "@/lib/prisma";
 
-export type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "VERIFY";
+type AuditAction = "CREATE" | "UPDATE" | "DELETE" | "VERIFY";
 
 interface CreateAuditLogParams {
   userId: string;

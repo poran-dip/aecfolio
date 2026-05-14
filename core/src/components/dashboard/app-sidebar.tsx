@@ -3,11 +3,9 @@ import {
   Briefcase,
   ChevronRight,
   ChevronsUpDown,
-  FileText,
   GraduationCap,
   LogOut,
   Settings,
-  Trophy,
   User,
 } from "lucide-react";
 import Image from "next/image";
@@ -49,66 +47,37 @@ import {
 const data = {
   studentNav: [
     {
-      title: "Academics",
-      url: "/dashboard",
+      title: "Dashboard",
+      url: "/student",
       icon: GraduationCap,
-      isActive: true,
       items: [
-        { title: "Dashboard", url: "/dashboard" },
-        { title: "Results", url: "/dashboard/results" },
-        { title: "Achievements", url: "/dashboard/achievements" },
+        { title: "Profile", url: "/student" },
+        { title: "Generate CV", url: "/student/cv" },
       ],
-    },
-    {
-      title: "Portfolio",
-      url: "/dashboard/projects",
-      icon: Briefcase,
-      items: [
-        { title: "Skills", url: "/dashboard/skills" },
-        { title: "Projects", url: "/dashboard/projects" },
-        { title: "Experience", url: "/dashboard/experience" },
-      ],
-    },
-    {
-      title: "Documents",
-      url: "/dashboard/cv",
-      icon: FileText,
-      items: [{ title: "Generate CV", url: "/dashboard/cv" }],
     },
   ],
   facultyNav: [
     {
       title: "Students",
-      url: "/dashboard",
+      url: "/faculty",
       icon: GraduationCap,
       isActive: true,
-      items: [{ title: "All Students", url: "/dashboard" }],
-    },
-    {
-      title: "Verify",
-      url: "/dashboard/verify",
-      icon: Trophy,
-      isActive: true,
       items: [
-        { title: "Results", url: "/dashboard/verify/results" },
-        { title: "Achievements", url: "/dashboard/verify/achievements" },
-        { title: "Certifications", url: "/dashboard/verify/certifications" },
+        { title: "All Students", url: "/faculty" },
+        { title: "Verification Queue", url: "/faculty/verify" },
       ],
     },
     {
-      title: "Administration",
-      url: "/dashboard/faculty",
+      title: "User Approvals",
+      url: "/faculty/users",
       icon: Briefcase,
-      items: [
-        { title: "Faculty", url: "/dashboard/faculty" },
-        { title: "Pending Users", url: "/dashboard/pending" },
-      ],
+      items: [{ title: "Pending Users", url: "/faculty/users" }],
     },
     {
       title: "Account",
-      url: "/dashboard/settings",
+      url: "/faculty/profile",
       icon: Settings,
-      items: [{ title: "Edit Profile", url: "/dashboard/settings" }],
+      items: [{ title: "Profile", url: "/faculty/profile" }],
     },
   ],
 };
@@ -223,7 +192,9 @@ export function AppSidebar({
               <Collapsible
                 key={item.title}
                 asChild
-                defaultOpen={item.isActive}
+                defaultOpen={item.items?.some(
+                  (subItem) => pathname === subItem.url,
+                )}
                 className="group/collapsible"
               >
                 <SidebarMenuItem>
@@ -314,7 +285,10 @@ export function AppSidebar({
                 <DropdownMenuSeparator />
                 <DropdownMenuGroup>
                   <DropdownMenuItem asChild>
-                    <Link href="/dashboard" className="w-full cursor-pointer">
+                    <Link
+                      href={`/${role?.toLowerCase()}/profile`}
+                      className="w-full cursor-pointer"
+                    >
                       <User className="mr-2 h-4 w-4" />
                       Profile
                     </Link>

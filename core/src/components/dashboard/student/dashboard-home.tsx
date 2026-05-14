@@ -1,551 +1,808 @@
 "use client";
 
-import {
-  Camera,
-  ExternalLink,
-  Link as LinkIcon,
-  Plus,
-  Save,
-  Trash2,
-  User,
-} from "lucide-react";
-import { useSession } from "next-auth/react";
-import { useEffect, useRef, useState } from "react";
+import { Check, FileText, Pencil, Plus, Trash2, X } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "@/components/dashboard/ui/Button";
-import { Card, CardHeader } from "@/components/dashboard/ui/Card";
-import { Navbar } from "@/components/dashboard/ui/Navbar";
-import { PageLoader } from "@/components/dashboard/ui/Spinner";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea";
+import AchievementForm from "./forms/achievement-form";
+import CertificationForm from "./forms/certification-form";
+import ExperienceForm from "./forms/experience-form";
+import ProjectForm from "./forms/project-form";
+import ResultForm from "./forms/result-form";
+import SocialForm from "./forms/social-form";
+import type {
+  Achievement,
+  Certification,
+  Experience,
+  Project,
+  Result,
+  Social,
+  User,
+  UserDraft,
+} from "./student-dashboard.types";
 
-const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
-const SOCIAL_TYPES = ["LINKEDIN", "GITHUB", "LEETCODE", "CODEFORCES", "OTHER"];
+export default function StudentPage() {
+  const router = useRouter();
 
-interface ProfileData {
-  student: {
-    id: string;
-    rollNo: string;
-    course: string;
-    branch: string;
-    semester: number;
-    bio: string | null;
-    phone: string | null;
-    address: string | null;
-    socials: { id: string; type: string; url: string }[];
-  } | null;
-  name: string | null;
-  email: string;
-  image: string | null;
-}
+  const [user, setUser] = useState<User | null>(null);
+  const [editingProfile, setEditingProfile] = useState(false);
+  const [userDraft, setUserDraft] = useState<UserDraft>({});
+  const [skillInput, setSkillInput] = useState("");
 
-const socialIcon = (type: string) => {
-  if (type === "GITHUB") return <ExternalLink size={16} />;
-  if (type === "LINKEDIN") return <ExternalLink size={16} />;
-  return <ExternalLink size={16} />;
-};
+  const [experiences, setExperiences] = useState<Experience[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [certifications, setCertifications] = useState<Certification[]>([]);
+  const [socials, setSocials] = useState<Social[]>([]);
+  const [results, setResults] = useState<Result[]>([]);
 
-export default function ProfilePage() {
-  const { data: session, status } = useSession();
-
-  const [data, setData] = useState<ProfileData | null>(null);
-  const [saving, setSaving] = useState(false);
-
-  // Form state
-  const [bio, setBio] = useState("");
-  const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
-  const [semester, setSemester] = useState(1);
-  const [enrolled, setEnrolled] = useState("ACTIVE");
-  const [socials, setSocials] = useState<{ type: string; url: string }[]>([]);
-  const [newSocialType, setNewSocialType] = useState("LINKEDIN");
-  const [newSocialUrl, setNewSocialUrl] = useState("");
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    // Create a temporary local URL for instant preview
-    const imageUrl = URL.createObjectURL(file);
-
-    // Save to localStorage for cross-component mock sync
-    localStorage.setItem("mockUserImage", imageUrl);
-    window.dispatchEvent(new Event("userImageUpdated"));
-
-    // Optimistically update the UI to show the new image
-    setData((prev) => {
-      if (!prev) {
-        return {
-          name: "Test Student",
-          email: "student@aec.ac.in",
-          image: imageUrl,
-          student: null,
-        };
-      }
-      return {
-        ...prev,
-        image: imageUrl,
-      };
-    });
-
-    toast.success("Profile image updated!");
-
-    // Simulate backend upload delay (API missing)
-    // Normally: await fetch("/api/upload", { method: "POST", body: formData })
-  };
+  const [editingExp, setEditingExp] = useState<string | null>(null);
+  const [editingProj, setEditingProj] = useState<string | null>(null);
+  const [editingAch, setEditingAch] = useState<string | null>(null);
+  const [editingCert, setEditingCert] = useState<string | null>(null);
+  const [editingSoc, setEditingSoc] = useState<string | null>(null);
+  const [editingRes, setEditingRes] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!session?.user?.id) return;
-
-    fetch("/api/me", {
-      headers: { "x-user-id": session.user.id },
-    })
-      .then((r) => r.json())
-      .then((d) => {
-        console.log("API response:", d);
-        setData(d);
-        setBio(d.student?.bio ?? "");
-        setPhone(d.student?.phone ?? "");
-        setAddress(d.student?.address ?? "");
-        setSemester(d.student?.semester ?? 1);
-        setSocials(
-          d.student?.socials?.map((s: { type: string; url: string }) => ({
-            type: s.type,
-            url: s.url,
-          })) ?? [],
-        );
-      });
-  }, [session]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await fetch("/api/me", {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": session?.user?.id ?? "",
-        },
-        body: JSON.stringify({ phone }),
-      });
-      if (res.ok) toast.success("Profile updated!");
-      else toast.error("Failed to update profile");
-    } catch {
-      toast.error("Network error");
-    } finally {
-      setSaving(false);
+    async function load() {
+      try {
+        const [usrRes, expRes, projRes, achRes, certRes, socRes, resRes] =
+          await Promise.all([
+            fetch("/api/me"),
+            fetch("/api/experience"),
+            fetch("/api/project"),
+            fetch("/api/achievement"),
+            fetch("/api/certification"),
+            fetch("/api/social"),
+            fetch("/api/result"),
+          ]);
+        const [usr, exp, proj, ach, cert, soc, res] = await Promise.all([
+          usrRes.json(),
+          expRes.json(),
+          projRes.json(),
+          achRes.json(),
+          certRes.json(),
+          socRes.json(),
+          resRes.json(),
+        ]);
+        setUser(usr);
+        setExperiences(exp);
+        setProjects(proj);
+        setAchievements(ach);
+        setCertifications(cert);
+        setSocials(soc);
+        setResults(res);
+      } catch {
+        toast.error("Failed to load profile");
+      }
     }
-  };
+    load();
+  }, []);
 
-  const addSocial = async () => {
-    if (!newSocialUrl.trim()) return;
-    if (socials.some((s) => s.type === newSocialType)) {
-      toast.error(`You already added a ${newSocialType} link!`);
-      return;
-    }
+  async function saveProfile() {
     try {
-      setSocials((prev) => [
-        ...prev,
-        { type: newSocialType, url: newSocialUrl },
+      const [updatedUser, updatedStudent] = await Promise.all([
+        fetch("/api/me", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: userDraft.name,
+            phone: userDraft.phone,
+          }),
+        }).then((r) => r.json()),
+        fetch(`/api/student/${user?.student.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            bio: userDraft.bio,
+            skills: userDraft.skills,
+          }),
+        }).then((r) => r.json()),
       ]);
-      setNewSocialUrl("");
-      toast.success("Social link added!");
-      await fetch("/api/social", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-user-id": session?.user?.id ?? "",
-        },
-        body: JSON.stringify({
-          studentId: data?.student?.id,
-          type: newSocialType,
-          url: newSocialUrl,
-        }),
-      });
+      setUser((prev) => ({
+        ...prev,
+        ...updatedUser,
+        student: { ...prev?.student, ...updatedStudent },
+      }));
+      setEditingProfile(false);
+      toast.success("Profile updated");
     } catch {
-      toast.error("Failed to sync social link to server");
+      toast.error("Failed to update profile");
     }
-  };
+  }
 
-  if (status === "loading") return <PageLoader />;
+  async function createEntry<T>(
+    url: string,
+    body: object,
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    resetEditing: () => void,
+  ) {
+    try {
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const created = await res.json();
+      setter((prev) => [...prev, created]);
+      resetEditing();
+      toast.success("Added");
+    } catch {
+      toast.error("Failed to add");
+    }
+  }
+
+  async function updateEntry<T extends { id: string }>(
+    url: string,
+    id: string,
+    body: object,
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+    resetEditing: () => void,
+  ) {
+    try {
+      const res = await fetch(`${url}/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const updated = await res.json();
+      setter((prev) => prev.map((e) => (e.id === id ? updated : e)));
+      resetEditing();
+      toast.success("Updated");
+    } catch {
+      toast.error("Failed to update");
+    }
+  }
+
+  async function deleteEntry<T extends { id: string }>(
+    url: string,
+    id: string,
+    setter: React.Dispatch<React.SetStateAction<T[]>>,
+  ) {
+    try {
+      await fetch(`${url}/${id}`, { method: "DELETE" });
+      setter((prev) => prev.filter((e) => e.id !== id));
+      toast.success("Deleted");
+    } catch {
+      toast.error("Failed to delete");
+    }
+  }
+
+  if (!user) {
+    return (
+      <div className="flex items-center justify-center h-64 text-sm text-muted-foreground">
+        Loading...
+      </div>
+    );
+  }
 
   return (
-    <div>
-      <Navbar
-        title="My Profile"
-        subtitle="Personal details and contact information"
-        actions={
-          <Button
-            onClick={handleSave}
-            loading={saving}
-            icon={<Save size={14} />}
-          >
-            Save Changes
-          </Button>
-        }
-      />
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-xl font-semibold">{user.student.rollNo}</h1>
+          <p className="text-sm text-muted-foreground">
+            {user.student.course} · {user.student.branch} · Semester{" "}
+            {user.student.semester}
+          </p>
+        </div>
+        <Button onClick={() => router.push("/student/cv")}>
+          <FileText className="h-4 w-4 mr-2" /> Generate CV
+        </Button>
+      </div>
 
-      <div className="p-6 space-y-6 max-w-4xl mx-auto">
-        {/* Profile Hero Section */}
-        <div className="flex flex-col md:flex-row gap-6 items-center md:items-start p-6 bg-white border border-slate-200 rounded-xl shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-full h-24 bg-linear-to-r from-blue-600 to-indigo-600"></div>
-          <div className="relative mt-8 md:mt-8 flex flex-col md:flex-row items-center md:items-end gap-6 w-full">
-            <div className="relative group shrink-0">
-              <Avatar className="h-32 w-32 border-4 border-white shadow-xl bg-white">
-                {data?.image && (
-                  <AvatarImage
-                    src={data.image}
-                    alt={data?.name || "Student"}
-                    className="object-cover"
-                  />
-                )}
-                <AvatarFallback className="text-4xl bg-slate-100 text-slate-500 font-medium">
-                  {data?.name?.substring(0, 2).toUpperCase() || "ST"}
-                </AvatarFallback>
-              </Avatar>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity"
+      <Separator />
+
+      {/* Basic Info */}
+      <div className="space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-sm font-medium">Basic Info</h2>
+          {!editingProfile ? (
+            <Button
+              size="sm"
+              variant="ghost"
+              className="h-7 text-xs"
+              onClick={() => {
+                setUserDraft({
+                  name: user.name,
+                  phone: user.phone,
+                  bio: user.student.bio,
+                  skills: user.student.skills,
+                });
+                setEditingProfile(true);
+              }}
+            >
+              <Pencil className="h-3 w-3 mr-1" /> Edit
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-7 text-xs"
+                onClick={() => setEditingProfile(false)}
               >
-                <Camera size={16} />
-              </button>
-              <input
-                type="file"
-                ref={fileInputRef}
-                className="hidden"
-                accept="image/*"
-                onChange={handleImageUpload}
-              />
+                <X className="h-3 w-3 mr-1" /> Cancel
+              </Button>
+              <Button size="sm" className="h-7 text-xs" onClick={saveProfile}>
+                <Check className="h-3 w-3 mr-1" /> Save
+              </Button>
             </div>
-
-            <div className="flex-1 text-center md:text-left pb-1">
-              <h2 className="text-3xl font-bold text-slate-800">
-                {data?.name || "Student Name"}
-              </h2>
-              <p className="text-slate-500 font-medium mt-1">
-                {data?.student?.rollNo || "No Roll Assigned"} •{" "}
-                {data?.student?.course || "Course"}{" "}
-                {data?.student?.branch || ""}
-              </p>
-              <div className="flex items-center justify-center md:justify-start gap-4 mt-4">
-                {enrolled === "ACTIVE" ? (
-                  <span className="text-xs px-3 py-1 bg-green-100 text-green-700 font-bold rounded-full tracking-wide uppercase">
-                    Active Student
-                  </span>
-                ) : (
-                  <span className="text-xs px-3 py-1 bg-slate-100 text-slate-600 font-bold rounded-full tracking-wide uppercase">
-                    Inactive Student
-                  </span>
-                )}
-                <span className="text-sm font-medium text-slate-500">
-                  {data?.email}
-                </span>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
 
-        {/* Personal Details */}
-        <Card>
-          <CardHeader title="Account Details" icon={<User size={18} />} />
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            {/* Name (read-only from Google) */}
-            <div>
-              <label
-                htmlFor="name"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Full Name
-              </label>
-              <input
-                id="name"
-                type="text"
-                value={data?.name ?? ""}
-                disabled
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Synced from your Google account
-              </p>
-            </div>
-
-            {/* Email (read-only) */}
-            <div>
-              <label
-                htmlFor="email"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Email Address
-              </label>
-              <input
-                id="email"
-                type="email"
-                value={data?.email ?? ""}
-                disabled
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
-              />
-            </div>
-
-            {/* Roll No (read-only) */}
-            <div>
-              <label
-                htmlFor="roll-no"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Roll Number
-              </label>
-              <input
-                id="roll-no"
-                type="text"
-                value={data?.student?.rollNo ?? "Not assigned"}
-                disabled
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Assigned by administrator
-              </p>
-            </div>
-
-            {/* Phone */}
-            <div>
-              <label
-                htmlFor="phone"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Phone Number
-              </label>
-              <input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="+91 XXXXXXXXXX"
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition"
-              />
-            </div>
-
-            {/* Course (read-only) */}
-            <div>
-              <p className="block text-sm font-medium text-slate-700 mb-1.5">
-                Course
-              </p>
-              <div className="flex gap-2">
-                {COURSES.map((c) => (
+        {!editingProfile ? (
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              {user.student.bio ?? "No bio yet."}
+            </p>
+            {user.student.skills?.length > 0 && (
+              <div className="flex flex-wrap gap-1">
+                {user.student.skills.map((s) => (
                   <span
-                    key={c}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
-                      data?.student?.course === c
-                        ? "bg-blue-600 text-white border-blue-600"
-                        : "bg-slate-50 text-slate-400 border-slate-200"
-                    }`}
+                    key={s}
+                    className="text-xs bg-secondary px-2 py-0.5 rounded-full"
                   >
-                    {c}
+                    {s}
                   </span>
                 ))}
               </div>
-            </div>
-
-            {/* Branch (read-only) */}
-            <div>
-              <label
-                htmlFor="branch"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Branch
-              </label>
-              <input
-                id="branch"
-                type="text"
-                value={data?.student?.branch ?? "Not assigned"}
-                disabled
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 bg-slate-50 text-slate-400 text-sm cursor-not-allowed"
-              />
-            </div>
-
-            {/* Current Semester */}
-            <div>
-              <label
-                htmlFor="semester"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Current Semester
-              </label>
-              <select
-                id="semester"
-                value={semester}
-                onChange={(e) => setSemester(Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition bg-white"
-              >
-                {Array.from({ length: 8 }, (_, i) => i + 1).map((s) => (
-                  <option key={s} value={s}>
-                    Semester {s}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Enrollment enrolled */}
-            <div>
-              <label
-                htmlFor="enrollment-status"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Enrollment enrolled
-              </label>
-              <select
-                id="enrollment-status"
-                value={enrolled}
-                onChange={(e) => setEnrolled(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition bg-white"
-              >
-                <option value="ACTIVE">Currently Enrolled</option>
-                <option value="ALUMNI">Passed Out / Graduated</option>
-              </select>
-            </div>
-
-            {/* Address */}
-            <div className="sm:col-span-2">
-              <label
-                htmlFor="current-address"
-                className="block text-sm font-medium text-slate-700 mb-1.5"
-              >
-                Current Address
-              </label>
-              <textarea
-                id="current-address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
-                rows={2}
-                placeholder="Enter your current residential address..."
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Bio */}
-          <div className="mt-5">
-            <label
-              htmlFor="bio"
-              className="block text-sm font-medium text-slate-700 mb-1.5"
-            >
-              Bio / Objective Statement
-            </label>
-            <textarea
-              id="bio"
-              value={bio}
-              onChange={(e) => setBio(e.target.value)}
-              rows={4}
-              placeholder="Write a brief professional objective or bio that will appear on your CV..."
-              className="w-full px-3 py-2.5 rounded-lg border border-slate-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100 text-sm outline-none transition resize-none"
-            />
-            <p className="text-xs text-slate-400 mt-1">
-              {bio.length}/500 characters
-            </p>
-          </div>
-        </Card>
-
-        {/* Social Links */}
-        <Card>
-          <CardHeader
-            title="Social & Portfolio Links"
-            icon={<LinkIcon size={18} />}
-            description="These will appear on your CV"
-          />
-
-          {/* Existing socials */}
-          <div className="space-y-3 mb-6">
-            {socials.length === 0 ? (
-              <p className="text-sm text-slate-400">
-                No social links added yet.
+            )}
+            {user.student.cgpa !== null && (
+              <p className="text-xs text-muted-foreground">
+                CGPA: {user.student.cgpa}
               </p>
-            ) : (
-              socials.map((s, i) => (
-                <div
-                  key={`${s.type}-${s.url}`}
-                  className="flex items-center gap-3 p-3 bg-slate-50 rounded-lg border border-slate-200"
-                >
-                  <span className="text-slate-400 shrink-0">
-                    {socialIcon(s.type)}
-                  </span>
-                  <span className="text-xs font-medium text-slate-500 w-24 shrink-0">
-                    {s.type}
-                  </span>
-                  <span className="text-sm text-blue-600 truncate flex-1">
-                    {s.url}
-                  </span>
-                  <button
-                    type="button"
-                    className="text-slate-300 hover:text-red-400 transition-colors"
-                    onClick={async () => {
-                      // Update state immediately for functional UI
-                      setSocials((prev) => prev.filter((_, idx) => idx !== i));
-                      toast.success("Social link removed");
-
-                      // Background sync
-                      await fetch(`/api/student/socials?type=${s.type}`, {
-                        method: "DELETE",
-                      }).catch(() => {});
-                    }}
-                  >
-                    <Trash2 size={14} />
-                  </button>
-                </div>
-              ))
             )}
           </div>
-
-          {/* Add new social */}
-          <div className="flex items-end gap-3">
-            <div className="w-36">
-              <label
-                htmlFor="platform"
-                className="block text-xs font-medium text-slate-600 mb-1.5"
-              >
-                Platform
-              </label>
-              <select
-                id="platform"
-                value={newSocialType}
-                onChange={(e) => setNewSocialType(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm outline-none bg-white focus:border-blue-400"
-              >
-                {SOCIAL_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-            <div className="flex-1">
-              <label
-                htmlFor="url"
-                className="block text-xs font-medium text-slate-600 mb-1.5"
-              >
-                URL
-              </label>
-              <input
-                id="url"
-                type="url"
-                value={newSocialUrl}
-                onChange={(e) => setNewSocialUrl(e.target.value)}
-                placeholder="https://..."
-                className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 transition"
-                onKeyDown={(e) => e.key === "Enter" && addSocial()}
+        ) : (
+          <div className="space-y-3 p-3 border rounded-md bg-muted/30">
+            <div className="space-y-1">
+              <Label className="text-xs">Bio</Label>
+              <Textarea
+                className="text-xs resize-none"
+                rows={3}
+                value={userDraft.bio ?? ""}
+                onChange={(e) =>
+                  setUserDraft((d) => ({ ...d, bio: e.target.value || null }))
+                }
               />
             </div>
-            <Button
-              onClick={addSocial}
-              icon={<Plus size={14} />}
-              variant="secondary"
-            >
-              Add
-            </Button>
+            <div className="space-y-1">
+              <Label className="text-xs">Skills</Label>
+              <div className="flex gap-2">
+                <Input
+                  className="h-8 text-xs"
+                  placeholder="Add skill and press Enter..."
+                  value={skillInput}
+                  onChange={(e) => setSkillInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && skillInput.trim()) {
+                      e.preventDefault();
+                      setUserDraft((d) => ({
+                        ...d,
+                        skills: [...(d.skills ?? []), skillInput.trim()],
+                      }));
+                      setSkillInput("");
+                    }
+                  }}
+                />
+              </div>
+              {(userDraft.skills ?? []).length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {(userDraft.skills ?? []).map((s) => (
+                    <span
+                      key={s}
+                      className="inline-flex items-center gap-1 text-xs bg-secondary px-2 py-0.5 rounded-full"
+                    >
+                      {s}
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setUserDraft((d) => ({
+                            ...d,
+                            skills: (d.skills ?? []).filter((x) => x !== s),
+                          }))
+                        }
+                      >
+                        <X className="h-2.5 w-2.5" />
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </Card>
+        )}
       </div>
+
+      <Separator />
+
+      {/* Accordion sections */}
+      <Accordion type="multiple" className="space-y-2">
+        {/* Results */}
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <h2 className="text-sm font-medium">Results</h2>
+            <Separator />
+            <Accordion type="single" collapsible className="space-y-2">
+              {results.map((r) => (
+                <AccordionItem
+                  key={r.id}
+                  value={r.id}
+                  className="border rounded-md px-3"
+                >
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <span className="text-sm font-medium">
+                      Semester {r.semester}
+                    </span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-3 space-y-2">
+                    <ResultForm
+                      initial={{
+                        semester: r.semester,
+                        pendingSgpa: r.pendingSgpa,
+                      }}
+                      onSave={(data) =>
+                        updateEntry("/api/result", r.id, data, setResults, () =>
+                          setEditingRes(null),
+                        )
+                      }
+                      onCancel={() => setEditingRes(null)}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/student/results", r.id, setResults)
+                      }
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {editingRes === "new" ? (
+              <ResultForm
+                initial={{ semester: 0, pendingSgpa: 0.0 }}
+                onSave={(data) =>
+                  createEntry("/api/result", data, setResults, () =>
+                    setEditingRes(null),
+                  )
+                }
+                onCancel={() => setEditingRes(null)}
+              />
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingRes("new");
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Result
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Experiences */}
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <h2 className="text-sm font-medium">Experience</h2>
+            <Separator />
+            <Accordion type="single" collapsible className="space-y-2">
+              {experiences.map((e) => (
+                <AccordionItem
+                  key={e.id}
+                  value={e.id}
+                  className="border rounded-md px-3"
+                >
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">{e.title}</span>
+                      <span className="text-xs text-muted-foreground">
+                        · {e.organization}
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-3 space-y-2">
+                    <ExperienceForm
+                      initial={{
+                        type: e.type,
+                        title: e.title,
+                        organization: e.organization,
+                        description: e.description,
+                        startDate: e.startDate,
+                        endDate: e.endDate,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/experience",
+                          e.id,
+                          data,
+                          setExperiences,
+                          () => {},
+                        )
+                      }
+                      onCancel={() => {}}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/experience", e.id, setExperiences)
+                      }
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {editingExp === "new" ? (
+              <ExperienceForm
+                initial={{
+                  type: "INTERNSHIP",
+                  title: "",
+                  organization: "",
+                  description: "",
+                  startDate: null,
+                  endDate: null,
+                }}
+                onSave={(data) =>
+                  createEntry("/api/experience", data, setExperiences, () =>
+                    setEditingExp(null),
+                  )
+                }
+                onCancel={() => setEditingExp(null)}
+              />
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingExp("new");
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Experience
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Projects */}
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <h2 className="text-sm font-medium">Projects</h2>
+            <Separator />
+            <Accordion type="single" collapsible className="space-y-2">
+              {projects.map((p) => (
+                <AccordionItem
+                  key={p.id}
+                  value={p.id}
+                  className="border rounded-md px-3"
+                >
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <span className="text-sm font-medium">{p.title}</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-3 space-y-2">
+                    <ProjectForm
+                      initial={{
+                        title: p.title,
+                        description: p.description,
+                        techStack: p.techStack,
+                        link: p.link,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/project",
+                          p.id,
+                          data,
+                          setProjects,
+                          () => {},
+                        )
+                      }
+                      onCancel={() => {}}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/student/projects", p.id, setProjects)
+                      }
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {editingProj === "new" ? (
+              <ProjectForm
+                initial={{
+                  title: "",
+                  description: "",
+                  techStack: [],
+                  link: null,
+                }}
+                onSave={(data) =>
+                  createEntry("/api/project", data, setProjects, () =>
+                    setEditingProj(null),
+                  )
+                }
+                onCancel={() => setEditingProj(null)}
+              />
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingProj("new");
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Project
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Achievements */}
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <h2 className="text-sm font-medium">Achievements</h2>
+            <Separator />
+            <Accordion type="single" collapsible className="space-y-2">
+              {achievements.map((a) => (
+                <AccordionItem
+                  key={a.id}
+                  value={a.id}
+                  className="border rounded-md px-3"
+                >
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">{a.title}</span>
+                      {a.verified && (
+                        <span className="text-xs text-green-600">
+                          · Verified
+                        </span>
+                      )}
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-3 space-y-2">
+                    <AchievementForm
+                      initial={{
+                        title: a.title,
+                        description: a.description,
+                        proofImage: a.proofImage,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/achievement",
+                          a.id,
+                          data,
+                          setAchievements,
+                          () => setEditingAch(null),
+                        )
+                      }
+                      onCancel={() => setEditingAch(null)}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry(
+                          "/api/student/achievements",
+                          a.id,
+                          setAchievements,
+                        )
+                      }
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {editingAch === "new" ? (
+              <AchievementForm
+                initial={{ title: "", description: "", proofImage: null }}
+                onSave={(data) =>
+                  createEntry("/api/achievement", data, setAchievements, () =>
+                    setEditingAch(null),
+                  )
+                }
+                onCancel={() => setEditingAch(null)}
+              />
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingAch("new");
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Achievement
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Certifications */}
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <h2 className="text-sm font-medium">Certifications</h2>
+            <Separator />
+            <Accordion type="single" collapsible className="space-y-2">
+              {certifications.map((c) => (
+                <AccordionItem
+                  key={c.id}
+                  value={c.id}
+                  className="border rounded-md px-3"
+                >
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium">{c.name}</span>
+                      <span className="text-xs text-muted-foreground">
+                        · {c.issuer}
+                      </span>
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-3 space-y-2">
+                    <CertificationForm
+                      initial={{
+                        name: c.name,
+                        issuer: c.issuer,
+                        issueDate: c.issueDate,
+                        proofImage: c.proofImage,
+                      }}
+                      onSave={(data) =>
+                        updateEntry(
+                          "/api/certification",
+                          c.id,
+                          data,
+                          setCertifications,
+                          () => setEditingCert(null),
+                        )
+                      }
+                      onCancel={() => setEditingCert(null)}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry(
+                          "/api/student/certifications",
+                          c.id,
+                          setCertifications,
+                        )
+                      }
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {editingCert === "new" ? (
+              <CertificationForm
+                initial={{
+                  name: "",
+                  issuer: "",
+                  issueDate: null,
+                  proofImage: null,
+                }}
+                onSave={(data) =>
+                  createEntry(
+                    "/api/certification",
+                    data,
+                    setCertifications,
+                    () => setEditingCert(null),
+                  )
+                }
+                onCancel={() => setEditingCert(null)}
+              />
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingCert("new");
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Certification
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Socials */}
+        <Card>
+          <CardContent className="pt-4 space-y-2">
+            <h2 className="text-sm font-medium">Socials</h2>
+            <Separator />
+            <Accordion type="single" collapsible className="space-y-2">
+              {socials.map((s) => (
+                <AccordionItem
+                  key={s.id}
+                  value={s.id}
+                  className="border rounded-md px-3"
+                >
+                  <AccordionTrigger className="hover:no-underline py-2">
+                    <span className="text-sm font-medium">{s.type}</span>
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-3 space-y-2">
+                    <SocialForm
+                      initial={{ type: s.type, url: s.url }}
+                      onSave={(data) =>
+                        updateEntry("/api/social", s.id, data, setSocials, () =>
+                          setEditingSoc(null),
+                        )
+                      }
+                      onCancel={() => setEditingSoc(null)}
+                    />
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs text-destructive hover:text-destructive"
+                      onClick={() =>
+                        deleteEntry("/api/student/socials", s.id, setSocials)
+                      }
+                    >
+                      <Trash2 className="h-3 w-3 mr-1" /> Delete
+                    </Button>
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+            {editingSoc === "new" ? (
+              <SocialForm
+                initial={{ type: "OTHER", url: "" }}
+                onSave={(data) =>
+                  createEntry("/api/social", data, setSocials, () =>
+                    setEditingSoc(null),
+                  )
+                }
+                onCancel={() => setEditingSoc(null)}
+              />
+            ) : (
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full h-8 text-xs"
+                onClick={() => {
+                  setEditingSoc("new");
+                }}
+              >
+                <Plus className="h-3 w-3 mr-1" /> Add Social
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      </Accordion>
     </div>
   );
 }
