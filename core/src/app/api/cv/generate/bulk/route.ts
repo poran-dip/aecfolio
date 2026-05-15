@@ -3,6 +3,7 @@ import React from "react";
 import { templates } from "@/components/templates";
 import { requireRole } from "@/lib/api-auth";
 import type { StudentWithRelations } from "@/types/cv";
+import { inlineExternalResources } from "@/lib/inline-html";
 
 const ReactDOMServer = await import("react-dom/server");
 export const runtime = "nodejs";
@@ -34,14 +35,17 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entries = data.map((d) => {
-      const element = React.createElement(Template, { data: d });
-      const html = ReactDOMServer.renderToStaticMarkup(element);
-      return {
-        name: d.user.name,
-        html: `<!doctype html><html><title>${d.user.name} Resume</title><body>${html}</body></html>`,
-      };
-    });
+    const entries = await Promise.all(
+      data.map(async (d) => {
+        const element = React.createElement(Template, { data: d });
+        const html = ReactDOMServer.renderToStaticMarkup(element);
+        const rawHtml = `<!doctype html><html><title>${d.user.name} Resume</title><body>${html}</body></html>`;
+        return {
+          name: d.user.name,
+          html: await inlineExternalResources(rawHtml),
+        };
+      })
+    );
 
     const pdfResponse = await fetch(PDF_SERVICE_BULK_URL, {
       method: "POST",
