@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import React from "react";
 import { templates } from "@/components/templates";
 import { requireRole } from "@/lib/api-auth";
-import { inlineExternalResources } from "@/lib/inline-html";
 
 const ReactDOMServer = await import("react-dom/server");
 export const runtime = "nodejs";
@@ -25,9 +24,8 @@ export async function POST(req: NextRequest) {
 
     const element = React.createElement(Template, { data });
     const html = ReactDOMServer.renderToStaticMarkup(element);
-    const rawHtml = `<!doctype html><html><title>${session.user.name} Resume</title><body>${html}</body></html>`;
-    const fullHtml = await inlineExternalResources(rawHtml);
-
+    const fullHtml = `<!doctype html><html><title>${session.user.name} Resume</title><body>${html}</body></html>`;
+  
     const pdfResponse = await fetch(PDF_SERVICE_URL, {
       method: "POST",
       headers: {

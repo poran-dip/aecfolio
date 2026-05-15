@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { templates } from "@/components/templates";
 import { Button } from "@/components/ui/button";
 import type { StudentWithRelations } from "@/types/cv";
+import { toBase64 } from "@/lib/to-base64";
 
 export default function GenerateCVPage() {
   const [loading, setLoading] = useState(true);
@@ -32,6 +33,15 @@ export default function GenerateCVPage() {
 
   const handleDownload = async () => {
     setGenerating(true);
+    let processedData = data;
+      if (data?.user.image) {
+        try {
+          const base64 = await toBase64(data.user.image);
+          processedData = { ...data, user: { ...data.user, image: base64 } };
+        } catch {
+          console.warn("[download] Failed to inline profile image");
+        }
+      }
     try {
       const res = await fetch("/api/cv/generate", {
         method: "POST",
@@ -40,7 +50,7 @@ export default function GenerateCVPage() {
         },
         body: JSON.stringify({
           template: templateKey,
-          data,
+          data: processedData,
         }),
       });
       if (!res.ok) throw new Error();

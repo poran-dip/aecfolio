@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Spinner } from "@/components/ui/spinner";
+import { toBase64 } from "@/lib/to-base64";
 
 interface StudentListDetails {
   id: string;
@@ -42,10 +43,23 @@ export default function FacultyDashboard() {
       });
       const { students } = await idsRes.json();
 
+      const studentsWithInlinedImages = await Promise.all(
+        students.map(async (s: any) => {
+          if (!s.user?.image) return s;
+          try {
+            const base64 = await toBase64(s.user.image);
+            return { ...s, user: { ...s.user, image: base64 } };
+          } catch {
+            console.warn(`[export] Failed to inline image for ${s.user?.name}`);
+            return s;
+          }
+        })
+      );
+
       const zipRes = await fetch("/api/cv/generate/bulk", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ template: "professional", data: students }),
+        body: JSON.stringify({ template: "professional", data: studentsWithInlinedImages }),
       });
 
       const blob = await zipRes.blob();

@@ -11,6 +11,7 @@ export async function getInlinedFontStyle(): Promise<string> {
   const woff2Matches = [...css.matchAll(/url\((https:\/\/[^)]+)\)/g)];
   let inlinedCss = css;
   for (const [urlExpr, fontUrl] of woff2Matches) {
+    if (!fontUrl) continue;
     try {
       const fontBuf = await fetch(fontUrl).then((r) => r.arrayBuffer());
       const b64 = Buffer.from(fontBuf).toString("base64");
@@ -27,6 +28,7 @@ export async function getInlinedFontStyle(): Promise<string> {
 export async function inlineExternalResources(html: string): Promise<string> {
   const imgMatches = [...html.matchAll(/(<img[^>]+src=")(https?:\/\/[^"]+)(")/g)];
   for (const [full, prefix, url, suffix] of imgMatches) {
+    if (!url) continue;
     try {
       const res = await fetch(url);
       const buf = await res.arrayBuffer();

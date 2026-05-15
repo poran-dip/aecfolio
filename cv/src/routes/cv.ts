@@ -6,7 +6,7 @@ import type { BulkPayload, Payload } from "@/types";
 
 const cv = new Hono();
 
-const MAX_BODY_SIZE = 2 * 1024 * 1024;
+const MAX_BODY_SIZE = 15 * 1024 * 1024;
 
 cv.post("/", async (c) => {
   const contentLength = c.req.header("content-length");
