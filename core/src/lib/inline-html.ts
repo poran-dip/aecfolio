@@ -47,7 +47,11 @@ export async function inlineExternalResources(html: string): Promise<string> {
 
   const inlinedCss = await getInlinedFontStyle();
   for (const [tag] of [...fontLinkMatches, ...fontImportMatches]) {
-    html = html.replace(tag, `<style>${inlinedCss}</style>`);
+      const isLink = tag.startsWith("<link");
+      html = html.replace(
+        tag,
+        isLink ? `<style>${inlinedCss}</style>` : inlinedCss,
+      );
   }
 
   return html;
