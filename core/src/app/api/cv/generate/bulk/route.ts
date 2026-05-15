@@ -35,17 +35,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const entries = await Promise.all(
-      data.map(async (d) => {
-        const element = React.createElement(Template, { data: d });
-        const html = ReactDOMServer.renderToStaticMarkup(element);
-        const rawHtml = `<!doctype html><html><title>${d.user.name} Resume</title><body>${html}</body></html>`;
-        return {
-          name: d.user.name,
-          html: await inlineExternalResources(rawHtml),
-        };
-      })
-    );
+    let entries: { name: string | null; html: string }[];
+    try {
+      entries = await Promise.all(
+        data.map(async (d) => {
+          const element = React.createElement(Template, { data: d });
+          const html = ReactDOMServer.renderToStaticMarkup(element);
+          const rawHtml = `<!doctype html><html><title>${d.user.name} Resume</title><body>${html}</body></html>`;
+          return {
+            name: d.user.name,
+            html: await inlineExternalResources(rawHtml),
+          };
+        })
+      );
+    } catch (err) {
+      console.error("[bulk] Failed during HTML inlining:", err);
+      return NextResponse.json({ error: "Failed to prepare HTML" }, { status: 500 });
+    }
 
     const pdfResponse = await fetch(PDF_SERVICE_BULK_URL, {
       method: "POST",
