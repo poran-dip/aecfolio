@@ -8,7 +8,7 @@ export async function generateCV(html: string): Promise<Buffer> {
   try {
     const inlinedHtml = await inlineExternalResources(html);
     await page.emulateMediaType("screen");
-    await page.setContent(inlinedHtml, { waitUntil: "networkidle0" });
+    await page.setContent(inlinedHtml, { waitUntil: "domcontentloaded", timeout: 30000 });
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,

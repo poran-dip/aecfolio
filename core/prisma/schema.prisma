@@ -122,6 +122,10 @@ model Student {
   results  Result[]
   cgpa     Float?
 
+  motherName    String?
+  fatherName    String?
+  location      String?
+
   experiences    Experience[]
   projects       Project[]
   achievements   Achievement[]
