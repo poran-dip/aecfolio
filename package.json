@@ -1,0 +1,25 @@
+{
+  "name": "aecfolio",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@11.1.2",
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "format": "biome format --write .",
+    "db:migrate": "pnpm --filter @aecfolio/db migrate",
+    "db:generate": "pnpm --filter @aecfolio/db generate"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^2.4.15",
+    "turbo": "^2.9.14",
+    "typescript": "^6.0.3"
+  },
+  "engines": {
+    "node": ">=24",
+    "pnpm": ">=11"
+  }
+}
