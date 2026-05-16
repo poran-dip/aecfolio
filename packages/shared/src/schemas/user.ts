@@ -1,0 +1,23 @@
+import { z } from "zod";
+import { Role } from "../enums";
+
+export const userSchema = z.object({
+  id: z.string(),
+  name: z.string().nullable(),
+  email: z.email(),
+  emailVerified: z.coerce.date().nullable(),
+  phone: z.string().nullable(),
+  image: z.string().nullable(),
+  role: z.enum(Role),
+  createdAt: z.coerce.date(),
+  updatedAt: z.coerce.date(),
+});
+
+export const updateUserSchema = z.object({
+  name: z.string().min(1).optional(),
+  phone: z.string().optional(),
+  image: z.url().optional(),
+});
+
+export type User = z.infer<typeof userSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;

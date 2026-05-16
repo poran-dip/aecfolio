@@ -4,6 +4,15 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    typescript:
+      specifier: ^6.0.3
+      version: 6.0.3
+    zod:
+      specifier: ^4.4.3
+      version: 4.4.3
+
 importers:
 
   .:
@@ -14,9 +23,6 @@ importers:
       turbo:
         specifier: ^2.9.14
         version: 2.9.14
-      typescript:
-        specifier: ^6.0.3
-        version: 6.0.3
 
   packages/db:
     dependencies:
@@ -42,9 +48,22 @@ importers:
       drizzle-kit:
         specifier: ^0.31.10
         version: 0.31.10
+      drizzle-seed:
+        specifier: ^0.3.1
+        version: 0.3.1(drizzle-orm@0.45.2(@types/pg@8.20.0)(pg@8.20.0))
       tsx:
         specifier: ^4.22.0
         version: 4.22.0
+
+  packages/shared:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.3
 
 packages:
 
@@ -710,6 +729,14 @@ packages:
       sqlite3:
         optional: true
 
+  drizzle-seed@0.3.1:
+    resolution: {integrity: sha512-F/0lgvfOAsqlYoHM/QAGut4xXIOXoE5VoAdv2FIl7DpGYVXlAzKuJO+IphkKUFK3Dz+rFlOsQLnMNrvoQ0cx7g==}
+    peerDependencies:
+      drizzle-orm: '>=0.36.4'
+    peerDependenciesMeta:
+      drizzle-orm:
+        optional: true
+
   error-causes@3.0.2:
     resolution: {integrity: sha512-i0B8zq1dHL6mM85FGoxaJnVtx6LD5nL2v0hlpGdntg5FOSyzQ46c9lmz5qx0xRS2+PWHGOHcYxGIBC5Le2dRMw==}
 
@@ -786,6 +813,9 @@ packages:
     resolution: {integrity: sha512-9ZhXKM/rw350N1ovuWHbGxnGh/SNJ4cnxHiM0rxE4VN41wsg8P8zWn9hv/buK00RP4WvlOyr/RBDiptyxVbkZQ==}
     engines: {node: '>=0.10.0'}
 
+  pure-rand@6.1.0:
+    resolution: {integrity: sha512-bVWawvoZoBYpp6yIoQtQXHZjmz35RSVHnUOTefl8Vcjr8snTPY1wnpSPMWekcFwbxI6gtmT7rSYPFvz71ldiOA==}
+
   resolve-pkg-maps@1.0.0:
     resolution: {integrity: sha512-seS2Tj26TBVOC2NIc2rOe2y2ZO7efxITtLZcGSOnHHNOQ7CkiUBfw0Iw2ck6xkIhPwLhKNLS8BO+hEpngQlqzw==}
 
@@ -820,6 +850,9 @@ packages:
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
+
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
 
@@ -1146,6 +1179,12 @@ snapshots:
       '@types/pg': 8.20.0
       pg: 8.20.0
 
+  drizzle-seed@0.3.1(drizzle-orm@0.45.2(@types/pg@8.20.0)(pg@8.20.0)):
+    dependencies:
+      pure-rand: 6.1.0
+    optionalDependencies:
+      drizzle-orm: 0.45.2(@types/pg@8.20.0)(pg@8.20.0)
+
   error-causes@3.0.2: {}
 
   esbuild@0.18.20:
@@ -1283,6 +1322,8 @@ snapshots:
     dependencies:
       xtend: 4.0.2
 
+  pure-rand@6.1.0: {}
+
   resolve-pkg-maps@1.0.0: {}
 
   source-map-support@0.5.21:
@@ -1314,3 +1355,5 @@ snapshots:
   undici-types@7.24.6: {}
 
   xtend@4.0.2: {}
+
+  zod@4.4.3: {}

@@ -9,7 +9,7 @@
     { "path": "./apps/api" },
     { "path": "./apps/web" },
     { "path": "./apps/worker" },
-    { "path": "./packages/types" },
+    { "path": "./packages/shared" },
     { "path": "./packages/db" },
     { "path": "./packages/ui" }
   ]
