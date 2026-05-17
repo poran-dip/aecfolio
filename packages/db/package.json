@@ -16,7 +16,7 @@
     "@paralleldrive/cuid2": "^3.3.0",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
-    "pg": "^8.20.0"
+    "pg": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",

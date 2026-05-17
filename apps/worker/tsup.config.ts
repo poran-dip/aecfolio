@@ -5,4 +5,5 @@ export default defineConfig({
   format: ["esm"],
   splitting: false,
   clean: true,
+  noExternal: ["@aecfolio/ui", "@aecfolio/shared"],
 });

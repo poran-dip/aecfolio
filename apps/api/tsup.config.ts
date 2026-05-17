@@ -5,4 +5,6 @@ export default defineConfig({
   format: ["esm"],
   splitting: false,
   clean: true,
+  external: ["pg"],
+  noExternal: ["@aecfolio/db", "@aecfolio/shared"],
 });
