@@ -3,8 +3,9 @@ import { Hono } from "hono";
 import { db } from "../lib/db";
 import { ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
+import type { AppEnv } from "../types/context";
 
-const auditLogs = new Hono();
+const auditLogs = new Hono<AppEnv>();
 
 auditLogs.get("/", requireRole("FACULTY"), async (c) => {
   const userId = c.req.query("userId");

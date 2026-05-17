@@ -4,10 +4,11 @@ import { z } from "zod";
 import { db } from "../lib/db";
 import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
+import type { AppEnv } from "../types/context";
 
 const CV_SERVICE_URL = process.env.CV_SERVICE_URL ?? "http://localhost:3001/cv";
 
-const cv = new Hono();
+const cv = new Hono<AppEnv>();
 
 cv.get("/me", requireRole("STUDENT"), async (c) => {
   const user = getUser(c);

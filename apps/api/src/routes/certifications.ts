@@ -12,8 +12,9 @@ import { db } from "../lib/db";
 import { fail, getUser, ok } from "../lib/response";
 import { getStudentForUser } from "../lib/student";
 import { requireRole } from "../middleware/role";
+import type { AppEnv } from "../types/context";
 
-const certifications = new Hono();
+const certifications = new Hono<AppEnv>();
 
 certifications.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
   const user = getUser(c);
