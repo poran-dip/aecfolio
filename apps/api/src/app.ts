@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger } from "hono/logger";
 import { authMiddleware } from "./middleware/auth";
-import api from "./routes/index";
+import api from "./routes";
 import type { AppEnv } from "./types/context";
 
 const app = new Hono<AppEnv>();
