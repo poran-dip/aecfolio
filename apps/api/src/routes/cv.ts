@@ -46,7 +46,7 @@ cv.post(
     const pdfRes = await fetch(CV_SERVICE_URL, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ template, data, name: user.name }),
+      body: JSON.stringify({ template, data }),
     });
 
     if (!pdfRes.ok) return fail(c, "CV_ERROR", "Failed to generate PDF", 500);
