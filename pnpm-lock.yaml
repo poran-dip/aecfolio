@@ -9,6 +9,9 @@ catalogs:
     '@types/node':
       specifier: ^24.12.4
       version: 24.12.4
+    dotenv:
+      specifier: ^17.4.2
+      version: 17.4.2
     drizzle-orm:
       specifier: ^0.45.2
       version: 0.45.2
@@ -53,6 +56,9 @@ importers:
       better-auth:
         specifier: ^1.6.11
         version: 1.6.11(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.20.0)(kysely@0.28.17)(pg@8.20.0))(pg@8.20.0)
+      dotenv:
+        specifier: 'catalog:'
+        version: 17.4.2
       drizzle-orm:
         specifier: 'catalog:'
         version: 0.45.2(@types/pg@8.20.0)(kysely@0.28.17)(pg@8.20.0)
@@ -79,7 +85,7 @@ importers:
         specifier: ^3.3.0
         version: 3.3.0
       dotenv:
-        specifier: ^17.4.2
+        specifier: 'catalog:'
         version: 17.4.2
       drizzle-orm:
         specifier: 'catalog:'
@@ -103,6 +109,9 @@ importers:
       tsx:
         specifier: 'catalog:'
         version: 4.22.0
+      typescript:
+        specifier: 'catalog:'
+        version: 5.9.3
 
   packages/shared:
     dependencies:

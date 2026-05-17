@@ -6,7 +6,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
+import { fail, getUser, ok } from "../lib/response";
 import { getStudentForUser } from "../lib/student";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
@@ -14,7 +14,7 @@ import type { AppEnv } from "../types/context";
 const results = new Hono<AppEnv>();
 
 results.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user");
+  const user = getUser(c);
   const paramStudentId = c.req.query("studentId");
 
   if (user.role === "STUDENT") {
@@ -41,7 +41,7 @@ results.post(
   requireRole("STUDENT"),
   zValidator("json", createResultSchema),
   async (c) => {
-    const user = c.get("user");
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const student = await getStudentForUser(user.id);
@@ -67,7 +67,7 @@ results.patch(
   requireRole("FACULTY"),
   zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
   async (c) => {
-    const user = c.get("user");
+    const user = getUser(c);
     const { ids } = c.req.valid("json");
 
     await db
@@ -91,7 +91,7 @@ results.patch(
 );
 
 results.get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user");
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const result = await db.query.resultsTable.findFirst({
@@ -113,7 +113,7 @@ results.patch(
   requireRole("STUDENT", "FACULTY"),
   zValidator("json", updateResultSchema),
   async (c) => {
-    const user = c.get("user");
+    const user = getUser(c);
     const id = c.req.param("id");
     const body = c.req.valid("json");
 
@@ -145,7 +145,7 @@ results.patch(
 );
 
 results.patch("/:id/verify", requireRole("FACULTY"), async (c) => {
-  const user = c.get("user");
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const existing = await db.query.resultsTable.findFirst({
@@ -169,7 +169,7 @@ results.patch("/:id/verify", requireRole("FACULTY"), async (c) => {
 });
 
 results.delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user");
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const result = await db.query.resultsTable.findFirst({

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@aecfolio/db": "workspace:*",
@@ -15,6 +16,7 @@
     "@hono/node-server": "^1.19.14",
     "@hono/zod-validator": "^0.8.0",
     "better-auth": "^1.6.11",
+    "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "^4.12.19",
     "zod": "catalog:"

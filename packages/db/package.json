@@ -9,11 +9,12 @@
     "push": "drizzle-kit push",
     "studio": "drizzle-kit studio",
     "seed": "tsx src/seed.ts",
-    "seed:fake": "tsx src/seed-fake.ts"
+    "seed:fake": "tsx src/seed-fake.ts",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@paralleldrive/cuid2": "^3.3.0",
-    "dotenv": "^17.4.2",
+    "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "^8.20.0"
   },
@@ -22,7 +23,8 @@
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.31.10",
     "drizzle-seed": "^0.3.1",
-    "tsx": "catalog:"
+    "tsx": "catalog:",
+    "typescript": "catalog:"
   },
   "exports": {
     ".": "./src/index.ts"
