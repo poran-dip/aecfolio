@@ -5,16 +5,15 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
+import { fail, getUser, ok } from "../lib/response";
 import { getStudentForUser } from "../lib/student";
-import type { SessionUser } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
 const socials = new Hono<AppEnv>();
 
 socials.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const paramStudentId = c.req.query("studentId");
 
   let studentId: string | null = null;
@@ -39,7 +38,7 @@ socials.post(
   requireRole("STUDENT"),
   zValidator("json", createSocialSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const student = await getStudentForUser(user.id);
@@ -60,7 +59,7 @@ socials.post(
 );
 
 socials.get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const social = await db.query.socialsTable.findFirst({
@@ -82,7 +81,7 @@ socials.patch(
   requireRole("STUDENT", "FACULTY"),
   zValidator("json", updateSocialSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const id = c.req.param("id");
     const body = c.req.valid("json");
 
@@ -113,7 +112,7 @@ socials.patch(
 );
 
 socials.delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const social = await db.query.socialsTable.findFirst({

@@ -5,15 +5,14 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
-import type { SessionUser } from "../middleware/auth";
+import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
 const me = new Hono<AppEnv>();
 
 me.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
 
   const result = await db.query.usersTable.findFirst({
     where: (u, { and, eq, isNull }) =>
@@ -30,7 +29,7 @@ me.patch(
   requireRole("STUDENT", "FACULTY"),
   zValidator("json", updateUserSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const [updated] = await db
@@ -50,7 +49,7 @@ me.patch(
 );
 
 me.delete("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
 
   const [deleted] = await db
     .update(usersTable)
@@ -72,7 +71,7 @@ me.post(
   requireRole("PENDING"),
   zValidator("json", createStudentSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const existing = await db.query.studentsTable.findFirst({

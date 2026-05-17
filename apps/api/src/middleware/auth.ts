@@ -1,19 +1,18 @@
-import type { Role } from "@aecfolio/shared";
 import type { MiddlewareHandler } from "hono";
+import { auth } from "../lib/auth";
 import type { AppEnv } from "../types/context";
 
-export type SessionUser = {
-  id: string;
-  name: string;
-  role: Role;
-};
-
 export const authMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
-  const stubUser: SessionUser = {
-    id: "stub-user-id",
-    name: "Stub User",
-    role: "FACULTY",
-  };
-  c.set("user", stubUser);
+  c.set("user", null);
+  c.set("session", null);
+
+  if (c.req.path.startsWith("/api/auth")) return next();
+
+  const session = await auth.api.getSession({ headers: c.req.raw.headers });
+  if (session) {
+    c.set("user", session.user);
+    c.set("session", session.session);
+  }
+
   await next();
 };

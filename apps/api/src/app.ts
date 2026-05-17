@@ -9,13 +9,22 @@ const app = new Hono<AppEnv>();
 
 app.use("*", logger());
 app.use(
-  "*",
-  cors({ origin: process.env.CORS_ORIGIN ?? "http://localhost:5173" }),
+  "/api/*",
+  cors({
+    origin: (origin) => {
+      const allowed = [
+        process.env.CORS_ORIGIN ?? "http://localhost:5173",
+        "http://localhost:5174",
+      ];
+      if (!origin) return null;
+      return allowed.includes(origin) ? origin : null;
+    },
+    credentials: true,
+  }),
 );
-app.use("*", authMiddleware);
+app.use("/api/*", authMiddleware);
 
 app.route("/api", api);
-
 app.get("/health", (c) => c.json({ ok: true }));
 
 export default app;

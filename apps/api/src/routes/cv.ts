@@ -2,8 +2,7 @@ import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
-import type { SessionUser } from "../middleware/auth";
+import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
 
 const CV_SERVICE_URL = process.env.CV_SERVICE_URL ?? "http://localhost:3001/cv";
@@ -11,7 +10,7 @@ const CV_SERVICE_URL = process.env.CV_SERVICE_URL ?? "http://localhost:3001/cv";
 const cv = new Hono();
 
 cv.get("/me", requireRole("STUDENT"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
 
   const student = await db.query.studentsTable.findFirst({
     where: (s, { eq }) => eq(s.userId, user.id),
@@ -40,7 +39,7 @@ cv.post(
   requireRole("STUDENT"),
   zValidator("json", generateSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const { template, data } = c.req.valid("json");
 
     const pdfRes = await fetch(CV_SERVICE_URL, {

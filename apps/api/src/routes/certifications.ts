@@ -9,15 +9,14 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
+import { fail, getUser, ok } from "../lib/response";
 import { getStudentForUser } from "../lib/student";
-import type { SessionUser } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 
 const certifications = new Hono();
 
 certifications.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const paramStudentId = c.req.query("studentId");
 
   let studentId: string | null = null;
@@ -45,7 +44,7 @@ certifications.post(
   requireRole("STUDENT"),
   zValidator("json", createCertificationSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const student = await getStudentForUser(user.id);
@@ -70,7 +69,7 @@ certifications.patch(
   requireRole("FACULTY"),
   zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const { ids } = c.req.valid("json");
 
     await db
@@ -93,7 +92,7 @@ certifications.patch(
 );
 
 certifications.get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const achievement = await db.query.certificationsTable.findFirst({
@@ -115,7 +114,7 @@ certifications.patch(
   requireRole("STUDENT", "FACULTY"),
   zValidator("json", updateCertificationSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const id = c.req.param("id");
     const body = c.req.valid("json");
 
@@ -146,7 +145,7 @@ certifications.patch(
 );
 
 certifications.patch("/:id/verify", requireRole("FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const existing = await db.query.certificationsTable.findFirst({
@@ -170,7 +169,7 @@ certifications.patch("/:id/verify", requireRole("FACULTY"), async (c) => {
 });
 
 certifications.delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const achievement = await db.query.certificationsTable.findFirst({

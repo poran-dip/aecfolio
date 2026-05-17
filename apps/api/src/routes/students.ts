@@ -11,8 +11,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
-import type { SessionUser } from "../middleware/auth";
+import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
@@ -31,7 +30,7 @@ students.post(
   requireRole("FACULTY"),
   zValidator("json", createStudentSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const [student] = await db
@@ -69,7 +68,7 @@ students.post(
   requireRole("FACULTY"),
   zValidator("json", importSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const { students: rows } = c.req.valid("json");
 
     const results = await Promise.allSettled(
@@ -129,7 +128,7 @@ students.patch(
   requireRole("FACULTY"),
   zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const { ids } = c.req.valid("json");
 
     const found = await db.query.studentsTable.findMany({
@@ -183,7 +182,7 @@ students.patch(
   requireRole("FACULTY"),
   zValidator("json", updateStudentSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const id = c.req.param("id");
     const body = c.req.valid("json");
 
@@ -208,7 +207,7 @@ students.patch(
 );
 
 students.delete("/:id", requireRole("FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const existing = await db.query.studentsTable.findFirst({

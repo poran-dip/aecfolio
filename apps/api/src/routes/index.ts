@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../types/context";
 import achievements from "./achievements";
 import auditLogs from "./audit-logs";
+import authRouter from "./auth";
 import certifications from "./certifications";
 import cv from "./cv";
 import dashboard from "./dashboard";
@@ -16,6 +17,7 @@ import users from "./users";
 
 const api = new Hono<AppEnv>();
 
+api.route("/auth", authRouter);
 api.route("/me", me);
 api.route("/users", users);
 api.route("/dashboard", dashboard);

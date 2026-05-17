@@ -8,16 +8,15 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
+import { fail, getUser, ok } from "../lib/response";
 import { getStudentForUser } from "../lib/student";
-import type { SessionUser } from "../middleware/auth";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
 const experiences = new Hono<AppEnv>();
 
 experiences.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const paramStudentId = c.req.query("studentId");
 
   let studentId: string | null = null;
@@ -45,7 +44,7 @@ experiences.post(
   requireRole("STUDENT"),
   zValidator("json", createExperienceSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const student = await getStudentForUser(user.id);
@@ -66,7 +65,7 @@ experiences.post(
 );
 
 experiences.get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const experience = await db.query.experiencesTable.findFirst({
@@ -88,7 +87,7 @@ experiences.patch(
   requireRole("STUDENT", "FACULTY"),
   zValidator("json", updateExperienceSchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const id = c.req.param("id");
     const body = c.req.valid("json");
 
@@ -119,7 +118,7 @@ experiences.patch(
 );
 
 experiences.delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const experience = await db.query.experiencesTable.findFirst({

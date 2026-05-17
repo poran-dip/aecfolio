@@ -1,10 +1,10 @@
 import { createId } from "@paralleldrive/cuid2";
 import { sql } from "drizzle-orm";
 import {
+  boolean,
   check,
   index,
   pgTable,
-  primaryKey,
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
@@ -16,12 +16,15 @@ export const usersTable = pgTable(
     id: text()
       .primaryKey()
       .$defaultFn(() => createId()),
-    name: text(),
+    name: text().notNull(),
     email: text().unique().notNull(),
-    emailVerified: timestamp("email_verified"),
-    phone: text(),
+    emailVerified: boolean("email_verified").default(false).notNull(),
     image: text(),
+    phone: text(),
     role: roleEnum().default("PENDING").notNull(),
+    banned: boolean().default(false).notNull(),
+    banReason: text("ban_reason"),
+    banExpires: timestamp("ban_expires"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -37,38 +40,17 @@ export const usersTable = pgTable(
   ],
 );
 
-export const accountsTable = pgTable(
-  "accounts",
-  {
-    userId: text("user_id").notNull(),
-    type: text().notNull(),
-    provider: text().notNull(),
-    providerAccountId: text("provider_account_id").notNull(),
-    refreshToken: text("refresh_token"),
-    accessToken: text("access_token"),
-    expiresAt: text("expires_at"),
-    tokenType: text("token_type"),
-    scope: text(),
-    idToken: text("id_token"),
-    sessionState: text("session_state"),
-    createdAt: timestamp("created_at").defaultNow().notNull(),
-    updatedAt: timestamp("updated_at")
-      .defaultNow()
-      .notNull()
-      .$onUpdate(() => new Date()),
-  },
-  (t) => [
-    primaryKey({ columns: [t.provider, t.providerAccountId] }),
-    index("accounts_user_id_idx").on(t.userId),
-  ],
-);
-
 export const sessionsTable = pgTable(
   "sessions",
   {
-    sessionToken: text("session_token").unique().notNull(),
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    expiresAt: timestamp("expires_at").notNull(),
+    token: text().unique().notNull(),
+    ipAddress: text("ip_address"),
+    userAgent: text("user_agent"),
     userId: text("user_id").notNull(),
-    expires: timestamp().notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -78,12 +60,45 @@ export const sessionsTable = pgTable(
   (t) => [index("sessions_user_id_idx").on(t.userId)],
 );
 
-export const verificationTokensTable = pgTable(
-  "verification_tokens",
+export const accountsTable = pgTable(
+  "accounts",
   {
-    identifier: text().notNull(),
-    token: text().notNull(),
-    expires: timestamp().notNull(),
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    accountId: text("account_id").notNull(),
+    providerId: text("provider_id").notNull(),
+    userId: text("user_id").notNull(),
+    accessToken: text("access_token"),
+    refreshToken: text("refresh_token"),
+    idToken: text("id_token"),
+    accessTokenExpiresAt: timestamp("access_token_expires_at"),
+    refreshTokenExpiresAt: timestamp("refresh_token_expires_at"),
+    scope: text(),
+    password: text(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
   },
-  (t) => [primaryKey({ columns: [t.identifier, t.token] })],
+  (t) => [index("accounts_user_id_idx").on(t.userId)],
+);
+
+export const verificationsTable = pgTable(
+  "verifications",
+  {
+    id: text()
+      .primaryKey()
+      .$defaultFn(() => createId()),
+    identifier: text().notNull(),
+    value: text().notNull(),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at")
+      .defaultNow()
+      .notNull()
+      .$onUpdate(() => new Date()),
+  },
+  (t) => [index("verifications_identifier_idx").on(t.identifier)],
 );

@@ -5,8 +5,7 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
-import { fail, ok } from "../lib/response";
-import type { SessionUser } from "../middleware/auth";
+import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
@@ -25,7 +24,7 @@ faculty.post(
   requireRole("FACULTY"),
   zValidator("json", createFacultySchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const body = c.req.valid("json");
 
     const [f] = await db
@@ -151,7 +150,7 @@ faculty.patch(
   requireRole("FACULTY"),
   zValidator("json", updateFacultySchema),
   async (c) => {
-    const user = c.get("user") as SessionUser;
+    const user = getUser(c);
     const id = c.req.param("id");
     const body = c.req.valid("json");
 
@@ -176,7 +175,7 @@ faculty.patch(
 );
 
 faculty.delete("/:id", requireRole("FACULTY"), async (c) => {
-  const user = c.get("user") as SessionUser;
+  const user = getUser(c);
   const id = c.req.param("id");
 
   const existing = await db.query.facultyTable.findFirst({
