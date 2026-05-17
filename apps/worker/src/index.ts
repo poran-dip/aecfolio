@@ -6,7 +6,7 @@ import { closeBrowser, getBrowser } from "./lib/puppeteer";
 import cv from "./routes/cv";
 
 const isProd = process.env.NODE_ENV === "production";
-const port = Number(process.env.PORT) || 3001;
+const port = Number(process.env.WORKER_PORT) || 3001;
 
 const app = new Hono();
 

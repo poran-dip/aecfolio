@@ -1,0 +1,33 @@
+# deps
+node_modules
+**/node_modules
+
+# build outputs
+**/dist
+**/.react-router
+
+# dev/tooling
+**/.env
+**/.env.local
+**/drizzle
+**/*.log
+
+# turbo
+.turbo
+**/.turbo
+
+# vcs
+.git
+.gitignore
+
+# editor
+.vscode
+
+# misc
+.DS_Store
+Thumbs.db
+*.tsbuildinfo
+
+# other
+README.md
+*.md
