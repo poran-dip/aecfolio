@@ -1,0 +1,30 @@
+{
+  "name": "@aecfolio/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "typecheck": "react-router typegen && tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-router/node": "7.15.1",
+    "@react-router/serve": "7.15.1",
+    "isbot": "^5.1.36",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router": "7.15.1"
+  },
+  "devDependencies": {
+    "@react-router/dev": "7.15.1",
+    "@tailwindcss/vite": "^4.2.2",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "tailwindcss": "^4.2.2",
+    "typescript": "catalog:",
+    "vite": "^8.0.3"
+  }
+}
