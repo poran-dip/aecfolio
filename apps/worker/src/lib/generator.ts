@@ -9,7 +9,7 @@ export async function generateCV(element: React.ReactElement): Promise<Buffer> {
   try {
     const html = renderToStaticMarkup(element);
     const inlined = await inlineImages(html);
-  
+
     const fontFaceBlock = `<style>
       @font-face { font-family: 'Outfit'; font-weight: 300; src: url('/fonts/outfit/Outfit-Light.ttf') format('truetype'); }
       @font-face { font-family: 'Outfit'; font-weight: 400; src: url('/fonts/outfit/Outfit-Regular.ttf') format('truetype'); }

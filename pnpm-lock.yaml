@@ -93,6 +93,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4
+      tsup:
+        specifier: 'catalog:'
+        version: 8.5.1(tsx@4.22.0)(typescript@5.9.3)
       tsx:
         specifier: 'catalog:'
         version: 4.22.0
