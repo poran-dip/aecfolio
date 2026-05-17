@@ -9,6 +9,9 @@ catalogs:
     '@hono/node-server':
       specifier: ^1.19.14
       version: 1.19.14
+    '@paralleldrive/cuid2':
+      specifier: ^3.3.0
+      version: 3.3.0
     '@types/node':
       specifier: ^24.12.4
       version: 24.12.4
@@ -77,6 +80,9 @@ importers:
       '@hono/zod-validator':
         specifier: ^0.8.0
         version: 0.8.0(hono@4.12.19)(zod@4.4.3)
+      '@paralleldrive/cuid2':
+        specifier: 'catalog:'
+        version: 3.3.0
       better-auth:
         specifier: ^1.6.11
         version: 1.6.11(drizzle-kit@0.31.10)(drizzle-orm@0.45.2(@types/pg@8.20.0)(kysely@0.28.17)(pg@8.20.0))(pg@8.20.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -207,7 +213,7 @@ importers:
   packages/db:
     dependencies:
       '@paralleldrive/cuid2':
-        specifier: ^3.3.0
+        specifier: 'catalog:'
         version: 3.3.0
       dotenv:
         specifier: 'catalog:'

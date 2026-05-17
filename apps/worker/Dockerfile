@@ -3,13 +3,13 @@ WORKDIR /app
 
 RUN apk add --no-cache chromium nss freetype harfbuzz ca-certificates ttf-freefont
 
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY apps/worker/package.json ./apps/worker/
 COPY packages/ui/package.json ./packages/ui/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/db/package.json ./packages/db/
 
-RUN corepack enable && pnpm install --filter @aecfolio/worker
+RUN corepack enable && pnpm install --filter @aecfolio/worker...
 
 COPY apps/worker ./apps/worker
 COPY packages/ui ./packages/ui

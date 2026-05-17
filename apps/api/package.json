@@ -15,6 +15,7 @@
     "@better-auth/drizzle-adapter": "^1.6.11",
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "^0.8.0",
+    "@paralleldrive/cuid2": "catalog:",
     "better-auth": "^1.6.11",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",

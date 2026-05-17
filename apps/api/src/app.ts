@@ -25,6 +25,6 @@ app.use(
 app.use("/api/*", authMiddleware);
 
 app.route("/api", api);
-app.get("/health", (c) => c.json({ ok: true }));
+app.get("/api/health", (c) => c.json({ ok: true }));
 
 export default app;

@@ -1,7 +1,7 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
 
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 
@@ -23,4 +23,4 @@ COPY --from=builder /app/apps/web/dist ./apps/web/dist
 
 ENV PORT=3000
 EXPOSE 3000
-CMD ["node_modules/.bin/react-router-serve", "apps/web/dist/server/index.js"]
+CMD ["sh", "-c", "cd /app/apps/web && node_modules/.bin/react-router-serve dist/server/index.js"]
