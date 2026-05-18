@@ -5,5 +5,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function DashboardPage() {
-  return <div />;
+  return null;
 }

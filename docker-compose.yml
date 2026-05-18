@@ -35,7 +35,8 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       API_PORT: 3002
       WORKER_URL: http://worker:3001
-      BETTER_AUTH_URL: http://api:3002
+      BETTER_AUTH_URL: http://localhost
+      CORS_ORIGIN: http://localhost
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
@@ -50,6 +51,8 @@ services:
       dockerfile: apps/web/Dockerfile
     environment:
       PORT: 3000
+      VITE_API_URL: /api
+      INTERNAL_API_URL: http://api:3002
     depends_on:
       - api
     restart: unless-stopped
