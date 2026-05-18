@@ -3,6 +3,7 @@ packages:
   - 'packages/*'
 allowBuilds:
   esbuild: true
+  msw: true
   puppeteer: true
 catalog:
   "@hono/node-server": ^1.19.14
