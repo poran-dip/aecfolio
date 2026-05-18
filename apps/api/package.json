@@ -16,7 +16,7 @@
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "^0.8.0",
     "@paralleldrive/cuid2": "catalog:",
-    "better-auth": "^1.6.11",
+    "better-auth": "catalog:",
     "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "hono": "catalog:",

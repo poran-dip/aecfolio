@@ -10,8 +10,10 @@
     "typecheck": "react-router typegen && tsc --noEmit"
   },
   "dependencies": {
+    "@aecfolio/shared": "workspace:*",
     "@react-router/node": "7.15.1",
     "@react-router/serve": "7.15.1",
+    "better-auth": "catalog:",
     "isbot": "^5.1.36",
     "react": "catalog:",
     "react-dom": "catalog:",

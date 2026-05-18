@@ -10,6 +10,7 @@ catalog:
   "@types/node": ^24.12.4
   "@types/react": ^19.2.6
   "@types/react-dom": ^19.2.3
+  better-auth: ^1.6.11
   dotenv: ^17.4.2
   drizzle-orm: ^0.45.2
   hono: ^4.12.19
