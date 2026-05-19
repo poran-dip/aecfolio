@@ -5,7 +5,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
 COPY apps/web/package.json ./apps/web/
 COPY packages/shared/package.json ./packages/shared/
 
-RUN corepack enable && pnpm install --filter @aecfolio/web
+RUN corepack enable && pnpm install --filter @aecfolio/web --filter @aecfolio/shared
 
 COPY apps/web ./apps/web
 COPY packages/shared ./packages/shared
@@ -17,7 +17,8 @@ WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/web/package.json ./apps/web/
-RUN corepack enable && pnpm install --filter @aecfolio/web --prod
+COPY packages/shared/package.json ./packages/shared/
+RUN corepack enable && pnpm install --filter @aecfolio/web --filter @aecfolio/shared --prod
 
 COPY --from=builder /app/apps/web/dist ./apps/web/dist
 

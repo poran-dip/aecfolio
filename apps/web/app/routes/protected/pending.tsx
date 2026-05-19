@@ -1,4 +1,5 @@
 import { redirect } from "react-router";
+import PendingApprovalScreen from "~/components/protected/pending";
 import { redirectByRole } from "~/lib/auth-redirect";
 import { getSession } from "~/lib/session";
 import type { Route } from "./+types/pending";
@@ -15,5 +16,5 @@ export async function loader({ request }: Route.LoaderArgs) {
 }
 
 export default function PendingPage() {
-  return <div />;
+  return <PendingApprovalScreen />;
 }

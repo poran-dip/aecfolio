@@ -51,7 +51,7 @@ services:
       dockerfile: apps/web/Dockerfile
     environment:
       PORT: 3000
-      VITE_API_URL: /api
+      VITE_API_URL: http://localhost/api
       INTERNAL_API_URL: http://api:3002
     depends_on:
       - api

@@ -11,18 +11,22 @@ import type { AppEnv } from "../types/context";
 
 const me = new Hono<AppEnv>();
 
-me.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
+me.get(
+  "/",
+  requireRole("STUDENT", "FACULTY", "PENDING", "ADMIN"),
+  async (c) => {
+    const user = getUser(c);
 
-  const result = await db.query.usersTable.findFirst({
-    where: (u, { and, eq, isNull }) =>
-      and(eq(u.id, user.id), isNull(u.deletedAt)),
-    with: { student: true, faculty: true },
-  });
+    const result = await db.query.usersTable.findFirst({
+      where: (u, { and, eq, isNull }) =>
+        and(eq(u.id, user.id), isNull(u.deletedAt)),
+      with: { student: true, faculty: true },
+    });
 
-  if (!result) return fail(c, "NOT_FOUND", "User not found", 404);
-  return ok(c, result);
-});
+    if (!result) return fail(c, "NOT_FOUND", "User not found", 404);
+    return ok(c, result);
+  },
+);
 
 me.patch(
   "/",
@@ -92,6 +96,48 @@ me.post(
       .returning();
 
     return ok(c, student, 201);
+  },
+);
+
+me.get("/onboarding", requireRole("PENDING"), async (c) => {
+  const user = getUser(c);
+
+  const student = await db.query.studentsTable.findFirst({
+    where: (s, { eq }) => eq(s.userId, user.id),
+  });
+
+  if (!student) return fail(c, "NOT_FOUND", "No onboarding data found", 404);
+  return ok(c, student);
+});
+
+me.patch(
+  "/onboarding",
+  requireRole("PENDING"),
+  zValidator("json", createStudentSchema),
+  async (c) => {
+    const user = getUser(c);
+    const body = c.req.valid("json");
+
+    const existing = await db.query.studentsTable.findFirst({
+      where: (s, { eq }) => eq(s.userId, user.id),
+    });
+    if (!existing)
+      return fail(c, "NOT_FOUND", "No onboarding data to update", 404);
+
+    const rollConflict = await db.query.studentsTable.findFirst({
+      where: (s, { and, eq, ne }) =>
+        and(eq(s.rollNo, body.rollNo), ne(s.userId, user.id)),
+    });
+    if (rollConflict)
+      return fail(c, "CONFLICT", "Roll number already in use", 409);
+
+    const [updated] = await db
+      .update(studentsTable)
+      .set(body)
+      .where(eq(studentsTable.userId, user.id))
+      .returning();
+
+    return ok(c, updated);
   },
 );
 
