@@ -1,3 +1,4 @@
+import GenerateCV from "~/components/protected/students/cv";
 import type { Route } from "./+types/cv";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function StudentCVPage() {
-  return <div />;
+  return <GenerateCV />;
 }

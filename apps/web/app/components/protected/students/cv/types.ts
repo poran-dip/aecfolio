@@ -9,7 +9,7 @@ import type {
   User,
 } from "@aecfolio/shared";
 
-export type CVData = Student & {
+export type StudentWithRelations = Student & {
   user: User;
   experiences: Experience[];
   projects: Project[];
@@ -18,5 +18,3 @@ export type CVData = Student & {
   socials: Social[];
   results: Result[];
 };
-
-export type CVProps = { data: CVData };
