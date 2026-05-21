@@ -1,3 +1,4 @@
+import FacultyProfile from "~/components/protected/faculty/profile";
 import type { Route } from "./+types/profile";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function FacultyProfilePage() {
-  return <div />;
+  return <FacultyProfile />;
 }
