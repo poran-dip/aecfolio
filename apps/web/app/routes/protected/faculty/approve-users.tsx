@@ -1,3 +1,4 @@
+import PendingUsers from "~/components/protected/faculty/pending-users";
 import type { Route } from "./+types/approve-users";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function FacultyApproveUsersPage() {
-  return <div />;
+  return <PendingUsers />;
 }
