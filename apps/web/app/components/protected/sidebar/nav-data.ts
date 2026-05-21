@@ -17,7 +17,7 @@ export const facultyNav = [
     icon: GraduationCap,
     items: [
       { title: "All Students", url: "/faculty" },
-      { title: "Verification Queue", url: "/faculty/verify" },
+      { title: "Verification Queue", url: "/faculty/verifications" },
     ],
   },
   {
