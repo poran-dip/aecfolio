@@ -1,3 +1,4 @@
+import PendingVerifications from "~/components/protected/faculty/verification-queue";
 import type { Route } from "./+types/pending-verifications";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function FacultyPendingVerificationsPage() {
-  return <div />;
+  return <PendingVerifications />;
 }
