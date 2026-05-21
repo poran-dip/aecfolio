@@ -1,3 +1,4 @@
+import StudentProfile from "~/components/protected/students/profile";
 import type { Route } from "./+types/profile";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function StudentProfilePage() {
-  return <div />;
+  return <StudentProfile />;
 }
