@@ -1,3 +1,4 @@
+import FacultyAllStudents from "~/components/protected/faculty/all-students";
 import type { Route } from "./+types/all-students";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function FacultyAllStudentsPage() {
-  return <div />;
+  return <FacultyAllStudents />;
 }
