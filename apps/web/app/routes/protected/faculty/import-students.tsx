@@ -1,3 +1,4 @@
+import ImportStudents from "~/components/protected/faculty/import-students";
 import type { Route } from "./+types/import-students";
 
 export function meta(_: Route.MetaArgs) {
@@ -5,5 +6,5 @@ export function meta(_: Route.MetaArgs) {
 }
 
 export default function FacultyImportStudentsPage() {
-  return <div />;
+  return <ImportStudents />;
 }
