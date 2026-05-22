@@ -35,7 +35,7 @@ async function promoteUser(
   }
 
   console.log(
-    `✅ Success! User ${result[0].id} is now an ${result[0].role}.`,
+    `✅ Success! User ${result[0].id} is now promoted to ${result[0].role}.`,
   );
 }
 

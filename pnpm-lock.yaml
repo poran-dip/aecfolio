@@ -313,6 +313,9 @@ importers:
 
   packages/ui:
     dependencies:
+      '@aecfolio/shared':
+        specifier: workspace:*
+        version: link:../shared
       react:
         specifier: 'catalog:'
         version: 19.2.6
@@ -320,9 +323,6 @@ importers:
       '@aecfolio/db':
         specifier: workspace:*
         version: link:../db
-      '@aecfolio/shared':
-        specifier: workspace:*
-        version: link:../shared
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.4
