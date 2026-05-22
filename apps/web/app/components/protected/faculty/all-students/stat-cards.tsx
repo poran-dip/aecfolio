@@ -24,7 +24,7 @@ export function StatsCards({ pendingOverall, pendingUsers }: StatsCardsProps) {
         <div className="flex items-end justify-between">
           <p className="text-2xl font-bold">{pendingOverall}</p>
           <Button variant="secondary" size="sm" asChild>
-            <Link to="/faculty/verify">Review & Verify</Link>
+            <Link to="/faculty/verifications">Review & Verify</Link>
           </Button>
         </div>
       </Card>

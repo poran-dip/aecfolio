@@ -76,8 +76,8 @@ export default function StudentProfile() {
     title: item?.title ?? "",
     organization: item?.organization ?? "",
     description: item?.description ?? "",
-    startDate: item?.startDate?.toISOString() ?? null,
-    endDate: item?.endDate?.toISOString() ?? null,
+    startDate: item?.startDate ? new Date(item.startDate).toISOString() : null,
+    endDate: item?.endDate ? new Date(item.endDate).toISOString() : null,
   });
 
   const getProjectInitialData = (item: Project | null) => ({
@@ -96,7 +96,7 @@ export default function StudentProfile() {
   const getCertificationInitialData = (item: Certification | null) => ({
     name: item?.name ?? "",
     issuer: item?.issuer ?? "",
-    issueDate: item?.issueDate?.toISOString() ?? null,
+    issueDate: item?.issueDate ? new Date(item.issueDate).toISOString() : null,
     proofImage: item?.proofImage ?? null,
   });
 

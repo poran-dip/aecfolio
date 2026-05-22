@@ -7,7 +7,7 @@ export interface StudentListDetails {
   name: string | null;
   rollNo: string;
   course: string;
-  batch: string;
+  branch: string;
   semester: number;
   cgpa: number | null;
   unverifiedResults: number;
@@ -25,7 +25,7 @@ export function useDashboard() {
   const [pendingUsers, setPendingUsers] = useState(0);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [batchFilter, setBatchFilter] = useState("ALL");
+  const [branchFilter, setBranchFilter] = useState("ALL");
   const [courseFilter, setCourseFilter] = useState("ALL");
   const [minCgpa, setMinCgpa] = useState("");
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -59,8 +59,8 @@ export function useDashboard() {
           (stu.rollNo || "").toLowerCase().includes(s),
       );
     }
-    if (batchFilter !== "ALL")
-      result = result.filter((stu) => stu.batch === batchFilter);
+    if (branchFilter !== "ALL")
+      result = result.filter((stu) => stu.branch === branchFilter);
     if (courseFilter !== "ALL")
       result = result.filter((stu) => stu.course === courseFilter);
     if (minCgpa)
@@ -70,7 +70,7 @@ export function useDashboard() {
           parseFloat(String(stu.cgpa)) >= parseFloat(minCgpa),
       );
     setFiltered(result);
-  }, [search, batchFilter, courseFilter, data, minCgpa]);
+  }, [search, branchFilter, courseFilter, data, minCgpa]);
 
   async function handleExport() {
     setExporting(true);
@@ -119,8 +119,8 @@ export function useDashboard() {
     loading,
     search,
     setSearch,
-    batchFilter,
-    setBatchFilter,
+    branchFilter,
+    setBranchFilter,
     courseFilter,
     setCourseFilter,
     minCgpa,

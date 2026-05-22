@@ -14,13 +14,4 @@ users.get("/", requireRole("FACULTY"), async (c) => {
   return ok(c, result);
 });
 
-users.get("/pending", requireRole("FACULTY"), async (c) => {
-  const result = await db.query.usersTable.findMany({
-    where: (u, { and, isNull, eq }) =>
-      and(isNull(u.deletedAt), eq(u.role, "PENDING")),
-    with: { student: true },
-  });
-  return ok(c, result);
-});
-
 export default users;

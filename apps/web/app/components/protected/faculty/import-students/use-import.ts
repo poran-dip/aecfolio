@@ -90,7 +90,7 @@ export function useImport() {
 
     setImporting(true);
     try {
-      const data = await fetchApi<ImportResult>("/api/student/import", {
+      const data = await fetchApi<ImportResult>("/api/students/import", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

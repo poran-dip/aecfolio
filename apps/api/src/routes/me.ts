@@ -1,11 +1,16 @@
 import { studentsTable, usersTable } from "@aecfolio/db";
-import { createStudentSchema, updateUserSchema } from "@aecfolio/shared";
+import {
+  createStudentSchema,
+  updateStudentSchema,
+  updateUserSchema,
+} from "@aecfolio/shared";
 import { zValidator } from "@hono/zod-validator";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
 import { fail, getUser, ok } from "../lib/response";
+import { getStudentForUser } from "../lib/student";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
@@ -47,6 +52,33 @@ me.patch(
       action: "UPDATE",
       entity: "User",
       entityId: user.id,
+    });
+    return ok(c, updated);
+  },
+);
+
+me.patch(
+  "/student",
+  requireRole("STUDENT"),
+  zValidator("json", updateStudentSchema),
+  async (c) => {
+    const user = getUser(c);
+    const body = c.req.valid("json");
+
+    const student = await getStudentForUser(user.id);
+    if (!student) return fail(c, "NOT_FOUND", "Student profile not found", 404);
+
+    const [updated] = await db
+      .update(studentsTable)
+      .set(body)
+      .where(eq(studentsTable.id, student.id))
+      .returning();
+
+    await createAuditLog({
+      userId: user.id,
+      action: "UPDATE",
+      entity: "Student",
+      entityId: student.id,
     });
     return ok(c, updated);
   },

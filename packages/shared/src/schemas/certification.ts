@@ -17,8 +17,8 @@ export const certificationSchema = z.object({
 export const createCertificationSchema = z.object({
   name: z.string().min(1),
   issuer: z.string().min(1),
-  issueDate: z.coerce.date().optional(),
-  proofImage: z.url().optional(),
+  issueDate: z.coerce.date().nullable().optional(),
+  proofImage: z.url().nullable().optional(),
 });
 
 export const updateCertificationSchema = createCertificationSchema.partial();

@@ -16,7 +16,7 @@ export const achievementSchema = z.object({
 export const createAchievementSchema = z.object({
   title: z.string().min(1),
   description: z.string().min(1),
-  proofImage: z.url().optional(),
+  proofImage: z.url().nullable().optional(),
 });
 
 export const updateAchievementSchema = createAchievementSchema.partial();

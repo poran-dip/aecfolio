@@ -29,7 +29,7 @@ export function usePendingUsers() {
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
-    fetchApi<PendingStudent[]>("/api/users/pending")
+    fetchApi<PendingStudent[]>("/api/students/pending")
       .then((d) => setStudents(d ?? []))
       .catch((err) =>
         toast.error(

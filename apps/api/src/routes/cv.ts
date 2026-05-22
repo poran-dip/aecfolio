@@ -6,7 +6,7 @@ import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
-const CV_SERVICE_URL = process.env.CV_SERVICE_URL ?? "http://localhost:3001/cv";
+const WORKER_URL = process.env.WORKER_URL ?? "http://localhost:3001";
 
 const cv = new Hono<AppEnv>();
 
@@ -43,7 +43,7 @@ cv.post(
     const user = getUser(c);
     const { template, data } = c.req.valid("json");
 
-    const pdfRes = await fetch(CV_SERVICE_URL, {
+    const pdfRes = await fetch(`${WORKER_URL}/cv`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ template, data }),
@@ -88,7 +88,7 @@ cv.post(
       },
     });
 
-    const pdfRes = await fetch(`${CV_SERVICE_URL}/bulk`, {
+    const pdfRes = await fetch(`${WORKER_URL}/cv/bulk`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ template, students }),

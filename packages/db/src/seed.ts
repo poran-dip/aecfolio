@@ -97,7 +97,7 @@ async function main() {
       verifiedBy: faculty.id,
       verifiedAt: new Date(),
     },
-    { studentId: student1.id, semester: 5, sgpa: 8.9, verified: false },
+    { studentId: student1.id, semester: 5, pendingSgpa: 8.9, verified: false },
   ]);
 
   // Student 2

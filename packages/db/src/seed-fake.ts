@@ -4,23 +4,14 @@ import { seed } from "drizzle-seed";
 import { Pool } from "pg";
 import * as schema from "./schema";
 import {
-  achievementsRelations,
   achievementsTable,
-  certificationsRelations,
   certificationsTable,
-  experiencesRelations,
   experiencesTable,
-  facultyRelations,
   facultyTable,
-  projectsRelations,
   projectsTable,
-  resultsRelations,
   resultsTable,
-  socialsRelations,
   socialsTable,
-  studentsRelations,
   studentsTable,
-  usersRelations,
   usersTable,
 } from "./schema";
 
@@ -40,15 +31,6 @@ await seed(db, {
   achievementsTable,
   certificationsTable,
   socialsTable,
-  usersRelations,
-  studentsRelations,
-  resultsRelations,
-  experiencesRelations,
-  projectsRelations,
-  achievementsRelations,
-  certificationsRelations,
-  socialsRelations,
-  facultyRelations,
 }).refine((f) => ({
   usersTable: {
     count: 15,
@@ -91,7 +73,7 @@ await seed(db, {
         values: ["CSE", "ETE", "EE", "IE", "ME", "CE"],
       }),
       semester: f.int({ minValue: 1, maxValue: 8 }),
-      cgpa: f.default({ defaultValue: null }),
+      cgpa: f.number({ minValue: 5.0, maxValue: 10.0, precision: 100 }),
       bio: f.loremIpsum(),
       skills: f.default({ defaultValue: [] }),
       deletedAt: f.default({ defaultValue: null }),
@@ -144,7 +126,7 @@ await seed(db, {
     columns: {
       semester: f.int({ minValue: 1, maxValue: 8 }),
       sgpa: f.number({ minValue: 5.0, maxValue: 10.0, precision: 100 }),
-      pendingSgpa: f.default({ defaultValue: null }),
+      pendingSgpa: f.number({ minValue: 5.0, maxValue: 10.0, precision: 100 }),
       verified: f.default({ defaultValue: false }),
       verifiedBy: f.default({ defaultValue: null }),
       verifiedAt: f.default({ defaultValue: null }),

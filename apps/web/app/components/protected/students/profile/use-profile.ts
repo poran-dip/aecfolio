@@ -81,15 +81,13 @@ export function useProfile() {
   }
 
   async function updateStudent() {
+    console.log("studentDraft", studentDraft);
     try {
-      const updated = await fetchApi<Student>(
-        `/api/students/${user?.student.id}`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(studentDraft),
-        },
-      );
+      const updated = await fetchApi<Student>("/api/me/student", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(studentDraft),
+      });
       setUser((prev) =>
         prev ? { ...prev, student: { ...prev.student, ...updated } } : prev,
       );

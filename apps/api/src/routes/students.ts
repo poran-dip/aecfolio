@@ -6,7 +6,7 @@ import {
   updateStudentSchema,
 } from "@aecfolio/shared";
 import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { createAuditLog } from "../lib/audit";
@@ -61,6 +61,31 @@ const importSchema = z.object({
       }),
     )
     .min(1),
+});
+
+students.get("/pending", requireRole("FACULTY"), async (c) => {
+  const result = await db
+    .select({
+      id: studentsTable.id,
+      rollNo: studentsTable.rollNo,
+      course: studentsTable.course,
+      branch: studentsTable.branch,
+      semester: studentsTable.semester,
+      cgpa: studentsTable.cgpa,
+      user: {
+        id: usersTable.id,
+        name: usersTable.name,
+        email: usersTable.email,
+        createdAt: usersTable.createdAt,
+      },
+    })
+    .from(studentsTable)
+    .innerJoin(usersTable, eq(studentsTable.userId, usersTable.id))
+    .where(
+      and(isNull(studentsTable.deletedAt), eq(usersTable.role, "PENDING")),
+    );
+
+  return ok(c, result);
 });
 
 students.post(
