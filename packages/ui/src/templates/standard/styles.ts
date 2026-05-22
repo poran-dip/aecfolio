@@ -202,6 +202,7 @@ export const styles = `
     font-size: 11px;
     color: var(--text-primary);
     line-height: 1.5;
+    white-space: pre-wrap;
   }
 
   .cv-item-tech {
