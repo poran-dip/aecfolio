@@ -14,110 +14,88 @@ import { getStudentForUser } from "../lib/student";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
-const achievements = new Hono<AppEnv>();
-
-achievements.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
-  const paramStudentId = c.req.query("studentId");
-
-  let studentId: string | null = null;
-
-  if (user.role === "FACULTY" && paramStudentId) {
-    studentId = paramStudentId;
-  } else if (user.role === "STUDENT") {
-    const student = await getStudentForUser(user.id);
-    if (!student) return fail(c, "NOT_FOUND", "Student profile not found", 404);
-    studentId = student.id;
-  }
-
-  const result = await db.query.achievementsTable.findMany({
-    where: (a, { and, isNull, eq }) =>
-      studentId
-        ? and(isNull(a.deletedAt), eq(a.studentId, studentId))
-        : isNull(a.deletedAt),
-  });
-
-  return ok(c, result);
-});
-
-achievements.post(
-  "/",
-  requireRole("STUDENT"),
-  zValidator("json", createAchievementSchema),
-  async (c) => {
+const achievements = new Hono<AppEnv>()
+  .get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
     const user = getUser(c);
-    const body = c.req.valid("json");
+    const paramStudentId = c.req.query("studentId");
 
-    const student = await getStudentForUser(user.id);
-    if (!student) return fail(c, "NOT_FOUND", "Student profile not found", 404);
+    let studentId: string | null = null;
 
-    const [achievement] = await db
-      .insert(achievementsTable)
-      .values({ ...body, studentId: student.id })
-      .returning();
-    await createAuditLog({
-      userId: user.id,
-      action: "CREATE",
-      entity: "Achievement",
-      entityId: achievement.id,
+    if (user.role === "FACULTY" && paramStudentId) {
+      studentId = paramStudentId;
+    } else if (user.role === "STUDENT") {
+      const student = await getStudentForUser(user.id);
+      if (!student)
+        return fail(c, "NOT_FOUND", "Student profile not found", 404);
+      studentId = student.id;
+    }
+
+    const result = await db.query.achievementsTable.findMany({
+      where: (a, { and, isNull, eq }) =>
+        studentId
+          ? and(isNull(a.deletedAt), eq(a.studentId, studentId))
+          : isNull(a.deletedAt),
     });
-    return ok(c, achievement, 201);
-  },
-);
 
-achievements.patch(
-  "/verify",
-  requireRole("FACULTY"),
-  zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
-  async (c) => {
-    const user = getUser(c);
-    const { ids } = c.req.valid("json");
+    return ok(c, result);
+  })
 
-    await db
-      .update(achievementsTable)
-      .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
-      .where(inArray(achievementsTable.id, ids));
+  .post(
+    "/",
+    requireRole("STUDENT"),
+    zValidator("json", createAchievementSchema),
+    async (c) => {
+      const user = getUser(c);
+      const body = c.req.valid("json");
 
-    await Promise.all(
-      ids.map((id) =>
-        createAuditLog({
-          userId: user.id,
-          action: "VERIFY",
-          entity: "Achievement",
-          entityId: id,
-        }),
-      ),
-    );
-    return ok(c, { verified: ids.length });
-  },
-);
+      const student = await getStudentForUser(user.id);
+      if (!student)
+        return fail(c, "NOT_FOUND", "Student profile not found", 404);
 
-achievements.get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
-  const id = c.req.param("id");
+      const [achievement] = await db
+        .insert(achievementsTable)
+        .values({ ...body, studentId: student.id })
+        .returning();
+      await createAuditLog({
+        userId: user.id,
+        action: "CREATE",
+        entity: "Achievement",
+        entityId: achievement.id,
+      });
+      return ok(c, achievement, 201);
+    },
+  )
 
-  const achievement = await db.query.achievementsTable.findFirst({
-    where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
-  });
-  if (!achievement) return fail(c, "NOT_FOUND", "Achievement not found", 404);
+  .patch(
+    "/verify",
+    requireRole("FACULTY"),
+    zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
+    async (c) => {
+      const user = getUser(c);
+      const { ids } = c.req.valid("json");
 
-  if (user.role === "STUDENT") {
-    const student = await getStudentForUser(user.id);
-    if (achievement.studentId !== student?.id)
-      return fail(c, "FORBIDDEN", "Forbidden", 403);
-  }
+      await db
+        .update(achievementsTable)
+        .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
+        .where(inArray(achievementsTable.id, ids));
 
-  return ok(c, achievement);
-});
+      await Promise.all(
+        ids.map((id) =>
+          createAuditLog({
+            userId: user.id,
+            action: "VERIFY",
+            entity: "Achievement",
+            entityId: id,
+          }),
+        ),
+      );
+      return ok(c, { verified: ids.length });
+    },
+  )
 
-achievements.patch(
-  "/:id",
-  requireRole("STUDENT", "FACULTY"),
-  zValidator("json", updateAchievementSchema),
-  async (c) => {
+  .get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
     const user = getUser(c);
     const id = c.req.param("id");
-    const body = c.req.valid("json");
 
     const achievement = await db.query.achievementsTable.findFirst({
       where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
@@ -130,72 +108,97 @@ achievements.patch(
         return fail(c, "FORBIDDEN", "Forbidden", 403);
     }
 
+    return ok(c, achievement);
+  })
+
+  .patch(
+    "/:id",
+    requireRole("STUDENT", "FACULTY"),
+    zValidator("json", updateAchievementSchema),
+    async (c) => {
+      const user = getUser(c);
+      const id = c.req.param("id");
+      const body = c.req.valid("json");
+
+      const achievement = await db.query.achievementsTable.findFirst({
+        where: (a, { and, eq, isNull }) =>
+          and(eq(a.id, id), isNull(a.deletedAt)),
+      });
+      if (!achievement)
+        return fail(c, "NOT_FOUND", "Achievement not found", 404);
+
+      if (user.role === "STUDENT") {
+        const student = await getStudentForUser(user.id);
+        if (achievement.studentId !== student?.id)
+          return fail(c, "FORBIDDEN", "Forbidden", 403);
+      }
+
+      const [updated] = await db
+        .update(achievementsTable)
+        .set(body)
+        .where(eq(achievementsTable.id, id))
+        .returning();
+      await createAuditLog({
+        userId: user.id,
+        action: "UPDATE",
+        entity: "Achievement",
+        entityId: id,
+      });
+      return ok(c, updated);
+    },
+  )
+
+  .patch("/:id/verify", requireRole("FACULTY"), async (c) => {
+    const user = getUser(c);
+    const id = c.req.param("id");
+
+    const existing = await db.query.achievementsTable.findFirst({
+      where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
+    });
+    if (!existing) return fail(c, "NOT_FOUND", "Achievement not found", 404);
+
     const [updated] = await db
       .update(achievementsTable)
-      .set(body)
+      .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
       .where(eq(achievementsTable.id, id))
       .returning();
+
     await createAuditLog({
       userId: user.id,
-      action: "UPDATE",
+      action: "VERIFY",
       entity: "Achievement",
       entityId: id,
     });
     return ok(c, updated);
-  },
-);
+  })
 
-achievements.patch("/:id/verify", requireRole("FACULTY"), async (c) => {
-  const user = getUser(c);
-  const id = c.req.param("id");
+  .delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
+    const user = getUser(c);
+    const id = c.req.param("id");
 
-  const existing = await db.query.achievementsTable.findFirst({
-    where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
+    const achievement = await db.query.achievementsTable.findFirst({
+      where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
+    });
+    if (!achievement) return fail(c, "NOT_FOUND", "Achievement not found", 404);
+
+    if (user.role === "STUDENT") {
+      const student = await getStudentForUser(user.id);
+      if (achievement.studentId !== student?.id)
+        return fail(c, "FORBIDDEN", "Forbidden", 403);
+    }
+
+    const [deleted] = await db
+      .update(achievementsTable)
+      .set({ deletedAt: new Date() })
+      .where(eq(achievementsTable.id, id))
+      .returning();
+    await createAuditLog({
+      userId: user.id,
+      action: "DELETE",
+      entity: "Achievement",
+      entityId: id,
+    });
+    return ok(c, deleted);
   });
-  if (!existing) return fail(c, "NOT_FOUND", "Achievement not found", 404);
-
-  const [updated] = await db
-    .update(achievementsTable)
-    .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
-    .where(eq(achievementsTable.id, id))
-    .returning();
-
-  await createAuditLog({
-    userId: user.id,
-    action: "VERIFY",
-    entity: "Achievement",
-    entityId: id,
-  });
-  return ok(c, updated);
-});
-
-achievements.delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
-  const id = c.req.param("id");
-
-  const achievement = await db.query.achievementsTable.findFirst({
-    where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
-  });
-  if (!achievement) return fail(c, "NOT_FOUND", "Achievement not found", 404);
-
-  if (user.role === "STUDENT") {
-    const student = await getStudentForUser(user.id);
-    if (achievement.studentId !== student?.id)
-      return fail(c, "FORBIDDEN", "Forbidden", 403);
-  }
-
-  const [deleted] = await db
-    .update(achievementsTable)
-    .set({ deletedAt: new Date() })
-    .where(eq(achievementsTable.id, id))
-    .returning();
-  await createAuditLog({
-    userId: user.id,
-    action: "DELETE",
-    entity: "Achievement",
-    entityId: id,
-  });
-  return ok(c, deleted);
-});
 
 export default achievements;

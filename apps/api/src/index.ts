@@ -16,3 +16,5 @@ serve(
     );
   },
 );
+
+export type AppType = typeof app;

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts",
-    "build": "tsup src/index.ts",
+    "build": "tsup src/index.ts && tsc -p tsconfig.json --emitDeclarationOnly --noEmit false",
     "start": "node dist/index.js",
     "typecheck": "tsc --noEmit"
   },
@@ -29,5 +29,13 @@
     "tsup": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
-  }
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts"
 }

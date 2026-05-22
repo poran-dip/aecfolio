@@ -13,83 +13,61 @@ import { getStudentForUser } from "../lib/student";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
-const experiences = new Hono<AppEnv>();
-
-experiences.get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
-  const paramStudentId = c.req.query("studentId");
-
-  let studentId: string | null = null;
-
-  if (user.role === "FACULTY" && paramStudentId) {
-    studentId = paramStudentId;
-  } else if (user.role === "STUDENT") {
-    const student = await getStudentForUser(user.id);
-    if (!student) return fail(c, "NOT_FOUND", "Student profile not found", 404);
-    studentId = student.id;
-  }
-
-  const result = await db.query.experiencesTable.findMany({
-    where: (e, { and, isNull, eq }) =>
-      studentId
-        ? and(isNull(e.deletedAt), eq(e.studentId, studentId))
-        : isNull(e.deletedAt),
-  });
-
-  return ok(c, result);
-});
-
-experiences.post(
-  "/",
-  requireRole("STUDENT"),
-  zValidator("json", createExperienceSchema),
-  async (c) => {
+const experiences = new Hono<AppEnv>()
+  .get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
     const user = getUser(c);
-    const body = c.req.valid("json");
+    const paramStudentId = c.req.query("studentId");
 
-    const student = await getStudentForUser(user.id);
-    if (!student) return fail(c, "NOT_FOUND", "Student profile not found", 404);
+    let studentId: string | null = null;
 
-    const [experience] = await db
-      .insert(experiencesTable)
-      .values({ ...body, studentId: student.id })
-      .returning();
-    await createAuditLog({
-      userId: user.id,
-      action: "CREATE",
-      entity: "Experience",
-      entityId: experience.id,
+    if (user.role === "FACULTY" && paramStudentId) {
+      studentId = paramStudentId;
+    } else if (user.role === "STUDENT") {
+      const student = await getStudentForUser(user.id);
+      if (!student)
+        return fail(c, "NOT_FOUND", "Student profile not found", 404);
+      studentId = student.id;
+    }
+
+    const result = await db.query.experiencesTable.findMany({
+      where: (e, { and, isNull, eq }) =>
+        studentId
+          ? and(isNull(e.deletedAt), eq(e.studentId, studentId))
+          : isNull(e.deletedAt),
     });
-    return ok(c, experience, 201);
-  },
-);
 
-experiences.get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
-  const id = c.req.param("id");
+    return ok(c, result);
+  })
 
-  const experience = await db.query.experiencesTable.findFirst({
-    where: (e, { and, eq, isNull }) => and(eq(e.id, id), isNull(e.deletedAt)),
-  });
-  if (!experience) return fail(c, "NOT_FOUND", "Experience not found", 404);
+  .post(
+    "/",
+    requireRole("STUDENT"),
+    zValidator("json", createExperienceSchema),
+    async (c) => {
+      const user = getUser(c);
+      const body = c.req.valid("json");
 
-  if (user.role === "STUDENT") {
-    const student = await getStudentForUser(user.id);
-    if (experience.studentId !== student?.id)
-      return fail(c, "FORBIDDEN", "Forbidden", 403);
-  }
+      const student = await getStudentForUser(user.id);
+      if (!student)
+        return fail(c, "NOT_FOUND", "Student profile not found", 404);
 
-  return ok(c, experience);
-});
+      const [experience] = await db
+        .insert(experiencesTable)
+        .values({ ...body, studentId: student.id })
+        .returning();
+      await createAuditLog({
+        userId: user.id,
+        action: "CREATE",
+        entity: "Experience",
+        entityId: experience.id,
+      });
+      return ok(c, experience, 201);
+    },
+  )
 
-experiences.patch(
-  "/:id",
-  requireRole("STUDENT", "FACULTY"),
-  zValidator("json", updateExperienceSchema),
-  async (c) => {
+  .get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
     const user = getUser(c);
     const id = c.req.param("id");
-    const body = c.req.valid("json");
 
     const experience = await db.query.experiencesTable.findFirst({
       where: (e, { and, eq, isNull }) => and(eq(e.id, id), isNull(e.deletedAt)),
@@ -102,48 +80,72 @@ experiences.patch(
         return fail(c, "FORBIDDEN", "Forbidden", 403);
     }
 
-    const [updated] = await db
+    return ok(c, experience);
+  })
+
+  .patch(
+    "/:id",
+    requireRole("STUDENT", "FACULTY"),
+    zValidator("json", updateExperienceSchema),
+    async (c) => {
+      const user = getUser(c);
+      const id = c.req.param("id");
+      const body = c.req.valid("json");
+
+      const experience = await db.query.experiencesTable.findFirst({
+        where: (e, { and, eq, isNull }) =>
+          and(eq(e.id, id), isNull(e.deletedAt)),
+      });
+      if (!experience) return fail(c, "NOT_FOUND", "Experience not found", 404);
+
+      if (user.role === "STUDENT") {
+        const student = await getStudentForUser(user.id);
+        if (experience.studentId !== student?.id)
+          return fail(c, "FORBIDDEN", "Forbidden", 403);
+      }
+
+      const [updated] = await db
+        .update(experiencesTable)
+        .set(body)
+        .where(eq(experiencesTable.id, id))
+        .returning();
+      await createAuditLog({
+        userId: user.id,
+        action: "UPDATE",
+        entity: "Experience",
+        entityId: id,
+      });
+      return ok(c, updated);
+    },
+  )
+
+  .delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
+    const user = getUser(c);
+    const id = c.req.param("id");
+
+    const experience = await db.query.experiencesTable.findFirst({
+      where: (e, { and, eq, isNull }) => and(eq(e.id, id), isNull(e.deletedAt)),
+    });
+    if (!experience) return fail(c, "NOT_FOUND", "Experience not found", 404);
+
+    if (user.role === "STUDENT") {
+      const student = await getStudentForUser(user.id);
+      if (experience.studentId !== student?.id)
+        return fail(c, "FORBIDDEN", "Forbidden", 403);
+    }
+
+    const [deleted] = await db
       .update(experiencesTable)
-      .set(body)
+      .set({ deletedAt: new Date() })
       .where(eq(experiencesTable.id, id))
       .returning();
     await createAuditLog({
       userId: user.id,
-      action: "UPDATE",
+      action: "DELETE",
       entity: "Experience",
       entityId: id,
     });
-    return ok(c, updated);
-  },
-);
-
-experiences.delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-  const user = getUser(c);
-  const id = c.req.param("id");
-
-  const experience = await db.query.experiencesTable.findFirst({
-    where: (e, { and, eq, isNull }) => and(eq(e.id, id), isNull(e.deletedAt)),
+    return ok(c, deleted);
   });
-  if (!experience) return fail(c, "NOT_FOUND", "Experience not found", 404);
-
-  if (user.role === "STUDENT") {
-    const student = await getStudentForUser(user.id);
-    if (experience.studentId !== student?.id)
-      return fail(c, "FORBIDDEN", "Forbidden", 403);
-  }
-
-  const [deleted] = await db
-    .update(experiencesTable)
-    .set({ deletedAt: new Date() })
-    .where(eq(experiencesTable.id, id))
-    .returning();
-  await createAuditLog({
-    userId: user.id,
-    action: "DELETE",
-    entity: "Experience",
-    entityId: id,
-  });
-  return ok(c, deleted);
-});
 
 export default experiences;

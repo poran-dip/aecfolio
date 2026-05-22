@@ -123,6 +123,9 @@ importers:
 
   apps/web:
     dependencies:
+      '@aecfolio/api':
+        specifier: workspace:*
+        version: link:../api
       '@aecfolio/shared':
         specifier: workspace:*
         version: link:../../packages/shared
@@ -153,6 +156,9 @@ importers:
       exceljs:
         specifier: ^4.4.0
         version: 4.4.0
+      hono:
+        specifier: 'catalog:'
+        version: 4.12.19
       isbot:
         specifier: ^5.1.36
         version: 5.1.40

@@ -15,21 +15,20 @@ import socials from "./socials";
 import students from "./students";
 import users from "./users";
 
-const api = new Hono<AppEnv>();
-
-api.route("/auth", authRouter);
-api.route("/me", me);
-api.route("/users", users);
-api.route("/dashboard", dashboard);
-api.route("/students", students);
-api.route("/faculty", faculty);
-api.route("/achievements", achievements);
-api.route("/certifications", certifications);
-api.route("/results", results);
-api.route("/experiences", experiences);
-api.route("/projects", projects);
-api.route("/socials", socials);
-api.route("/cv", cv);
-api.route("/audit-logs", auditLogs);
+const api = new Hono<AppEnv>()
+  .route("/auth", authRouter)
+  .route("/me", me)
+  .route("/users", users)
+  .route("/dashboard", dashboard)
+  .route("/students", students)
+  .route("/faculty", faculty)
+  .route("/achievements", achievements)
+  .route("/certifications", certifications)
+  .route("/results", results)
+  .route("/experiences", experiences)
+  .route("/projects", projects)
+  .route("/socials", socials)
+  .route("/cv", cv)
+  .route("/audit-logs", auditLogs);
 
 export default api;

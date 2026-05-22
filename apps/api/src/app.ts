@@ -5,26 +5,25 @@ import { authMiddleware } from "./middleware/auth";
 import api from "./routes";
 import type { AppEnv } from "./types/context";
 
-const app = new Hono<AppEnv>();
+const app = new Hono<AppEnv>()
+  .use("*", logger())
 
-app.use("*", logger());
-app.use(
-  "/api/*",
-  cors({
-    origin: (origin) => {
-      const allowed = [
-        process.env.CORS_ORIGIN ?? "http://localhost:5173",
-        "http://localhost:5174",
-      ];
-      if (!origin) return null;
-      return allowed.includes(origin) ? origin : null;
-    },
-    credentials: true,
-  }),
-);
-app.use("/api/*", authMiddleware);
+  .use(
+    "/api/*",
+    cors({
+      origin: (origin) => {
+        const allowed = [process.env.CORS_ORIGIN ?? "http://localhost:3000"];
+        if (!origin) return null;
+        return allowed.includes(origin) ? origin : null;
+      },
+      credentials: true,
+    }),
+  )
 
-app.route("/api", api);
-app.get("/api/health", (c) => c.json({ ok: true }));
+  .use("/api/*", authMiddleware)
+
+  .route("/api", api)
+
+  .get("/api/health", (c) => c.json({ ok: true }));
 
 export default app;
