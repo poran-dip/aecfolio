@@ -3,10 +3,9 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { db } from "../lib/db";
 import { fail, getUser, ok } from "../lib/response";
+import { workerClient } from "../lib/worker-client";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
-
-const WORKER_URL = process.env.WORKER_URL ?? "http://localhost:3001";
 
 const cv = new Hono<AppEnv>();
 
@@ -43,10 +42,8 @@ cv.post(
     const user = getUser(c);
     const { template, data } = c.req.valid("json");
 
-    const pdfRes = await fetch(`${WORKER_URL}/cv`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ template, data }),
+    const pdfRes = await workerClient.cv.$post({
+      json: { template, data },
     });
 
     if (!pdfRes.ok) return fail(c, "CV_ERROR", "Failed to generate PDF", 500);
@@ -88,10 +85,8 @@ cv.post(
       },
     });
 
-    const pdfRes = await fetch(`${WORKER_URL}/cv/bulk`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ template, students }),
+    const pdfRes = await workerClient.cv.bulk.$post({
+      json: { template, students },
     });
 
     if (!pdfRes.ok) return fail(c, "CV_ERROR", "Failed to generate PDFs", 500);

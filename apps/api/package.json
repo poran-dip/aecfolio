@@ -12,6 +12,7 @@
   "dependencies": {
     "@aecfolio/db": "workspace:*",
     "@aecfolio/shared": "workspace:*",
+    "@aecfolio/worker": "workspace:*",
     "@better-auth/drizzle-adapter": "^1.6.11",
     "@hono/node-server": "catalog:",
     "@hono/zod-validator": "^0.8.0",
