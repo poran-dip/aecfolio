@@ -1,3 +1,4 @@
+import { Branch } from "@aecfolio/shared";
 import { Search } from "lucide-react";
 import { Button } from "~/components/ui/button";
 import { Spinner } from "~/components/ui/spinner";
@@ -5,8 +6,8 @@ import { Spinner } from "~/components/ui/spinner";
 interface StudentFiltersProps {
   search: string;
   onSearchChange: (v: string) => void;
-  batchFilter: string;
-  onBatchChange: (v: string) => void;
+  branchFilter: string;
+  onBranchChange: (v: string) => void;
   courseFilter: string;
   onCourseChange: (v: string) => void;
   minCgpa: string;
@@ -19,8 +20,8 @@ interface StudentFiltersProps {
 export function StudentFilters({
   search,
   onSearchChange,
-  batchFilter,
-  onBatchChange,
+  branchFilter,
+  onBranchChange,
   courseFilter,
   onCourseChange,
   minCgpa,
@@ -46,14 +47,16 @@ export function StudentFilters({
       </div>
       <div className="flex gap-4">
         <select
-          value={batchFilter}
-          onChange={(e) => onBatchChange(e.target.value)}
+          value={branchFilter}
+          onChange={(e) => onBranchChange(e.target.value)}
           className="py-2 pl-3 pr-8 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white outline-none"
         >
-          <option value="ALL">All Batches</option>
-          <option value="2024">2026</option>
-          <option value="2023">2025</option>
-          <option value="2022">2024</option>
+          <option value="ALL">All Branches</option>
+          {Object.values(Branch).map((b) => (
+            <option key={b} value={b}>
+              {b}
+            </option>
+          ))}
         </select>
         <select
           value={courseFilter}
@@ -76,11 +79,19 @@ export function StudentFilters({
           className="py-2 pl-3 pr-3 w-28 border border-slate-200 rounded-lg text-sm bg-slate-50 focus:bg-white focus:border-blue-500 outline-none"
         />
       </div>
-      {selectedCount > 0 && (
-        <Button onClick={onExport} disabled={exporting} size="sm">
-          {exporting ? <Spinner /> : `Export CVs (${selectedCount})`}
-        </Button>
-      )}
+      <Button
+        onClick={onExport}
+        disabled={exporting || selectedCount === 0}
+        size="sm"
+      >
+        {exporting ? (
+          <Spinner />
+        ) : selectedCount > 0 ? (
+          `Export CVs (${selectedCount})`
+        ) : (
+          "Export CVs"
+        )}
+      </Button>
     </div>
   );
 }

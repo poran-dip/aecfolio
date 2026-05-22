@@ -12,8 +12,8 @@ export default function FacultyAllStudents() {
     loading,
     search,
     setSearch,
-    batchFilter,
-    setBatchFilter,
+    branchFilter,
+    setBranchFilter,
     courseFilter,
     setCourseFilter,
     minCgpa,
@@ -33,8 +33,8 @@ export default function FacultyAllStudents() {
       <StudentFilters
         search={search}
         onSearchChange={setSearch}
-        batchFilter={batchFilter}
-        onBatchChange={setBatchFilter}
+        branchFilter={branchFilter}
+        onBranchChange={setBranchFilter}
         courseFilter={courseFilter}
         onCourseChange={setCourseFilter}
         minCgpa={minCgpa}
