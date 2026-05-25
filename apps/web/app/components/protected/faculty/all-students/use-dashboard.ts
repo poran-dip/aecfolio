@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
+import { parseApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
 
 export interface StudentListDetails {
   id: string;
@@ -34,7 +35,8 @@ export function useDashboard() {
   useEffect(() => {
     async function load() {
       try {
-        const d = await fetchApi<DashboardData>("/api/dashboard");
+        const res = await apiClient.api.dashboard.$get();
+        const d = await parseApi<DashboardData>(res);
         setData(d.students ?? []);
         setFiltered(d.students ?? []);
         setPendingUsers(d.pendingUsers ?? 0);
@@ -75,13 +77,11 @@ export function useDashboard() {
   async function handleExport() {
     setExporting(true);
     try {
-      const zipRes = await fetch("/api/cv/generate/bulk", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const zipRes = await apiClient.api.cv.generate.bulk.$post({
+        json: {
           template: "standard",
           ids: Array.from(selected),
-        }),
+        },
       });
       const blob = await zipRes.blob();
       const url = URL.createObjectURL(blob);

@@ -49,3 +49,16 @@ export async function fetchApiPaginated<T>(
 
   return json.data;
 }
+
+export async function parseApi<T>(res: Response): Promise<T> {
+  const json: ApiResponse<T> = await res.json();
+  if (!json.success) {
+    const error = json as unknown as { error: ApiError["error"] };
+    throw new ApiErrorWithDetails(
+      error.error.message,
+      error.error.code,
+      error.error.details,
+    );
+  }
+  return json.data;
+}

@@ -1,7 +1,7 @@
 import type { templates } from "@aecfolio/ui";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
 import type { StudentWithRelations } from "./types";
 
 export function useCv() {
@@ -14,8 +14,11 @@ export function useCv() {
   useEffect(() => {
     const load = async () => {
       try {
-        const json = await fetchApi<StudentWithRelations>("/api/cv/me");
-        setData(json);
+        const res = await apiClient.api.cv.me.$get();
+        if (!res.ok) throw new Error("Failed to load CV data");
+        const json = await res.json();
+        if (!json.success) throw new Error(json.error.message);
+        setData(json.data as unknown as StudentWithRelations);
       } catch (err) {
         toast.error(
           err instanceof Error ? err.message : "Failed to load CV data",
@@ -31,10 +34,8 @@ export function useCv() {
   const handleDownload = async () => {
     setGenerating(true);
     try {
-      const res = await fetch("/api/cv/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ template: templateKey, data }),
+      const res = await apiClient.api.cv.generate.$post({
+        json: { template: templateKey, data: data as Record<string, unknown> },
       });
       if (!res.ok) throw new Error("Failed to generate CV");
       const blob = await res.blob();

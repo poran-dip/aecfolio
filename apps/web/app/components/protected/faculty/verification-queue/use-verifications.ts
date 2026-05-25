@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
-import { BATCH_ENDPOINTS, type PendingItem, SINGLE_ENDPOINTS } from "./types";
+import { parseApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
+import { BATCH_APPROVE, type PendingItem, SINGLE_APPROVE } from "./types";
 
 export function useVerifications() {
   const [items, setItems] = useState<PendingItem[]>([]);
@@ -13,7 +14,9 @@ export function useVerifications() {
   const [branchFilter, setBranchFilter] = useState("ALL");
 
   useEffect(() => {
-    fetchApi<{ pending: PendingItem[] }>("/api/faculty/verifications")
+    apiClient.api.faculty.verifications
+      .$get()
+      .then((res) => parseApi<{ pending: PendingItem[] }>(res))
       .then((data) => setItems(data.pending))
       .catch((err) =>
         toast.error(
@@ -43,9 +46,8 @@ export function useVerifications() {
 
   const handleSingleApprove = async (item: PendingItem) => {
     try {
-      await fetchApi(`/api/${SINGLE_ENDPOINTS[item.type]}/${item.id}/verify`, {
-        method: "PATCH",
-      });
+      const res = await SINGLE_APPROVE[item.type](item.id);
+      await parseApi(res);
       setItems((prev) => prev.filter((i) => i.id !== item.id));
       setSelected((prev) => {
         const next = new Set(prev);
@@ -75,11 +77,9 @@ export function useVerifications() {
         Object.entries(byType)
           .filter(([, ids]) => ids.length > 0)
           .map(([type, ids]) =>
-            fetchApi(BATCH_ENDPOINTS[type], {
-              method: "PATCH",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ids }),
-            }),
+            BATCH_APPROVE[type as keyof typeof BATCH_APPROVE](ids).then((res) =>
+              parseApi(res),
+            ),
           ),
       );
 

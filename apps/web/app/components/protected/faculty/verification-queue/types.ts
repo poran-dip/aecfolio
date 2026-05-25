@@ -1,3 +1,5 @@
+import { apiClient } from "~/lib/api-client";
+
 export interface PendingItem {
   id: string;
   type: "Result" | "Achievement" | "Certification";
@@ -7,14 +9,20 @@ export interface PendingItem {
   createdAt: string;
 }
 
-export const BATCH_ENDPOINTS: Record<string, string> = {
-  Achievement: "/api/achievements/verify",
-  Certification: "/api/certifications/verify",
-  Result: "/api/results/verify",
+export const BATCH_APPROVE = {
+  Achievement: (ids: string[]) =>
+    apiClient.api.achievements.verify.$patch({ json: { ids } }),
+  Certification: (ids: string[]) =>
+    apiClient.api.certifications.verify.$patch({ json: { ids } }),
+  Result: (ids: string[]) =>
+    apiClient.api.results.verify.$patch({ json: { ids } }),
 };
 
-export const SINGLE_ENDPOINTS: Record<string, string> = {
-  Achievement: "achievements",
-  Certification: "certifications",
-  Result: "results",
+export const SINGLE_APPROVE = {
+  Achievement: (id: string) =>
+    apiClient.api.achievements[":id"].verify.$patch({ param: { id } }),
+  Certification: (id: string) =>
+    apiClient.api.certifications[":id"].verify.$patch({ param: { id } }),
+  Result: (id: string) =>
+    apiClient.api.results[":id"].verify.$patch({ param: { id } }),
 };

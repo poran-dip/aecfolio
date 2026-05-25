@@ -12,7 +12,9 @@ import type {
 } from "@aecfolio/shared";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
+import { parseApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
+import type { StudentWithRelations } from "../cv/types";
 import type { UserWithStudent } from "./types";
 
 export function useProfile() {
@@ -39,22 +41,16 @@ export function useProfile() {
   useEffect(() => {
     async function load() {
       try {
-        const [usr, exp, proj, ach, cert, soc, res] = await Promise.all([
-          fetchApi<UserWithStudent>("/api/me"),
-          fetchApi<Experience[]>("/api/experiences"),
-          fetchApi<Project[]>("/api/projects"),
-          fetchApi<Achievement[]>("/api/achievements"),
-          fetchApi<Certification[]>("/api/certifications"),
-          fetchApi<Social[]>("/api/socials"),
-          fetchApi<Result[]>("/api/results"),
-        ]);
-        setUser(usr);
-        setExperiences(exp);
-        setProjects(proj);
-        setAchievements(ach);
-        setCertifications(cert);
-        setSocials(soc);
-        setResults(res);
+        const res = await apiClient.api.cv.me.$get();
+        const data = await parseApi<StudentWithRelations>(res);
+
+        setUser({ ...data.user, student: data } as UserWithStudent);
+        setExperiences(data.experiences);
+        setProjects(data.projects);
+        setAchievements(data.achievements);
+        setCertifications(data.certifications);
+        setSocials(data.socials);
+        setResults(data.results);
       } catch (err) {
         toast.error(
           err instanceof Error ? err.message : "Failed to load profile",
@@ -66,11 +62,8 @@ export function useProfile() {
 
   async function updateUser() {
     try {
-      const updated = await fetchApi<User>("/api/me", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(userDraft),
-      });
+      const res = await apiClient.api.me.$patch({ json: userDraft });
+      const updated = await parseApi<User>(res);
       setUser((prev) => (prev ? { ...prev, ...updated } : prev));
       toast.success("Profile updated");
     } catch (err) {
@@ -83,11 +76,8 @@ export function useProfile() {
   async function updateStudent() {
     console.log("studentDraft", studentDraft);
     try {
-      const updated = await fetchApi<Student>("/api/me/student", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(studentDraft),
-      });
+      const res = await apiClient.api.me.student.$patch({ json: studentDraft });
+      const updated = await parseApi<Student>(res);
       setUser((prev) =>
         prev ? { ...prev, student: { ...prev.student, ...updated } } : prev,
       );

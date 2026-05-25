@@ -1,8 +1,10 @@
+import type { Branch, Course } from "@aecfolio/shared";
 import ExcelJS from "exceljs";
 import Papa from "papaparse";
 import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
+import { parseApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
 import { parseRawRows, validateRow } from "./parse-students";
 import type { ImportResult, ParsedRow } from "./types";
 
@@ -90,21 +92,20 @@ export function useImport() {
 
     setImporting(true);
     try {
-      const data = await fetchApi<ImportResult>("/api/students/import", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      const res = await apiClient.api.students.import.$post({
+        json: {
           students: validRows.map((r) => ({
             name: r.name.trim(),
             email: r.email.trim(),
             rollNo: r.rollNo.trim(),
-            course: r.course,
-            branch: r.branch,
+            course: r.course as Course,
+            branch: r.branch as Branch,
             semester: parseInt(r.semester, 10),
             cgpa: r.cgpa ? parseFloat(r.cgpa) : null,
           })),
-        }),
+        },
       });
+      const data = await parseApi<ImportResult>(res);
       setResult(data);
       if (data.created > 0) {
         setRows((prev) => {

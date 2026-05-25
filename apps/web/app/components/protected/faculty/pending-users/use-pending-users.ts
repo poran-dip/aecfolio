@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
+import { parseApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
 import type { EditableField, PendingStudent } from "./types";
 
 export const COURSES = ["BTECH", "MTECH", "BCA", "MCA"];
@@ -29,7 +30,9 @@ export function usePendingUsers() {
   const saveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   useEffect(() => {
-    fetchApi<PendingStudent[]>("/api/students/pending")
+    apiClient.api.students.pending
+      .$get()
+      .then((res) => parseApi<PendingStudent[]>(res))
       .then((d) => setStudents(d ?? []))
       .catch((err) =>
         toast.error(
@@ -69,11 +72,14 @@ export function usePendingUsers() {
     saveTimers.current[studentId] = setTimeout(async () => {
       setSaving((prev) => ({ ...prev, [studentId]: true }));
       try {
-        await fetchApi(`/api/students/${studentId}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...edits[studentId], [field]: value }),
+        const res = await apiClient.api.students[":id"].$patch({
+          param: { id: studentId },
+          json: { ...edits[studentId], [field]: value } as Record<
+            string,
+            unknown
+          >,
         });
+        await parseApi(res);
       } catch (err) {
         toast.error(
           err instanceof Error ? err.message : "Failed to save changes",
@@ -87,11 +93,10 @@ export function usePendingUsers() {
   const handleBulkApprove = async () => {
     setApproving(true);
     try {
-      await fetchApi("/api/students/approve", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ids: Array.from(selected) }),
+      const res = await apiClient.api.students.approve.$patch({
+        json: { ids: Array.from(selected) },
       });
+      await parseApi(res);
       setStudents((prev) => prev.filter((s) => !selected.has(s.id)));
       setSelected(new Set());
       toast.success(`${selected.size} student(s) approved`);

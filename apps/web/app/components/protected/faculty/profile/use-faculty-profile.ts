@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { fetchApi } from "~/lib/api";
+import { parseApi } from "~/lib/api";
+import { apiClient } from "~/lib/api-client";
 
 export interface FacultyProfile {
   id: string;
@@ -20,7 +21,9 @@ export function useFacultyProfile() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchApi<FacultyProfile>("/api/me")
+    apiClient.api.me
+      .$get()
+      .then((res) => parseApi<FacultyProfile>(res))
       .then((data) => setData(data))
       .catch((err) =>
         toast.error(
