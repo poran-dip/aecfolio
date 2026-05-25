@@ -6,13 +6,13 @@ COPY apps/api/package.json ./apps/api/
 COPY packages/db/package.json ./packages/db/
 COPY packages/shared/package.json ./packages/shared/
 
-RUN corepack enable && pnpm install --filter @aecfolio/api
+RUN corepack enable && pnpm install --filter @aecfolio/api --filter @aecfolio/db --filter @aecfolio/shared
 
 COPY apps/api ./apps/api
 COPY packages/db ./packages/db
 COPY packages/shared ./packages/shared
 
-RUN pnpm --filter @aecfolio/api build
+RUN pnpm --filter @aecfolio/db build && pnpm --filter @aecfolio/api build
 
 FROM node:24-alpine
 WORKDIR /app
@@ -21,6 +21,7 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY apps/api/package.json ./apps/api/
 RUN corepack enable && pnpm install --filter @aecfolio/api --prod
 
+COPY --from=builder /app/packages/db/dist ./packages/db/dist
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 
 ENV PORT=3002
