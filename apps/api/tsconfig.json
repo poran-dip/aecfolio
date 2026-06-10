@@ -2,15 +2,8 @@
   "extends": "../../tsconfig.json",
   "compilerOptions": {
     "composite": true,
-    "module": "esnext",
-    "moduleResolution": "bundler",
-    "target": "es2024",
-    "lib": ["es2024"],
-    "rootDir": "./src",
-    "outDir": "./dist",
-    "types": ["node"],
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
+    "rootDir": "src",
+    "types": ["node"]
   },
   "include": ["src"]
 }
