@@ -13,6 +13,7 @@
     { "path": "./apps/api" },
     { "path": "./apps/web" },
     { "path": "./apps/worker" },
+    { "path": "./packages/config" },
     { "path": "./packages/db" },
     { "path": "./packages/shared" },
     { "path": "./packages/ui" }
