@@ -15,7 +15,7 @@
     },
     "typecheck": {
       "dependsOn": ["^typecheck"],
-      "cache": true
+      "cache": false
     },
     "lint": {
       "cache": true
