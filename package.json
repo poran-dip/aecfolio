@@ -7,14 +7,12 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "start": "turbo start",
+    "lint": "biome check --write",
     "typecheck": "turbo typecheck",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
-    "db:migrate": "pnpm --filter db migrate",
-    "db:generate": "pnpm --filter db generate",
-    "db:push": "pnpm --filter db push",
-    "db:studio": "pnpm --filter db studio"
+    "db:migrate": "pnpm -F db migrate",
+    "db:generate": "pnpm -F db generate",
+    "db:push": "pnpm -F db push",
+    "db:studio": "pnpm -F db studio"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.4.16",
