@@ -16,9 +16,9 @@
     "hono": "catalog:",
     "jszip": "^3.10.1",
     "p-queue": "^9.2.0",
-    "puppeteer": "^24.40.0",
-    "react-dom": "catalog:",
-    "react": "catalog:"
+    "puppeteer": "^25.1.0",
+    "react": "catalog:",
+    "react-dom": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
