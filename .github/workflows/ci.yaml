@@ -1,0 +1,32 @@
+name: "Lint and Typecheck PRs"
+
+on:
+  pull_request
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint codebase
+        run: pnpm lint:ci
+
+      - name: Perform typecheck
+        run: pnpm typecheck
+
+      - name: Run tests
+        run: pnpm test
