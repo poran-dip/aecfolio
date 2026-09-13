@@ -1,3 +1,4 @@
+import { apiEnv } from "@aecfolio/config";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { z } from "zod";
@@ -6,7 +7,7 @@ import { fail, getUser, ok } from "../lib/response";
 import { requireRole } from "../middleware/role";
 import type { AppEnv } from "../types/context";
 
-const WORKER_URL = process.env.WORKER_URL ?? "http://localhost:3001";
+const WORKER_URL = apiEnv.WORKER_URL;
 
 const generateSchema = z.object({
   template: z.string().min(1),
