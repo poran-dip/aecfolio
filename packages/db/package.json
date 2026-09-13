@@ -9,8 +9,6 @@
     "migrate": "dotenv-run -- drizzle-kit migrate --config drizzle.config.ts",
     "push": "dotenv-run -- drizzle-kit push",
     "studio": "dotenv-run -- drizzle-kit studio",
-    "seed": "dotenv-run -- tsx src/seed.ts",
-    "seed:fake": "dotenv-run -- tsx src/seed-fake.ts",
     "typecheck": "tsc"
   },
   "dependencies": {

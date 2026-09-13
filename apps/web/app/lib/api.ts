@@ -1,4 +1,14 @@
 import type { ApiError, ApiResponse, PaginatedData } from "@aecfolio/shared";
+import { apiBase } from "./config";
+
+function resolveUrl(url: string): string {
+  if (/^https?:\/\//.test(url)) return url;
+  return `${apiBase}${url.startsWith("/") ? "" : "/"}${url}`;
+}
+
+async function request(url: string, options?: RequestInit): Promise<Response> {
+  return fetch(resolveUrl(url), { credentials: "include", ...options });
+}
 
 export class ApiErrorWithDetails extends Error {
   code: string;
@@ -16,7 +26,7 @@ export async function fetchApi<T>(
   url: string,
   options?: RequestInit,
 ): Promise<T> {
-  const res = await fetch(url, options);
+  const res = await request(url, options);
   const json: ApiResponse<T> = await res.json();
 
   if (!json.success) {
@@ -35,7 +45,7 @@ export async function fetchApiPaginated<T>(
   url: string,
   options?: RequestInit,
 ): Promise<PaginatedData<T>> {
-  const res = await fetch(url, options);
+  const res = await request(url, options);
   const json: ApiResponse<PaginatedData<T>> = await res.json();
 
   if (!json.success) {

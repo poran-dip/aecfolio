@@ -1,9 +1,10 @@
 import "dotenv/config";
+import { apiEnv } from "@aecfolio/config";
 import { serve } from "@hono/node-server";
 import app from "./app";
 
-const isProd = process.env.NODE_ENV === "production";
-const port = Number(process.env.API_PORT) || 3002;
+const isProd = apiEnv.NODE_ENV === "production";
+const port = apiEnv.API_PORT;
 
 serve(
   {

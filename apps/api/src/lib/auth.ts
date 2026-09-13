@@ -1,3 +1,4 @@
+import { apiEnv, authEnv } from "@aecfolio/config";
 import {
   accountsTable,
   sessionsTable,
@@ -9,20 +10,9 @@ import { betterAuth } from "better-auth";
 import { admin } from "better-auth/plugins";
 import { db } from "./db";
 
-const baseURL = process.env.BETTER_AUTH_URL;
-if (!baseURL) throw new Error("BETTER_AUTH_URL missing");
-
-const googleClientId = process.env.GOOGLE_CLIENT_ID;
-const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
-if (!googleClientId || !googleClientSecret)
-  throw new Error("Google OAuth credentials missing");
-
-const betterAuthSecret = process.env.BETTER_AUTH_SECRET;
-if (!betterAuthSecret) throw new Error("Better Auth secret missing");
-
 export const auth = betterAuth({
-  baseURL,
-  secret: betterAuthSecret,
+  baseURL: authEnv.BETTER_AUTH_URL,
+  secret: authEnv.BETTER_AUTH_SECRET,
   database: drizzleAdapter(db, {
     provider: "pg",
     schema: {
@@ -34,8 +24,8 @@ export const auth = betterAuth({
   }),
   socialProviders: {
     google: {
-      clientId: googleClientId,
-      clientSecret: googleClientSecret,
+      clientId: authEnv.GOOGLE_CLIENT_ID,
+      clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
     },
   },
   plugins: [
@@ -59,5 +49,5 @@ export const auth = betterAuth({
       },
     },
   },
-  trustedOrigins: [process.env.CORS_ORIGIN ?? "http://localhost:3000"],
+  trustedOrigins: [apiEnv.CORS_ORIGIN],
 });
