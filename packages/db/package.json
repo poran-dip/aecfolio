@@ -5,17 +5,18 @@
   "type": "module",
   "scripts": {
     "build": "tsup",
-    "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate",
-    "push": "drizzle-kit push",
-    "studio": "drizzle-kit studio",
-    "seed": "tsx src/seed.ts",
-    "seed:fake": "tsx src/seed-fake.ts",
+    "generate": "dotenv-run -- drizzle-kit generate --config drizzle.config.ts",
+    "migrate": "dotenv-run -- drizzle-kit migrate --config drizzle.config.ts",
+    "push": "dotenv-run -- drizzle-kit push",
+    "studio": "dotenv-run -- drizzle-kit studio",
+    "seed": "dotenv-run -- tsx src/seed.ts",
+    "seed:fake": "dotenv-run -- tsx src/seed-fake.ts",
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@aecfolio/config": "workspace:*",
+    "@dotenv-run/cli": "catalog:",
     "@paralleldrive/cuid2": "catalog:",
-    "dotenv": "catalog:",
     "drizzle-orm": "catalog:",
     "pg": "catalog:"
   },

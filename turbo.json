@@ -25,9 +25,6 @@
     "lint": {
       "cache": true
     },
-    "test": {
-      "cache": false
-    },
     "api#build": {
       "dependsOn": ["worker#build", "^build"]
     }

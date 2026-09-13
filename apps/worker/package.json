@@ -4,13 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts",
+    "dev": "dotenv-run -- tsx watch src/index.ts",
     "build": "tsup",
-    "start": "node dist/index.js",
+    "start": "dotenv-run -- node dist/index.js",
     "typecheck": "tsc"
   },
   "dependencies": {
+    "@aecfolio/config": "workspace:*",
     "@aecfolio/ui": "workspace:*",
+    "@dotenv-run/cli": "catalog:",
     "@hono/node-server": "catalog:",
     "dotenv": "catalog:",
     "hono": "catalog:",
