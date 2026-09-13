@@ -1,4 +1,4 @@
-import { env } from "@aecfolio/config";
+import { dbEnv } from "@aecfolio/config";
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
@@ -6,6 +6,6 @@ export default defineConfig({
   schema: "./src/schema/index.ts",
   dialect: "postgresql",
   dbCredentials: {
-    url: env.DATABASE_URL,
+    url: dbEnv.DATABASE_URL,
   },
 });
