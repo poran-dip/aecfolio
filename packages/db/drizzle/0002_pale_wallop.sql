@@ -1,0 +1,1 @@
+ALTER TABLE "certifications" DROP COLUMN "expiry_date";
