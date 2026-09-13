@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   tsconfig: "tsconfig.build.json",
@@ -7,8 +7,10 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
   minify: true,
   treeshake: true,
-  noExternal: ["@aecfolio/ui", "@aecfolio/shared"],
+  deps: {
+    alwaysBundle: ["@aecfolio/ui", "@aecfolio/shared"],
+  },
+  target: false,
 });

@@ -1,4 +1,4 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   tsconfig: "tsconfig.build.json",
@@ -7,8 +7,11 @@ export default defineConfig({
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
   minify: true,
   treeshake: true,
-  external: ["pg"],
+  deps: {
+    neverBundle: ["pg"],
+    alwaysBundle: ["@aecfolio/db", "@aecfolio/shared"],
+  },
+  target: false,
 });

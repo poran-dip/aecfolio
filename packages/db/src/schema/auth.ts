@@ -51,6 +51,7 @@ export const sessionsTable = pgTable(
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
     userId: text("user_id").notNull(),
+    impersonatedBy: text("impersonated_by"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()

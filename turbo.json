@@ -13,15 +13,17 @@
       "persistent": true,
       "cache": false
     },
+    "test": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["src/**", "vitest.config.ts"]
+    },
     "typecheck": {
       "dependsOn": ["^typecheck"],
       "cache": false
     },
     "lint": {
       "cache": true
-    },
-    "test": {
-      "cache": false
     },
     "api#build": {
       "dependsOn": ["worker#build", "^build"]
