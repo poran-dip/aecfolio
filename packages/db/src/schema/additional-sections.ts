@@ -60,7 +60,6 @@ export const certificationsTable = pgTable(
     name: text().notNull(),
     issuer: text().notNull(),
     issueDate: text("issue_date"),
-    expiryDate: text("expiry_date"),
     credentialLink: text("credential_link"),
     proofKey: text("proof_key"),
     status: verificationStatusEnum().default("PENDING").notNull(),
