@@ -1,3 +1,4 @@
+import { workerEnv } from "@aecfolio/config";
 import puppeteer, { type Browser } from "puppeteer";
 
 let browser: Browser | null = null;
@@ -7,8 +8,8 @@ export async function getBrowser(): Promise<Browser> {
 
   browser = await puppeteer.launch({
     headless: true,
-    ...(process.env.PUPPETEER_EXECUTABLE_PATH && {
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH,
+    ...(workerEnv.PUPPETEER_EXECUTABLE_PATH && {
+      executablePath: workerEnv.PUPPETEER_EXECUTABLE_PATH,
     }),
     args: [
       "--no-sandbox",
