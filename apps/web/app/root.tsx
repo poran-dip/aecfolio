@@ -5,12 +5,18 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
+  useRouteLoaderData,
 } from "react-router";
 
 import type { Route } from "./+types/root";
 import "./app.css";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "./components/ui/tooltip";
+import { getPublicEnv } from "./lib/env.server";
+
+export function loader() {
+  return { env: getPublicEnv() };
+}
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -35,6 +41,15 @@ export const links: Route.LinksFunction = () => [
   { rel: "manifest", href: "/manifest.json" },
 ];
 
+function PublicEnvScript() {
+  const data = useRouteLoaderData<typeof loader>("root");
+  const json = JSON.stringify(data?.env ?? {}).replace(/</g, "\\u003c");
+
+  return (
+    <script dangerouslySetInnerHTML={{ __html: `window.__ENV__=${json}` }} />
+  );
+}
+
 export function Layout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
@@ -50,6 +65,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <Toaster />
         </TooltipProvider>
         <ScrollRestoration />
+        <PublicEnvScript />
         <Scripts />
       </body>
     </html>
