@@ -18,5 +18,6 @@ COPY packages/db ./packages/db
 RUN pnpm --filter @aecfolio/config build
 
 USER node
+WORKDIR /app/packages/db
 
-CMD ["pnpm", "--filter", "@aecfolio/db", "migrate:docker"]
+CMD ["node_modules/.bin/drizzle-kit", "migrate", "--config", "drizzle.config.ts"]

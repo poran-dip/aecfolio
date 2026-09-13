@@ -13,7 +13,6 @@
     "@aecfolio/config": "workspace:*",
     "@aecfolio/db": "workspace:*",
     "@aecfolio/shared": "workspace:*",
-    "@aecfolio/worker": "workspace:*",
     "@better-auth/drizzle-adapter": "^1.7.4",
     "@dotenv-run/cli": "catalog:",
     "@hono/node-server": "catalog:",
