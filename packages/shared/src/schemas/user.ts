@@ -1,9 +1,10 @@
 import { z } from "zod";
 import { Role } from "../enums";
+import { softDeleteFields, timestampFields } from "./common";
 
 export const userSchema = z.object({
   id: z.string(),
-  name: z.string().nullable(),
+  name: z.string(),
   email: z.email(),
   emailVerified: z.boolean(),
   phone: z.string().nullable(),
@@ -12,15 +13,20 @@ export const userSchema = z.object({
   banned: z.boolean(),
   banReason: z.string().nullable(),
   banExpires: z.coerce.date().nullable(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  ...timestampFields,
+  ...softDeleteFields,
 });
 
 export const updateUserSchema = z.object({
-  name: z.string().min(1).optional(),
-  phone: z.string().optional(),
-  image: z.url().optional(),
+  name: z.string().trim().min(1).optional(),
+  phone: z.string().trim().nullable().optional(),
+  image: z.url().nullable().optional(),
+});
+
+export const setUserRoleSchema = z.object({
+  role: z.enum(Role),
 });
 
 export type User = z.infer<typeof userSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+export type SetUserRoleInput = z.infer<typeof setUserRoleSchema>;
