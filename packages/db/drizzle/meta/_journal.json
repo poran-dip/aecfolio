@@ -15,6 +15,13 @@
       "when": 1789308549958,
       "tag": "0001_auditlog_immutable_trigger",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789325875369,
+      "tag": "0002_pale_wallop",
+      "breakpoints": true
     }
   ]
 }
