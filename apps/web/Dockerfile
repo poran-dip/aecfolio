@@ -2,11 +2,11 @@ FROM node:24-alpine AS builder
 WORKDIR /app
 
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml tsconfig.json ./
-COPY apps/api/package.json ./apps/api/
+COPY apps/api/package.json apps/api/tsconfig.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
-COPY apps/worker/package.json ./apps/worker/
+COPY apps/worker/package.json apps/worker/tsconfig.json ./apps/worker/
 COPY packages/config/package.json ./packages/config/
-COPY packages/db/package.json ./packages/db/
+COPY packages/db/package.json packages/db/tsconfig.json ./packages/db/
 COPY packages/shared/package.json ./packages/shared/
 COPY packages/ui/package.json ./packages/ui/
 

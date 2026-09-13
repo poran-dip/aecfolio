@@ -28,7 +28,7 @@ const origin = (label: string) =>
 
 const dbSchema = z.object({
   DATABASE_URL: required(
-    "e.g. postgresql://postgres:password@localhost:6432/aecfolio",
+    "e.g. postgresql://postgres:password@localhost:15432/aecfolio",
   ),
 });
 
