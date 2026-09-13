@@ -8,6 +8,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
+import { usersTable } from "./auth";
 
 export const auditLogsTable = pgTable(
   "audit_logs",
@@ -15,7 +16,9 @@ export const auditLogsTable = pgTable(
     id: text()
       .primaryKey()
       .$defaultFn(() => createId()),
-    userId: text("user_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "restrict" }),
     action: text().notNull(),
     entity: text().notNull(),
     entityId: text("entity_id").notNull(),

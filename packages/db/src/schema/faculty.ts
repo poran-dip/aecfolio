@@ -1,6 +1,7 @@
 import { createId } from "@paralleldrive/cuid2";
 import { sql } from "drizzle-orm";
 import { check, pgTable, text, timestamp } from "drizzle-orm/pg-core";
+import { usersTable } from "./auth";
 import { branchEnum } from "./enums";
 
 export const facultyTable = pgTable(
@@ -9,7 +10,10 @@ export const facultyTable = pgTable(
     id: text()
       .primaryKey()
       .$defaultFn(() => createId()),
-    userId: text("user_id").unique().notNull(),
+    userId: text("user_id")
+      .unique()
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
     employeeId: text("employee_id").unique().notNull(),
     designation: text(),
     department: branchEnum(),

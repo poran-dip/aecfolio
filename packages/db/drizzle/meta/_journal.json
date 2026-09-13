@@ -5,22 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779040297799,
-      "tag": "0000_cooing_earthquake",
+      "when": 1789308343558,
+      "tag": "0000_wealthy_pete_wisdom",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1779040376121,
-      "tag": "0001_auditlog_immutable",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1789280517558,
-      "tag": "0002_nice_newton_destine",
+      "when": 1789308549958,
+      "tag": "0001_auditlog_immutable_trigger",
       "breakpoints": true
     }
   ]

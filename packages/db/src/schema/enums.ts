@@ -1,12 +1,9 @@
 import { pgEnum } from "drizzle-orm/pg-core";
 
-export const roleEnum = pgEnum("role", [
-  "STUDENT",
-  "FACULTY",
-  "ADMIN",
-  "PENDING",
-]);
+export const roleEnum = pgEnum("role", ["STUDENT", "FACULTY", "MOD", "ADMIN"]);
+
 export const courseEnum = pgEnum("course", ["BTECH", "MTECH", "BCA", "MCA"]);
+
 export const branchEnum = pgEnum("branch", [
   "CSE",
   "ETE",
@@ -17,4 +14,17 @@ export const branchEnum = pgEnum("branch", [
   "IPE",
   "CHE",
   "CA",
+]);
+
+export const studentStatusEnum = pgEnum("student_status", [
+  "ACTIVE",
+  "ALUMNI",
+  "SUSPENDED",
+  "LEFT",
+]);
+
+export const verificationStatusEnum = pgEnum("verification_status", [
+  "PENDING",
+  "VERIFIED",
+  "REJECTED",
 ]);

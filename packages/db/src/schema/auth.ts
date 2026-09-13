@@ -21,7 +21,7 @@ export const usersTable = pgTable(
     emailVerified: boolean("email_verified").default(false).notNull(),
     image: text(),
     phone: text(),
-    role: roleEnum().default("PENDING").notNull(),
+    role: roleEnum().notNull(),
     banned: boolean().default(false).notNull(),
     banReason: text("ban_reason"),
     banExpires: timestamp("ban_expires"),
@@ -50,7 +50,9 @@ export const sessionsTable = pgTable(
     token: text().unique().notNull(),
     ipAddress: text("ip_address"),
     userAgent: text("user_agent"),
-    userId: text("user_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
     impersonatedBy: text("impersonated_by"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
@@ -69,7 +71,9 @@ export const accountsTable = pgTable(
       .$defaultFn(() => createId()),
     accountId: text("account_id").notNull(),
     providerId: text("provider_id").notNull(),
-    userId: text("user_id").notNull(),
+    userId: text("user_id")
+      .notNull()
+      .references(() => usersTable.id, { onDelete: "cascade" }),
     accessToken: text("access_token"),
     refreshToken: text("refresh_token"),
     idToken: text("id_token"),
