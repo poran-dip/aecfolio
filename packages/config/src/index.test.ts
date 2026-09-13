@@ -5,7 +5,7 @@ beforeEach(() => {
   vi.unstubAllEnvs();
 });
 
-const DB_URL = "postgresql://postgres:password@localhost:55432/aecfolio";
+const DB_URL = "postgresql://postgres:password@localhost:6432/aecfolio";
 const SECRET = "a".repeat(32);
 
 describe("dbEnv", () => {
