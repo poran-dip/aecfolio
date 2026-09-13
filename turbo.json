@@ -10,6 +10,7 @@
       "cache": false
     },
     "dev": {
+      "dependsOn": ["^build"],
       "persistent": true,
       "cache": false
     },
@@ -19,7 +20,7 @@
       "inputs": ["src/**", "vitest.config.ts"]
     },
     "typecheck": {
-      "dependsOn": ["^typecheck"],
+      "dependsOn": ["^build", "^typecheck"],
       "cache": false
     },
     "lint": {
