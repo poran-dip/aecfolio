@@ -1,13 +1,16 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   tsconfig: "tsconfig.build.json",
   entry: ["src/index.ts"],
-  format: ["esm", "cjs"],
+  format: ["esm"],
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
   minify: true,
   treeshake: true,
+  deps: {
+    neverBundle: ["pg"],
+  },
+  target: false,
 });

@@ -4,21 +4,21 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "build": "tsup",
+    "build": "tsdown",
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "tsc"
   },
   "devDependencies": {
     "@types/node": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts",
       "require": "./dist/index.cjs"
     }
   }

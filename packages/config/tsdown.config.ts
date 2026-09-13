@@ -1,15 +1,13 @@
-import { defineConfig } from "tsup";
+import { defineConfig } from "tsdown";
 
 export default defineConfig({
   tsconfig: "tsconfig.build.json",
   entry: ["src/index.ts"],
-  format: ["esm"],
+  format: ["esm", "cjs"],
   dts: true,
   sourcemap: true,
   clean: true,
-  splitting: false,
   minify: true,
   treeshake: true,
-  external: ["pg"],
-  noExternal: ["@aecfolio/db", "@aecfolio/shared"],
+  target: false,
 });

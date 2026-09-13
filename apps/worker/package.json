@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "dotenv-run -- tsx watch src/index.ts",
-    "build": "tsup",
+    "build": "tsdown",
     "start": "dotenv-run -- node dist/index.js",
     "typecheck": "tsc"
   },
@@ -16,9 +16,9 @@
     "@hono/node-server": "catalog:",
     "dotenv": "catalog:",
     "hono": "catalog:",
-    "jszip": "^3.10.1",
-    "p-queue": "^9.2.0",
-    "puppeteer": "^25.1.0",
+    "jszip": "^3.10.2",
+    "p-queue": "^9.3.3",
+    "puppeteer": "^25.10.0",
     "react": "catalog:",
     "react-dom": "catalog:"
   },
@@ -26,16 +26,16 @@
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
-    "tsup": "catalog:",
+    "tsdown": "catalog:",
     "tsx": "catalog:",
     "typescript": "catalog:"
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts"
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts"
 }
