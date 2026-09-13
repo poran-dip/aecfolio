@@ -1,23 +1,21 @@
 import { z } from "zod";
-import { SocialType } from "../enums";
+import { softDeleteFields, timestampFields } from "./common";
 
 export const socialSchema = z.object({
   id: z.string(),
   studentId: z.string(),
-  type: z.enum(SocialType),
-  url: z.url(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  title: z.string(),
+  url: z.string(),
+  ...timestampFields,
+  ...softDeleteFields,
 });
 
 export const createSocialSchema = z.object({
-  type: z.enum(SocialType),
-  url: z.string().url(),
+  title: z.string().trim().min(1),
+  url: z.url({ protocol: /^https?$/ }),
 });
 
-export const updateSocialSchema = z.object({
-  url: z.url(),
-});
+export const updateSocialSchema = createSocialSchema.partial();
 
 export type Social = z.infer<typeof socialSchema>;
 export type CreateSocialInput = z.infer<typeof createSocialSchema>;

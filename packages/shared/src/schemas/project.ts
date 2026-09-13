@@ -1,21 +1,20 @@
 import { z } from "zod";
+import { softDeleteFields, timestampFields } from "./common";
 
 export const projectSchema = z.object({
   id: z.string(),
   studentId: z.string(),
   title: z.string(),
   description: z.string(),
-  techStack: z.array(z.string()),
   link: z.string().nullable(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  ...timestampFields,
+  ...softDeleteFields,
 });
 
 export const createProjectSchema = z.object({
-  title: z.string().min(1),
-  description: z.string().min(1),
-  techStack: z.array(z.string()).optional(),
-  link: z.string().url().optional(),
+  title: z.string().trim().min(1),
+  description: z.string().trim().min(1),
+  link: z.url().nullable().optional(),
 });
 
 export const updateProjectSchema = createProjectSchema.partial();

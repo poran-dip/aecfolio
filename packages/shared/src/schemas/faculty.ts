@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { Branch } from "../enums";
+import { softDeleteFields, timestampFields } from "./common";
 
 export const facultySchema = z.object({
   id: z.string(),
@@ -7,14 +8,14 @@ export const facultySchema = z.object({
   employeeId: z.string(),
   designation: z.string().nullable(),
   department: z.enum(Branch).nullable(),
-  createdAt: z.coerce.date(),
-  updatedAt: z.coerce.date(),
+  ...timestampFields,
+  ...softDeleteFields,
 });
 
 export const createFacultySchema = z.object({
-  employeeId: z.string().min(1),
-  designation: z.string().optional(),
-  department: z.enum(Branch).optional(),
+  employeeId: z.string().trim().min(1),
+  designation: z.string().trim().nullable().optional(),
+  department: z.enum(Branch).nullable().optional(),
 });
 
 export const updateFacultySchema = createFacultySchema.partial();

@@ -1,7 +1,7 @@
 export const Role = {
   STUDENT: "STUDENT",
   FACULTY: "FACULTY",
-  PENDING: "PENDING",
+  MOD: "MOD",
   ADMIN: "ADMIN",
 } as const;
 export type Role = (typeof Role)[keyof typeof Role];
@@ -27,20 +27,18 @@ export const Branch = {
 } as const;
 export type Branch = (typeof Branch)[keyof typeof Branch];
 
-export const ExperienceType = {
-  INTERNSHIP: "INTERNSHIP",
-  VOLUNTEER: "VOLUNTEER",
-  CLUB: "CLUB",
-  OTHER: "OTHER",
+export const StudentStatus = {
+  ACTIVE: "ACTIVE",
+  ALUMNI: "ALUMNI",
+  SUSPENDED: "SUSPENDED",
+  LEFT: "LEFT",
 } as const;
-export type ExperienceType =
-  (typeof ExperienceType)[keyof typeof ExperienceType];
+export type StudentStatus = (typeof StudentStatus)[keyof typeof StudentStatus];
 
-export const SocialType = {
-  LINKEDIN: "LINKEDIN",
-  GITHUB: "GITHUB",
-  LEETCODE: "LEETCODE",
-  CODEFORCES: "CODEFORCES",
-  OTHER: "OTHER",
+export const VerificationStatus = {
+  PENDING: "PENDING",
+  VERIFIED: "VERIFIED",
+  REJECTED: "REJECTED",
 } as const;
-export type SocialType = (typeof SocialType)[keyof typeof SocialType];
+export type VerificationStatus =
+  (typeof VerificationStatus)[keyof typeof VerificationStatus];
