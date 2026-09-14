@@ -1,65 +1,94 @@
 import { studentsTable, usersTable } from "@aecfolio/db";
-import {
-  createStudentSchema,
-  updateStudentSchema,
-  updateUserSchema,
-} from "@aecfolio/shared";
-import { zValidator } from "@hono/zod-validator";
+import { updateStudentProfileSchema, updateUserSchema } from "@aecfolio/shared";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
-import { createAuditLog } from "../lib/audit";
+import { getFacultyForUser, getStudentForUser } from "../lib/actor";
+import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
+import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
+import {
+  loadStudentProfile,
+  ProfileView,
+  projectStudentProfile,
+} from "../lib/profile";
 import { fail, getUser, ok } from "../lib/response";
-import { getStudentForUser } from "../lib/student";
-import { requireRole } from "../middleware/role";
+import { validate } from "../lib/validate";
+import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
 
 const me = new Hono<AppEnv>()
+  .get("/", requireAuth(), async (c) => {
+    const user = getUser(c);
+
+    const result = await db.query.usersTable.findFirst({
+      where: (u, { and, eq, isNull }) =>
+        and(eq(u.id, user.id), isNull(u.deletedAt)),
+      columns: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        phone: true,
+        image: true,
+        role: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+      with: { student: true, faculty: true },
+    });
+
+    if (!result) return fail(c, "NOT_FOUND", "User not found", 404);
+    return ok(c, result);
+  })
+
+  .patch("/", requireAuth(), validate("json", updateUserSchema), async (c) => {
+    const user = getUser(c);
+    const body = c.req.valid("json");
+
+    const [before] = await db
+      .select()
+      .from(usersTable)
+      .where(eq(usersTable.id, user.id))
+      .limit(1);
+
+    const [updated] = await db
+      .update(usersTable)
+      .set(body)
+      .where(eq(usersTable.id, user.id))
+      .returning();
+
+    await createAuditLog({
+      userId: user.id,
+      action: AuditAction.UPDATE,
+      entity: AuditEntity.USER,
+      entityId: user.id,
+      metadata: diff(before, updated),
+    });
+    return ok(c, updated);
+  })
+
   .get(
-    "/",
-    requireRole("STUDENT", "FACULTY", "PENDING", "ADMIN"),
+    "/profile",
+    requireCapability(Capability.PROFILE_WRITE_SELF),
     async (c) => {
       const user = getUser(c);
 
-      const result = await db.query.usersTable.findFirst({
-        where: (u, { and, eq, isNull }) =>
-          and(eq(u.id, user.id), isNull(u.deletedAt)),
-        with: { student: true, faculty: true },
-      });
+      const student = await getStudentForUser(user.id);
+      if (!student)
+        return fail(c, "NOT_FOUND", "Student profile not found", 404);
 
-      if (!result) return fail(c, "NOT_FOUND", "User not found", 404);
-      return ok(c, result);
-    },
-  )
+      const profile = await loadStudentProfile(student.id);
+      if (!profile)
+        return fail(c, "NOT_FOUND", "Student profile not found", 404);
 
-  .patch(
-    "/",
-    requireRole("STUDENT", "FACULTY"),
-    zValidator("json", updateUserSchema),
-    async (c) => {
-      const user = getUser(c);
-      const body = c.req.valid("json");
-
-      const [updated] = await db
-        .update(usersTable)
-        .set(body)
-        .where(eq(usersTable.id, user.id))
-        .returning();
-
-      await createAuditLog({
-        userId: user.id,
-        action: "UPDATE",
-        entity: "User",
-        entityId: user.id,
-      });
-      return ok(c, updated);
+      return ok(c, projectStudentProfile(profile, ProfileView.OWNER));
     },
   )
 
   .patch(
     "/student",
-    requireRole("STUDENT"),
-    zValidator("json", updateStudentSchema),
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    validate("json", updateStudentProfileSchema),
     async (c) => {
       const user = getUser(c);
       const body = c.req.valid("json");
@@ -67,6 +96,12 @@ const me = new Hono<AppEnv>()
       const student = await getStudentForUser(user.id);
       if (!student)
         return fail(c, "NOT_FOUND", "Student profile not found", 404);
+
+      const [before] = await db
+        .select()
+        .from(studentsTable)
+        .where(eq(studentsTable.id, student.id))
+        .limit(1);
 
       const [updated] = await db
         .update(studentsTable)
@@ -76,101 +111,22 @@ const me = new Hono<AppEnv>()
 
       await createAuditLog({
         userId: user.id,
-        action: "UPDATE",
-        entity: "Student",
+        action: AuditAction.UPDATE,
+        entity: AuditEntity.STUDENT,
         entityId: student.id,
+        metadata: diff(before, updated),
       });
       return ok(c, updated);
     },
   )
 
-  .delete("/", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/faculty", requireAuth(), async (c) => {
     const user = getUser(c);
 
-    const [deleted] = await db
-      .update(usersTable)
-      .set({ deletedAt: new Date() })
-      .where(eq(usersTable.id, user.id))
-      .returning();
+    const faculty = await getFacultyForUser(user.id);
+    if (!faculty) return fail(c, "NOT_FOUND", "Faculty profile not found", 404);
 
-    await createAuditLog({
-      userId: user.id,
-      action: "DELETE",
-      entity: "User",
-      entityId: user.id,
-    });
-    return ok(c, deleted);
-  })
-
-  .post(
-    "/onboarding",
-    requireRole("PENDING"),
-    zValidator("json", createStudentSchema),
-    async (c) => {
-      const user = getUser(c);
-      const body = c.req.valid("json");
-
-      const existing = await db.query.studentsTable.findFirst({
-        where: (s, { eq }) => eq(s.userId, user.id),
-      });
-      if (existing)
-        return fail(c, "CONFLICT", "Onboarding already completed", 409);
-
-      const rollConflict = await db.query.studentsTable.findFirst({
-        where: (s, { eq }) => eq(s.rollNo, body.rollNo),
-      });
-      if (rollConflict)
-        return fail(c, "CONFLICT", "Roll number already in use", 409);
-
-      const [student] = await db
-        .insert(studentsTable)
-        .values({ userId: user.id, skills: [], ...body })
-        .returning();
-
-      return ok(c, student, 201);
-    },
-  )
-
-  .get("/onboarding", requireRole("PENDING"), async (c) => {
-    const user = getUser(c);
-
-    const student = await db.query.studentsTable.findFirst({
-      where: (s, { eq }) => eq(s.userId, user.id),
-    });
-
-    if (!student) return fail(c, "NOT_FOUND", "No onboarding data found", 404);
-    return ok(c, student);
-  })
-
-  .patch(
-    "/onboarding",
-    requireRole("PENDING"),
-    zValidator("json", createStudentSchema),
-    async (c) => {
-      const user = getUser(c);
-      const body = c.req.valid("json");
-
-      const existing = await db.query.studentsTable.findFirst({
-        where: (s, { eq }) => eq(s.userId, user.id),
-      });
-      if (!existing)
-        return fail(c, "NOT_FOUND", "No onboarding data to update", 404);
-
-      const rollConflict = await db.query.studentsTable.findFirst({
-        where: (s, { and, eq, ne }) =>
-          and(eq(s.rollNo, body.rollNo), ne(s.userId, user.id)),
-      });
-      if (rollConflict)
-        return fail(c, "CONFLICT", "Roll number already in use", 409);
-
-      const [updated] = await db
-        .update(studentsTable)
-        .set(body)
-        .where(eq(studentsTable.userId, user.id))
-        .returning();
-
-      return ok(c, updated);
-    },
-  );
+    return ok(c, faculty);
+  });
 
 export default me;

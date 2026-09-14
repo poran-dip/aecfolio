@@ -1,45 +1,61 @@
 import { resultsTable } from "@aecfolio/db";
-import { createResultSchema, updateResultSchema } from "@aecfolio/shared";
-import { zValidator } from "@hono/zod-validator";
-import { eq, inArray } from "drizzle-orm";
+import {
+  createResultSchema,
+  updateResultSchema,
+  VerificationStatus,
+} from "@aecfolio/shared";
+import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
-import { createAuditLog } from "../lib/audit";
+import { getStudentForUser } from "../lib/actor";
+import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
+import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
+import {
+  findSchemeForCohort,
+  missingSchemeMessage,
+  recomputeCgpa,
+} from "../lib/grading";
+import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
+import { projectReviewable, viewForActor } from "../lib/profile";
 import { fail, getUser, ok } from "../lib/response";
-import { getStudentForUser } from "../lib/student";
-import { requireRole } from "../middleware/role";
+import { RESET_TO_PENDING } from "../lib/review";
+import { validate } from "../lib/validate";
+import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
 
+async function findOwned(id: string, studentId: string) {
+  const [row] = await db
+    .select()
+    .from(resultsTable)
+    .where(and(eq(resultsTable.id, id), isNull(resultsTable.deletedAt)))
+    .limit(1);
+  if (!row) return { row: null, owned: false };
+  return { row, owned: row.studentId === studentId };
+}
+
 const results = new Hono<AppEnv>()
-  .get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/", requireAuth(), async (c) => {
     const user = getUser(c);
-    const paramStudentId = c.req.query("studentId");
+    const scope = await resolveReadScope(c, user, c.req.query("studentId"));
+    if (!scope.ok) return scope.response;
 
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (!student)
-        return fail(c, "NOT_FOUND", "Student profile not found", 404);
+    const rows = await db
+      .select()
+      .from(resultsTable)
+      .where(
+        and(
+          eq(resultsTable.studentId, scope.studentId),
+          isNull(resultsTable.deletedAt),
+        ),
+      );
 
-      const result = await db.query.resultsTable.findMany({
-        where: (r, { eq }) => eq(r.studentId, student.id),
-      });
-      return ok(c, result);
-    }
-
-    // FACULTY
-    const result = await db.query.resultsTable.findMany({
-      where: paramStudentId
-        ? (r, { eq }) => eq(r.studentId, paramStudentId)
-        : undefined,
-    });
-    return ok(c, result);
+    return ok(c, projectReviewable(rows, viewForActor(user, scope.isOwn)));
   })
 
   .post(
     "/",
-    requireRole("STUDENT"),
-    zValidator("json", createResultSchema),
+    requireCapability(Capability.RESULT_SUBMIT_SELF),
+    validate("json", createResultSchema),
     async (c) => {
       const user = getUser(c);
       const body = c.req.valid("json");
@@ -48,150 +64,143 @@ const results = new Hono<AppEnv>()
       if (!student)
         return fail(c, "NOT_FOUND", "Student profile not found", 404);
 
+      const cohort = {
+        branch: student.branch,
+        admissionYear: student.admissionYear,
+        semester: body.semester,
+      };
+
+      const scheme = await findSchemeForCohort(cohort);
+      if (!scheme)
+        return fail(c, "NO_CREDIT_SCHEME", missingSchemeMessage(cohort), 409);
+
+      const [existing] = await db
+        .select({ id: resultsTable.id })
+        .from(resultsTable)
+        .where(
+          and(
+            eq(resultsTable.studentId, student.id),
+            eq(resultsTable.semester, body.semester),
+          ),
+        )
+        .limit(1);
+      if (existing)
+        return fail(
+          c,
+          "CONFLICT",
+          `A result for semester ${body.semester} already exists`,
+          409,
+        );
+
       const [result] = await db
         .insert(resultsTable)
-        .values({ ...body, studentId: student.id })
+        .values({
+          studentId: student.id,
+          semester: body.semester,
+          pendingSgpa: body.pendingSgpa,
+          schemeId: scheme.id,
+        })
         .returning();
 
       await createAuditLog({
         userId: user.id,
-        action: "CREATE",
-        entity: "Result",
+        action: AuditAction.CREATE,
+        entity: AuditEntity.RESULT,
         entityId: result.id,
       });
       return ok(c, result, 201);
     },
   )
 
-  .patch(
-    "/verify",
-    requireRole("FACULTY"),
-    zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
-    async (c) => {
-      const user = getUser(c);
-      const { ids } = c.req.valid("json");
-
-      await db
-        .update(resultsTable)
-        .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
-        .where(inArray(resultsTable.id, ids));
-
-      await Promise.all(
-        ids.map((id) =>
-          createAuditLog({
-            userId: user.id,
-            action: "VERIFY",
-            entity: "Result",
-            entityId: id,
-          }),
-        ),
-      );
-
-      return ok(c, { verified: ids.length });
-    },
-  )
-
-  .get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/:id", requireAuth(), async (c) => {
     const user = getUser(c);
     const id = c.req.param("id");
 
-    const result = await db.query.resultsTable.findFirst({
-      where: (r, { eq }) => eq(r.id, id),
-    });
-    if (!result) return fail(c, "NOT_FOUND", "Result not found", 404);
+    const [row] = await db
+      .select()
+      .from(resultsTable)
+      .where(and(eq(resultsTable.id, id), isNull(resultsTable.deletedAt)))
+      .limit(1);
+    if (!row) return fail(c, "NOT_FOUND", "Result not found", 404);
 
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (result.studentId !== student?.id)
-        return fail(c, "FORBIDDEN", "Forbidden", 403);
-    }
+    const scope = await resolveReadScope(c, user, row.studentId);
+    if (!scope.ok) return scope.response;
 
-    return ok(c, result);
+    const [projected] = projectReviewable(
+      [row],
+      viewForActor(user, scope.isOwn),
+    );
+    if (!projected) return fail(c, "NOT_FOUND", "Result not found", 404);
+    return ok(c, projected);
   })
 
   .patch(
     "/:id",
-    requireRole("STUDENT", "FACULTY"),
-    zValidator("json", updateResultSchema),
+    requireCapability(Capability.RESULT_SUBMIT_SELF),
+    validate("json", updateResultSchema),
     async (c) => {
       const user = getUser(c);
       const id = c.req.param("id");
       const body = c.req.valid("json");
 
-      const result = await db.query.resultsTable.findFirst({
-        where: (r, { eq }) => eq(r.id, id),
-      });
-      if (!result) return fail(c, "NOT_FOUND", "Result not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-      if (user.role === "STUDENT") {
-        const student = await getStudentForUser(user.id);
-        if (result.studentId !== student?.id)
-          return fail(c, "FORBIDDEN", "Forbidden", 403);
-      }
+      const { row, owned } = await findOwned(id, scope.studentId);
+      if (!row) return fail(c, "NOT_FOUND", "Result not found", 404);
+      if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
       const [updated] = await db
         .update(resultsTable)
-        .set(body)
+        .set({ ...body, ...RESET_TO_PENDING, sgpa: null })
         .where(eq(resultsTable.id, id))
         .returning();
 
+      if (row.status === VerificationStatus.VERIFIED)
+        await recomputeCgpa(scope.studentId);
+
       await createAuditLog({
         userId: user.id,
-        action: "UPDATE",
-        entity: "Result",
+        action: AuditAction.UPDATE,
+        entity: AuditEntity.RESULT,
         entityId: id,
+        metadata: diff(row, updated),
       });
       return ok(c, updated);
     },
   )
 
-  .patch("/:id/verify", requireRole("FACULTY"), async (c) => {
-    const user = getUser(c);
-    const id = c.req.param("id");
+  .delete(
+    "/:id",
+    requireCapability(Capability.RESULT_SUBMIT_SELF),
+    async (c) => {
+      const user = getUser(c);
+      const id = c.req.param("id");
 
-    const existing = await db.query.resultsTable.findFirst({
-      where: (r, { eq }) => eq(r.id, id),
-    });
-    if (!existing) return fail(c, "NOT_FOUND", "Result not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-    const [updated] = await db
-      .update(resultsTable)
-      .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
-      .where(eq(resultsTable.id, id))
-      .returning();
+      const { row, owned } = await findOwned(id, scope.studentId);
+      if (!row) return fail(c, "NOT_FOUND", "Result not found", 404);
+      if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
-    await createAuditLog({
-      userId: user.id,
-      action: "VERIFY",
-      entity: "Result",
-      entityId: id,
-    });
-    return ok(c, updated);
-  })
+      const [deleted] = await db
+        .update(resultsTable)
+        .set({ deletedAt: new Date() })
+        .where(eq(resultsTable.id, id))
+        .returning();
 
-  .delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-    const user = getUser(c);
-    const id = c.req.param("id");
+      if (row.status === VerificationStatus.VERIFIED)
+        await recomputeCgpa(scope.studentId);
 
-    const result = await db.query.resultsTable.findFirst({
-      where: (r, { eq }) => eq(r.id, id),
-    });
-    if (!result) return fail(c, "NOT_FOUND", "Result not found", 404);
-
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (result.studentId !== student?.id)
-        return fail(c, "FORBIDDEN", "Forbidden", 403);
-    }
-
-    await db.delete(resultsTable).where(eq(resultsTable.id, id));
-    await createAuditLog({
-      userId: user.id,
-      action: "DELETE",
-      entity: "Result",
-      entityId: id,
-    });
-    return ok(c, { deleted: true });
-  });
+      await createAuditLog({
+        userId: user.id,
+        action: AuditAction.DELETE,
+        entity: AuditEntity.RESULT,
+        entityId: id,
+      });
+      return ok(c, deleted);
+    },
+  );
 
 export default results;

@@ -1,5 +1,5 @@
-import { projectsTable } from "@aecfolio/db";
-import { createProjectSchema, updateProjectSchema } from "@aecfolio/shared";
+import { interestsTable } from "@aecfolio/db";
+import { createInterestSchema, updateInterestSchema } from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
@@ -14,14 +14,14 @@ import type { AppEnv } from "../types/context";
 async function findOwned(id: string, studentId: string) {
   const [row] = await db
     .select()
-    .from(projectsTable)
-    .where(and(eq(projectsTable.id, id), isNull(projectsTable.deletedAt)))
+    .from(interestsTable)
+    .where(and(eq(interestsTable.id, id), isNull(interestsTable.deletedAt)))
     .limit(1);
   if (!row) return { row: null, owned: false };
   return { row, owned: row.studentId === studentId };
 }
 
-const projects = new Hono<AppEnv>()
+const interests = new Hono<AppEnv>()
   .get("/", requireAuth(), async (c) => {
     const user = getUser(c);
     const scope = await resolveReadScope(c, user, c.req.query("studentId"));
@@ -29,11 +29,11 @@ const projects = new Hono<AppEnv>()
 
     const rows = await db
       .select()
-      .from(projectsTable)
+      .from(interestsTable)
       .where(
         and(
-          eq(projectsTable.studentId, scope.studentId),
-          isNull(projectsTable.deletedAt),
+          eq(interestsTable.studentId, scope.studentId),
+          isNull(interestsTable.deletedAt),
         ),
       );
 
@@ -43,7 +43,7 @@ const projects = new Hono<AppEnv>()
   .post(
     "/",
     requireCapability(Capability.PROFILE_WRITE_SELF),
-    validate("json", createProjectSchema),
+    validate("json", createInterestSchema),
     async (c) => {
       const user = getUser(c);
       const body = c.req.valid("json");
@@ -52,14 +52,14 @@ const projects = new Hono<AppEnv>()
       if (!scope.ok) return scope.response;
 
       const [row] = await db
-        .insert(projectsTable)
+        .insert(interestsTable)
         .values({ ...body, studentId: scope.studentId })
         .returning();
 
       await createAuditLog({
         userId: user.id,
         action: AuditAction.CREATE,
-        entity: AuditEntity.PROJECT,
+        entity: AuditEntity.INTEREST,
         entityId: row.id,
       });
       return ok(c, row, 201);
@@ -72,10 +72,10 @@ const projects = new Hono<AppEnv>()
 
     const [row] = await db
       .select()
-      .from(projectsTable)
-      .where(and(eq(projectsTable.id, id), isNull(projectsTable.deletedAt)))
+      .from(interestsTable)
+      .where(and(eq(interestsTable.id, id), isNull(interestsTable.deletedAt)))
       .limit(1);
-    if (!row) return fail(c, "NOT_FOUND", "Project not found", 404);
+    if (!row) return fail(c, "NOT_FOUND", "Interest not found", 404);
 
     const scope = await resolveReadScope(c, user, row.studentId);
     if (!scope.ok) return scope.response;
@@ -86,7 +86,7 @@ const projects = new Hono<AppEnv>()
   .patch(
     "/:id",
     requireCapability(Capability.PROFILE_WRITE_SELF),
-    validate("json", updateProjectSchema),
+    validate("json", updateInterestSchema),
     async (c) => {
       const user = getUser(c);
       const id = c.req.param("id");
@@ -96,19 +96,19 @@ const projects = new Hono<AppEnv>()
       if (!scope.ok) return scope.response;
 
       const { row, owned } = await findOwned(id, scope.studentId);
-      if (!row) return fail(c, "NOT_FOUND", "Project not found", 404);
+      if (!row) return fail(c, "NOT_FOUND", "Interest not found", 404);
       if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
       const [updated] = await db
-        .update(projectsTable)
+        .update(interestsTable)
         .set(body)
-        .where(eq(projectsTable.id, id))
+        .where(eq(interestsTable.id, id))
         .returning();
 
       await createAuditLog({
         userId: user.id,
         action: AuditAction.UPDATE,
-        entity: AuditEntity.PROJECT,
+        entity: AuditEntity.INTEREST,
         entityId: id,
         metadata: diff(row, updated),
       });
@@ -127,23 +127,23 @@ const projects = new Hono<AppEnv>()
       if (!scope.ok) return scope.response;
 
       const { row, owned } = await findOwned(id, scope.studentId);
-      if (!row) return fail(c, "NOT_FOUND", "Project not found", 404);
+      if (!row) return fail(c, "NOT_FOUND", "Interest not found", 404);
       if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
       const [deleted] = await db
-        .update(projectsTable)
+        .update(interestsTable)
         .set({ deletedAt: new Date() })
-        .where(eq(projectsTable.id, id))
+        .where(eq(interestsTable.id, id))
         .returning();
 
       await createAuditLog({
         userId: user.id,
         action: AuditAction.DELETE,
-        entity: AuditEntity.PROJECT,
+        entity: AuditEntity.INTEREST,
         entityId: id,
       });
       return ok(c, deleted);
     },
   );
 
-export default projects;
+export default interests;

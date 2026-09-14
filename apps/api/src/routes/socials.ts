@@ -1,144 +1,149 @@
 import { socialsTable } from "@aecfolio/db";
 import { createSocialSchema, updateSocialSchema } from "@aecfolio/shared";
-import { zValidator } from "@hono/zod-validator";
-import { eq } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
-import { createAuditLog } from "../lib/audit";
+import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
+import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
+import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { fail, getUser, ok } from "../lib/response";
-import { getStudentForUser } from "../lib/student";
-import { requireRole } from "../middleware/role";
+import { validate } from "../lib/validate";
+import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
 
+async function findOwned(id: string, studentId: string) {
+  const [row] = await db
+    .select()
+    .from(socialsTable)
+    .where(and(eq(socialsTable.id, id), isNull(socialsTable.deletedAt)))
+    .limit(1);
+  if (!row) return { row: null, owned: false };
+  return { row, owned: row.studentId === studentId };
+}
+
 const socials = new Hono<AppEnv>()
-  .get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/", requireAuth(), async (c) => {
     const user = getUser(c);
-    const paramStudentId = c.req.query("studentId");
+    const scope = await resolveReadScope(c, user, c.req.query("studentId"));
+    if (!scope.ok) return scope.response;
 
-    let studentId: string | null = null;
+    const rows = await db
+      .select()
+      .from(socialsTable)
+      .where(
+        and(
+          eq(socialsTable.studentId, scope.studentId),
+          isNull(socialsTable.deletedAt),
+        ),
+      );
 
-    if (user.role === "FACULTY" && paramStudentId) {
-      studentId = paramStudentId;
-    } else if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (!student)
-        return fail(c, "NOT_FOUND", "Student profile not found", 404);
-      studentId = student.id;
-    }
-
-    const result = await db.query.socialsTable.findMany({
-      where: (e, { eq }) =>
-        studentId ? eq(e.studentId, studentId) : undefined,
-    });
-
-    return ok(c, result);
+    return ok(c, rows);
   })
 
   .post(
     "/",
-    requireRole("STUDENT"),
-    zValidator("json", createSocialSchema),
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    validate("json", createSocialSchema),
     async (c) => {
       const user = getUser(c);
       const body = c.req.valid("json");
 
-      const student = await getStudentForUser(user.id);
-      if (!student)
-        return fail(c, "NOT_FOUND", "Student profile not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-      const [social] = await db
+      const [row] = await db
         .insert(socialsTable)
-        .values({ ...body, studentId: student.id })
+        .values({ ...body, studentId: scope.studentId })
         .returning();
+
       await createAuditLog({
         userId: user.id,
-        action: "CREATE",
-        entity: "Social",
-        entityId: social.id,
+        action: AuditAction.CREATE,
+        entity: AuditEntity.SOCIAL,
+        entityId: row.id,
       });
-      return ok(c, social, 201);
+      return ok(c, row, 201);
     },
   )
 
-  .get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/:id", requireAuth(), async (c) => {
     const user = getUser(c);
     const id = c.req.param("id");
 
-    const social = await db.query.socialsTable.findFirst({
-      where: (e, { eq }) => eq(e.id, id),
-    });
-    if (!social) return fail(c, "NOT_FOUND", "Social not found", 404);
+    const [row] = await db
+      .select()
+      .from(socialsTable)
+      .where(and(eq(socialsTable.id, id), isNull(socialsTable.deletedAt)))
+      .limit(1);
+    if (!row) return fail(c, "NOT_FOUND", "Social not found", 404);
 
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (social.studentId !== student?.id)
-        return fail(c, "FORBIDDEN", "Forbidden", 403);
-    }
+    const scope = await resolveReadScope(c, user, row.studentId);
+    if (!scope.ok) return scope.response;
 
-    return ok(c, social);
+    return ok(c, row);
   })
 
   .patch(
     "/:id",
-    requireRole("STUDENT", "FACULTY"),
-    zValidator("json", updateSocialSchema),
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    validate("json", updateSocialSchema),
     async (c) => {
       const user = getUser(c);
       const id = c.req.param("id");
       const body = c.req.valid("json");
 
-      const social = await db.query.socialsTable.findFirst({
-        where: (e, { eq }) => eq(e.id, id),
-      });
-      if (!social) return fail(c, "NOT_FOUND", "Social not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-      if (user.role === "STUDENT") {
-        const student = await getStudentForUser(user.id);
-        if (social.studentId !== student?.id)
-          return fail(c, "FORBIDDEN", "Forbidden", 403);
-      }
+      const { row, owned } = await findOwned(id, scope.studentId);
+      if (!row) return fail(c, "NOT_FOUND", "Social not found", 404);
+      if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
       const [updated] = await db
         .update(socialsTable)
         .set(body)
         .where(eq(socialsTable.id, id))
         .returning();
+
       await createAuditLog({
         userId: user.id,
-        action: "UPDATE",
-        entity: "Social",
+        action: AuditAction.UPDATE,
+        entity: AuditEntity.SOCIAL,
         entityId: id,
+        metadata: diff(row, updated),
       });
       return ok(c, updated);
     },
   )
 
-  .delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-    const user = getUser(c);
-    const id = c.req.param("id");
+  .delete(
+    "/:id",
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    async (c) => {
+      const user = getUser(c);
+      const id = c.req.param("id");
 
-    const social = await db.query.socialsTable.findFirst({
-      where: (e, { eq }) => eq(e.id, id),
-    });
-    if (!social) return fail(c, "NOT_FOUND", "Social not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (social.studentId !== student?.id)
-        return fail(c, "FORBIDDEN", "Forbidden", 403);
-    }
+      const { row, owned } = await findOwned(id, scope.studentId);
+      if (!row) return fail(c, "NOT_FOUND", "Social not found", 404);
+      if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
-    const [deleted] = await db
-      .delete(socialsTable)
-      .where(eq(socialsTable.id, id))
-      .returning();
-    await createAuditLog({
-      userId: user.id,
-      action: "DELETE",
-      entity: "Social",
-      entityId: id,
-    });
-    return ok(c, deleted);
-  });
+      const [deleted] = await db
+        .update(socialsTable)
+        .set({ deletedAt: new Date() })
+        .where(eq(socialsTable.id, id))
+        .returning();
+
+      await createAuditLog({
+        userId: user.id,
+        action: AuditAction.DELETE,
+        entity: AuditEntity.SOCIAL,
+        entityId: id,
+      });
+      return ok(c, deleted);
+    },
+  );
 
 export default socials;

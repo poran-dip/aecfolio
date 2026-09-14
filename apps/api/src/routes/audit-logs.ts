@@ -1,32 +1,66 @@
-import type { SQL } from "drizzle-orm";
+import { auditLogsTable, usersTable } from "@aecfolio/db";
+import { and, count, desc, eq, gte, lte, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
+import { z } from "zod";
+import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
-import { ok } from "../lib/response";
-import { requireRole } from "../middleware/role";
+import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";
+import { paginated } from "../lib/response";
+import { validate } from "../lib/validate";
+import { requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
+
+const listQuerySchema = paginationQuerySchema.extend({
+  userId: z.string().optional(),
+  entity: z.string().optional(),
+  entityId: z.string().optional(),
+  action: z.string().optional(),
+  from: z.coerce.date().optional(),
+  to: z.coerce.date().optional(),
+});
 
 const auditLogs = new Hono<AppEnv>().get(
   "/",
-  requireRole("FACULTY"),
+  requireCapability(Capability.AUDIT_READ),
+  validate("query", listQuerySchema),
   async (c) => {
-    const userId = c.req.query("userId");
-    const entity = c.req.query("entity");
-    const entityId = c.req.query("entityId");
+    const query = c.req.valid("query");
 
-    const result = await db.query.auditLogsTable.findMany({
-      where: (log, { and, eq }) => {
-        const conditions: SQL[] = [];
-        if (userId) conditions.push(eq(log.userId, userId));
-        if (entity) conditions.push(eq(log.entity, entity));
-        if (entityId) conditions.push(eq(log.entityId, entityId));
-        return conditions.length
-          ? and(...(conditions as [SQL, ...SQL[]]))
-          : undefined;
-      },
-      orderBy: (log, { desc }) => desc(log.createdAt),
-    });
+    const filters: SQL[] = [];
+    if (query.userId) filters.push(eq(auditLogsTable.userId, query.userId));
+    if (query.entity) filters.push(eq(auditLogsTable.entity, query.entity));
+    if (query.entityId)
+      filters.push(eq(auditLogsTable.entityId, query.entityId));
+    if (query.action) filters.push(eq(auditLogsTable.action, query.action));
+    if (query.from) filters.push(gte(auditLogsTable.createdAt, query.from));
+    if (query.to) filters.push(lte(auditLogsTable.createdAt, query.to));
 
-    return ok(c, result);
+    const where = filters.length ? and(...filters) : undefined;
+    const { limit, offset } = toOffset(query);
+
+    const [items, [total]] = await Promise.all([
+      db
+        .select({
+          id: auditLogsTable.id,
+          userId: auditLogsTable.userId,
+          action: auditLogsTable.action,
+          entity: auditLogsTable.entity,
+          entityId: auditLogsTable.entityId,
+          metadata: auditLogsTable.metadata,
+          createdAt: auditLogsTable.createdAt,
+          actorName: usersTable.name,
+          actorEmail: usersTable.email,
+        })
+        .from(auditLogsTable)
+        .innerJoin(usersTable, eq(auditLogsTable.userId, usersTable.id))
+        .where(where)
+        .orderBy(desc(auditLogsTable.createdAt))
+        .limit(limit)
+        .offset(offset),
+      db.select({ value: count() }).from(auditLogsTable).where(where),
+    ]);
+
+    return paginated(c, toPage(items, total?.value ?? 0, query));
   },
 );
 
