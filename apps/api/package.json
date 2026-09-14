@@ -7,7 +7,9 @@
     "dev": "dotenv-run -- tsx watch src/index.ts",
     "build": "tsdown",
     "start": "dotenv-run -- node dist/index.js",
-    "typecheck": "tsc"
+    "typecheck": "tsc",
+    "test": "dotenv-run -- vitest run",
+    "test:watch": "dotenv-run -- vitest"
   },
   "dependencies": {
     "@aecfolio/config": "workspace:*",
@@ -27,9 +29,11 @@
   },
   "devDependencies": {
     "@types/node": "catalog:",
+    "@types/pg": "^8.23.1",
     "tsdown": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {

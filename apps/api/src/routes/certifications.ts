@@ -3,202 +3,167 @@ import {
   createCertificationSchema,
   updateCertificationSchema,
 } from "@aecfolio/shared";
-import { zValidator } from "@hono/zod-validator";
-import { eq, inArray } from "drizzle-orm";
+import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
-import { z } from "zod";
-import { createAuditLog } from "../lib/audit";
+import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
+import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
+import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
+import { projectReviewable, viewForActor } from "../lib/profile";
 import { fail, getUser, ok } from "../lib/response";
-import { getStudentForUser } from "../lib/student";
-import { requireRole } from "../middleware/role";
+import { RESET_TO_PENDING } from "../lib/review";
+import { validate } from "../lib/validate";
+import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
 
+async function findOwned(id: string, studentId: string) {
+  const [row] = await db
+    .select()
+    .from(certificationsTable)
+    .where(
+      and(
+        eq(certificationsTable.id, id),
+        isNull(certificationsTable.deletedAt),
+      ),
+    )
+    .limit(1);
+  if (!row) return { row: null, owned: false };
+  return { row, owned: row.studentId === studentId };
+}
+
 const certifications = new Hono<AppEnv>()
-  .get("/", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/", requireAuth(), async (c) => {
     const user = getUser(c);
-    const paramStudentId = c.req.query("studentId");
+    const scope = await resolveReadScope(c, user, c.req.query("studentId"));
+    if (!scope.ok) return scope.response;
 
-    let studentId: string | null = null;
+    const rows = await db
+      .select()
+      .from(certificationsTable)
+      .where(
+        and(
+          eq(certificationsTable.studentId, scope.studentId),
+          isNull(certificationsTable.deletedAt),
+        ),
+      );
 
-    if (user.role === "FACULTY" && paramStudentId) {
-      studentId = paramStudentId;
-    } else if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (!student)
-        return fail(c, "NOT_FOUND", "Student profile not found", 404);
-      studentId = student.id;
-    }
-
-    const result = await db.query.certificationsTable.findMany({
-      where: (a, { and, isNull, eq }) =>
-        studentId
-          ? and(isNull(a.deletedAt), eq(a.studentId, studentId))
-          : isNull(a.deletedAt),
-    });
-
-    return ok(c, result);
+    return ok(c, projectReviewable(rows, viewForActor(user, scope.isOwn)));
   })
 
   .post(
     "/",
-    requireRole("STUDENT"),
-    zValidator("json", createCertificationSchema),
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    validate("json", createCertificationSchema),
     async (c) => {
       const user = getUser(c);
       const body = c.req.valid("json");
 
-      const student = await getStudentForUser(user.id);
-      if (!student)
-        return fail(c, "NOT_FOUND", "Student profile not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-      const [achievement] = await db
+      const [certification] = await db
         .insert(certificationsTable)
-        .values({ ...body, studentId: student.id })
+        .values({ ...body, studentId: scope.studentId })
         .returning();
+
       await createAuditLog({
         userId: user.id,
-        action: "CREATE",
-        entity: "Achievement",
-        entityId: achievement.id,
+        action: AuditAction.CREATE,
+        entity: AuditEntity.CERTIFICATION,
+        entityId: certification.id,
       });
-      return ok(c, achievement, 201);
+      return ok(c, certification, 201);
     },
   )
 
-  .patch(
-    "/verify",
-    requireRole("FACULTY"),
-    zValidator("json", z.object({ ids: z.array(z.string()).min(1) })),
-    async (c) => {
-      const user = getUser(c);
-      const { ids } = c.req.valid("json");
-
-      await db
-        .update(certificationsTable)
-        .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
-        .where(inArray(certificationsTable.id, ids));
-
-      await Promise.all(
-        ids.map((id) =>
-          createAuditLog({
-            userId: user.id,
-            action: "VERIFY",
-            entity: "Achievement",
-            entityId: id,
-          }),
-        ),
-      );
-      return ok(c, { verified: ids.length });
-    },
-  )
-
-  .get("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
+  .get("/:id", requireAuth(), async (c) => {
     const user = getUser(c);
     const id = c.req.param("id");
 
-    const achievement = await db.query.certificationsTable.findFirst({
-      where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
-    });
-    if (!achievement) return fail(c, "NOT_FOUND", "Achievement not found", 404);
+    const [row] = await db
+      .select()
+      .from(certificationsTable)
+      .where(
+        and(
+          eq(certificationsTable.id, id),
+          isNull(certificationsTable.deletedAt),
+        ),
+      )
+      .limit(1);
+    if (!row) return fail(c, "NOT_FOUND", "Certification not found", 404);
 
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (achievement.studentId !== student?.id)
-        return fail(c, "FORBIDDEN", "Forbidden", 403);
-    }
+    const scope = await resolveReadScope(c, user, row.studentId);
+    if (!scope.ok) return scope.response;
 
-    return ok(c, achievement);
+    const [projected] = projectReviewable(
+      [row],
+      viewForActor(user, scope.isOwn),
+    );
+    if (!projected) return fail(c, "NOT_FOUND", "Certification not found", 404);
+    return ok(c, projected);
   })
 
   .patch(
     "/:id",
-    requireRole("STUDENT", "FACULTY"),
-    zValidator("json", updateCertificationSchema),
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    validate("json", updateCertificationSchema),
     async (c) => {
       const user = getUser(c);
       const id = c.req.param("id");
       const body = c.req.valid("json");
 
-      const achievement = await db.query.certificationsTable.findFirst({
-        where: (a, { and, eq, isNull }) =>
-          and(eq(a.id, id), isNull(a.deletedAt)),
-      });
-      if (!achievement)
-        return fail(c, "NOT_FOUND", "Achievement not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-      if (user.role === "STUDENT") {
-        const student = await getStudentForUser(user.id);
-        if (achievement.studentId !== student?.id)
-          return fail(c, "FORBIDDEN", "Forbidden", 403);
-      }
+      const { row, owned } = await findOwned(id, scope.studentId);
+      if (!row) return fail(c, "NOT_FOUND", "Certification not found", 404);
+      if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
       const [updated] = await db
         .update(certificationsTable)
-        .set(body)
+        .set({ ...body, ...RESET_TO_PENDING })
         .where(eq(certificationsTable.id, id))
         .returning();
+
       await createAuditLog({
         userId: user.id,
-        action: "UPDATE",
-        entity: "Achievement",
+        action: AuditAction.UPDATE,
+        entity: AuditEntity.CERTIFICATION,
         entityId: id,
+        metadata: diff(row, updated),
       });
       return ok(c, updated);
     },
   )
 
-  .patch("/:id/verify", requireRole("FACULTY"), async (c) => {
-    const user = getUser(c);
-    const id = c.req.param("id");
+  .delete(
+    "/:id",
+    requireCapability(Capability.PROFILE_WRITE_SELF),
+    async (c) => {
+      const user = getUser(c);
+      const id = c.req.param("id");
 
-    const existing = await db.query.certificationsTable.findFirst({
-      where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
-    });
-    if (!existing) return fail(c, "NOT_FOUND", "Achievement not found", 404);
+      const scope = await resolveOwnStudent(c, user);
+      if (!scope.ok) return scope.response;
 
-    const [updated] = await db
-      .update(certificationsTable)
-      .set({ verified: true, verifiedBy: user.id, verifiedAt: new Date() })
-      .where(eq(certificationsTable.id, id))
-      .returning();
+      const { row, owned } = await findOwned(id, scope.studentId);
+      if (!row) return fail(c, "NOT_FOUND", "Certification not found", 404);
+      if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
 
-    await createAuditLog({
-      userId: user.id,
-      action: "VERIFY",
-      entity: "Achievement",
-      entityId: id,
-    });
-    return ok(c, updated);
-  })
+      const [deleted] = await db
+        .update(certificationsTable)
+        .set({ deletedAt: new Date() })
+        .where(eq(certificationsTable.id, id))
+        .returning();
 
-  .delete("/:id", requireRole("STUDENT", "FACULTY"), async (c) => {
-    const user = getUser(c);
-    const id = c.req.param("id");
-
-    const achievement = await db.query.certificationsTable.findFirst({
-      where: (a, { and, eq, isNull }) => and(eq(a.id, id), isNull(a.deletedAt)),
-    });
-    if (!achievement) return fail(c, "NOT_FOUND", "Achievement not found", 404);
-
-    if (user.role === "STUDENT") {
-      const student = await getStudentForUser(user.id);
-      if (achievement.studentId !== student?.id)
-        return fail(c, "FORBIDDEN", "Forbidden", 403);
-    }
-
-    const [deleted] = await db
-      .update(certificationsTable)
-      .set({ deletedAt: new Date() })
-      .where(eq(certificationsTable.id, id))
-      .returning();
-    await createAuditLog({
-      userId: user.id,
-      action: "DELETE",
-      entity: "Achievement",
-      entityId: id,
-    });
-    return ok(c, deleted);
-  });
+      await createAuditLog({
+        userId: user.id,
+        action: AuditAction.DELETE,
+        entity: AuditEntity.CERTIFICATION,
+        entityId: id,
+      });
+      return ok(c, deleted);
+    },
+  );
 
 export default certifications;

@@ -1,8 +1,8 @@
-import type { auth } from "../lib/auth";
+import type { Actor } from "../lib/session";
 
 export type AppEnv = {
   Variables: {
-    user: typeof auth.$Infer.Session.user | null;
-    session: typeof auth.$Infer.Session.session | null;
+    user: Actor | null;
+    sessionId: string | null;
   };
 };
