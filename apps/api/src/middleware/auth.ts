@@ -1,18 +1,23 @@
 import type { MiddlewareHandler } from "hono";
-import { auth } from "../lib/auth";
+import type { SessionResolver } from "../lib/session";
 import type { AppEnv } from "../types/context";
 
-export const authMiddleware: MiddlewareHandler<AppEnv> = async (c, next) => {
-  c.set("user", null);
-  c.set("session", null);
+export function createAuthMiddleware(
+  resolver: SessionResolver,
+): MiddlewareHandler<AppEnv> {
+  return async (c, next) => {
+    c.set("user", null);
+    c.set("sessionId", null);
 
-  if (c.req.path.startsWith("/api/auth")) return next();
+    const path = c.req.path;
+    if (path.startsWith("/api/auth") || path === "/api/health") return next();
 
-  const session = await auth.api.getSession({ headers: c.req.raw.headers });
-  if (session) {
-    c.set("user", session.user);
-    c.set("session", session.session);
-  }
+    const resolved = await resolver(c.req.raw.headers);
+    if (resolved) {
+      c.set("user", resolved.user);
+      c.set("sessionId", resolved.sessionId);
+    }
 
-  await next();
-};
+    await next();
+  };
+}
