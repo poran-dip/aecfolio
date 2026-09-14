@@ -541,6 +541,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 25.9.6
+      tsdown:
+        specifier: 'catalog:'
+        version: 0.23.0(tsx@4.23.13)(typescript@7.0.2)
       typescript:
         specifier: 'catalog:'
         version: 7.0.2
