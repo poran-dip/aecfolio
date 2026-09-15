@@ -90,6 +90,12 @@ pickers → composeDate → "Jan 2025 – Dec 2025" → decomposeDate → picker
 
 `cvSectionsConfigSchema` is the jsonb payload stored on `cv_preferences.sections` and copied verbatim into `cv_exports.config`. Ordering — of sections, of entries within a section, of social links — lives only here; no entity table has an `order` column. Storing the exact config rather than a checksum of the data is what makes the "skip regeneration if unchanged" short-circuit correct, since a reorder changes the rendered document without changing any row.
 
+## Uploads
+
+`schemas/upload.ts` is the contract for issuing an upload. `UPLOAD_RULES` names, per purpose, the content types allowed and the size cap: a **proof** is a JPEG, PNG, WebP or PDF up to 8 MiB, an **avatar** is a JPEG, PNG or WebP up to 2 MiB. SVG is excluded on purpose, since it is a document that can carry script, not an image.
+
+The browser asks for a ticket with `{ purpose, contentType, size }` and uploads to the signed URL it gets back. What gets stored on the row is the object key the ticket named — `proofKey` on achievements and certifications, `image` on users — never a URL. `image` used to be `z.url()`; it is an `objectKey` now, and the server checks that the key really is the caller's own upload before it will store it.
+
 ## Export filenames
 
 `utils/filename.ts`. A CV PDF is named **roll number first, then the name**:

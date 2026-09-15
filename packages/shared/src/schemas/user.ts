@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Role } from "../enums";
-import { softDeleteFields, timestampFields } from "./common";
+import { objectKey, softDeleteFields, timestampFields } from "./common";
 
 export const userSchema = z.object({
   id: z.string(),
@@ -20,7 +20,7 @@ export const userSchema = z.object({
 export const updateUserSchema = z.object({
   name: z.string().trim().min(1).optional(),
   phone: z.string().trim().nullable().optional(),
-  image: z.url().nullable().optional(),
+  image: objectKey.nullable().optional(),
 });
 
 export const setUserRoleSchema = z.object({
