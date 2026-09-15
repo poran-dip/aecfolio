@@ -5,8 +5,6 @@ node_modules/
 # output
 dist/
 dist-ssr/
-preview/
-generated/
 
 # react router
 .react-router/
@@ -35,4 +33,4 @@ Thumbs.db
 *.tsbuildinfo
 
 # runtime generated
-src/generated/
+generated/
