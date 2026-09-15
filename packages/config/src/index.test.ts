@@ -104,6 +104,51 @@ describe("authEnv", () => {
   });
 });
 
+describe("s3Env", () => {
+  const valid = {
+    S3_ENDPOINT: "http://localhost:3900",
+    S3_PUBLIC_ENDPOINT: "http://localhost:3900/",
+    S3_BUCKET: "storage",
+    S3_ACCESS_KEY_ID: `GK${"a1".repeat(12)}`,
+    S3_SECRET_ACCESS_KEY: "f".repeat(64),
+  };
+
+  const stub = (env: Record<string, string>) => {
+    for (const [key, value] of Object.entries(env)) vi.stubEnv(key, value);
+  };
+
+  it("accepts a valid scope and defaults the region", async () => {
+    stub(valid);
+    const { s3Env } = await import("./index");
+    expect(s3Env.S3_PUBLIC_ENDPOINT).toBe("http://localhost:3900");
+    expect(s3Env.S3_REGION).toBe("garage");
+  });
+
+  it("is not required by the api scope", async () => {
+    vi.stubEnv("CORS_ORIGIN", "http://localhost:3000");
+    const { apiEnv } = await import("./index");
+    expect(() => apiEnv.CORS_ORIGIN).not.toThrow();
+  });
+
+  it("rejects an access key Garage would refuse", async () => {
+    stub({ ...valid, S3_ACCESS_KEY_ID: "minioadmin" });
+    const { s3Env } = await import("./index");
+    expect(() => s3Env.S3_ACCESS_KEY_ID).toThrow(/S3_ACCESS_KEY_ID/);
+  });
+
+  it("rejects a secret that is not 64 hex chars", async () => {
+    stub({ ...valid, S3_SECRET_ACCESS_KEY: "password" });
+    const { s3Env } = await import("./index");
+    expect(() => s3Env.S3_BUCKET).toThrow(/S3_SECRET_ACCESS_KEY/);
+  });
+
+  it("rejects a public endpoint with a path", async () => {
+    stub({ ...valid, S3_PUBLIC_ENDPOINT: "http://localhost/api" });
+    const { s3Env } = await import("./index");
+    expect(() => s3Env.S3_BUCKET).toThrow(/S3_PUBLIC_ENDPOINT/);
+  });
+});
+
 describe("workerEnv", () => {
   it("treats PUPPETEER_EXECUTABLE_PATH as optional", async () => {
     const { workerEnv } = await import("./index");
