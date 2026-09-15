@@ -22,7 +22,7 @@ import {
 describe("verification", () => {
   beforeEach(resetDatabase);
 
-  it("promotes pendingSgpa to sgpa and recomputes CGPA when a result is verified (H13)", async () => {
+  it("promotes pendingSgpa to sgpa and recomputes CGPA when a result is verified", async () => {
     const mod = await createStaff(Role.MOD);
     const { student } = await createStudent({ branch: "CSE" });
 
@@ -75,7 +75,7 @@ describe("verification", () => {
     expect(res.status).toBe(409);
   });
 
-  it("reports missing and already-reviewed ids instead of counting them as done (H12)", async () => {
+  it("reports missing and already-reviewed ids instead of counting them as done", async () => {
     const mod = await createStaff(Role.MOD);
     const { student } = await createStudent();
 
@@ -101,7 +101,7 @@ describe("verification", () => {
     ).toEqual(["Already verified", "Not found"]);
   });
 
-  it("requires a reason to reject (U02)", async () => {
+  it("requires a reason to reject", async () => {
     const mod = await createStaff(Role.MOD);
     const { student } = await createStudent();
     const achievement = await createAchievement(student.id);
@@ -120,7 +120,7 @@ describe("verification", () => {
     expect(withReason.status).toBe(200);
   });
 
-  it("puts the submitted SGPA in the queue payload (U01)", async () => {
+  it("puts the submitted SGPA in the queue payload", async () => {
     const mod = await createStaff(Role.MOD);
     const { student } = await createStudent({ branch: "CSE" });
     const scheme = await createCreditScheme();
@@ -152,7 +152,7 @@ describe("verification", () => {
 describe("editing a reviewed claim", () => {
   beforeEach(resetDatabase);
 
-  it("sends a verified achievement back to pending (C05)", async () => {
+  it("sends a verified achievement back to pending", async () => {
     const mod = await createStaff(Role.MOD);
     const { actor, student } = await createStudent();
     const achievement = await createAchievement(student.id, {
@@ -324,7 +324,7 @@ describe("account creation", () => {
     expect(created.role).toBe(Role.STUDENT);
   });
 
-  it("marks pre-created rows emailVerified so Google sign-in can link to them (H14)", async () => {
+  it("marks pre-created rows emailVerified so Google sign-in can link to them", async () => {
     const mod = await createStaff(Role.MOD);
 
     const res = await asUser(mod.actor).post("/api/students", {
@@ -358,7 +358,7 @@ describe("account creation", () => {
     expect(res.body.data.userId).not.toBe(mod.actor.id);
   });
 
-  it("returns failed import rows identified, alongside the successes (H09)", async () => {
+  it("returns failed import rows identified, alongside the successes", async () => {
     const mod = await createStaff(Role.MOD);
     await createStudent({ rollNo: "TAKEN-001" });
 
@@ -551,7 +551,7 @@ describe("cohort promotion", () => {
 describe("audit trail", () => {
   beforeEach(resetDatabase);
 
-  it("labels certification entries as certifications, not achievements (M01)", async () => {
+  it("labels certification entries as certifications, not achievements", async () => {
     const { actor } = await createStudent();
 
     const res = await asUser(actor).post("/api/certifications", {
@@ -567,7 +567,7 @@ describe("audit trail", () => {
     expect(log.entity).toBe("Certification");
   });
 
-  it("404s a missing certification as a certification, not an achievement (M01)", async () => {
+  it("404s a missing certification as a certification, not an achievement", async () => {
     const { actor } = await createStudent();
     const res = await asUser(actor).get("/api/certifications/nope");
     expect(res.body.error.message).toBe("Certification not found");

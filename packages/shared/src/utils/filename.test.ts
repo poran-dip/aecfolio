@@ -100,7 +100,7 @@ describe("cvFileName", () => {
   });
 });
 
-describe("attachmentHeader — M12", () => {
+describe("attachmentHeader", () => {
   it("builds the header from the sanitised name", () => {
     expect(
       attachmentHeader(cvFileName({ rollNo: "23/162", name: "Poran Boruah" })),
@@ -125,7 +125,7 @@ describe("attachmentHeader — M12", () => {
   });
 });
 
-describe("uniqueFileName — U10's zip collision", () => {
+describe("uniqueFileName — zip collision", () => {
   it("passes a name through the first time", () => {
     const taken = new Set<string>();
     expect(uniqueFileName(taken, "23162-Poran.pdf")).toBe("23162-Poran.pdf");
