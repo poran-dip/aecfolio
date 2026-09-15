@@ -33,4 +33,4 @@ Thumbs.db
 *.tsbuildinfo
 
 # runtime generated
-src/generated/
+generated/

@@ -1,12 +1,16 @@
 import { describe, expect, it } from "vitest";
 import {
   composeDate,
+  DATE_RANGE_SEPARATOR,
   decomposeDate,
   formatYearMonth,
   isYearMonthOrdered,
   parseYearMonth,
 } from "./cv-date";
 import { formatDate, isPresent, parseLooseDate } from "./date";
+
+const range = (from: string, to: string) =>
+  `${from}${DATE_RANGE_SEPARATOR}${to}`;
 
 const jan25 = { year: 2025, month: 1 };
 const dec25 = { year: 2025, month: 12 };
@@ -40,10 +44,19 @@ describe("formatYearMonth / parseYearMonth", () => {
   });
 });
 
+describe("the separator", () => {
+  it("is a spaced en dash, U+2013", () => {
+    expect(DATE_RANGE_SEPARATOR).toHaveLength(3);
+    expect(DATE_RANGE_SEPARATOR.charCodeAt(0)).toBe(0x20);
+    expect(DATE_RANGE_SEPARATOR.charCodeAt(1)).toBe(0x2013);
+    expect(DATE_RANGE_SEPARATOR.charCodeAt(2)).toBe(0x20);
+  });
+});
+
 describe("composeDate", () => {
   it("joins a start and an end with a spaced en dash", () => {
     expect(composeDate({ start: jan25, end: dec25 })).toBe(
-      "Jan 2025 – Dec 2025",
+      range("Jan 2025", "Dec 2025"),
     );
   });
 
@@ -53,13 +66,13 @@ describe("composeDate", () => {
 
   it("writes Present instead of an end date", () => {
     expect(composeDate({ start: jan25, present: true })).toBe(
-      "Jan 2025 – Present",
+      range("Jan 2025", "Present"),
     );
   });
 
   it("ignores the end picker entirely when Present is checked", () => {
     expect(composeDate({ start: jan25, end: dec25, present: true })).toBe(
-      "Jan 2025 – Present",
+      range("Jan 2025", "Present"),
     );
   });
 
@@ -93,7 +106,7 @@ describe("composeDate", () => {
 
   it("does not reject an inverted range — that check happens elsewhere", () => {
     expect(composeDate({ start: dec25, end: jan25 })).toBe(
-      "Dec 2025 – Jan 2025",
+      range("Dec 2025", "Jan 2025"),
     );
   });
 });
@@ -114,7 +127,7 @@ describe("decomposeDate", () => {
   });
 
   it("opens a range in the pickers", () => {
-    expect(decomposeDate("Jan 2025 – Dec 2025")).toEqual({
+    expect(decomposeDate(range("Jan 2025", "Dec 2025"))).toEqual({
       custom: null,
       start: jan25,
       end: dec25,
@@ -123,7 +136,7 @@ describe("decomposeDate", () => {
   });
 
   it("checks the Present box", () => {
-    expect(decomposeDate("Jan 2025 – Present")).toEqual({
+    expect(decomposeDate(range("Jan 2025", "Present"))).toEqual({
       custom: null,
       start: jan25,
       end: null,
@@ -153,9 +166,10 @@ describe("decomposeDate", () => {
   });
 
   it("reads separators it would never write", () => {
+    const emDash = String.fromCharCode(0x2014);
     for (const stored of [
       "Jan 2025 - Dec 2025",
-      "Jan 2025—Dec 2025",
+      `Jan 2025${emDash}Dec 2025`,
       "Jan 2025 to Dec 2025",
       "Jan 2025-Dec 2025",
     ]) {
@@ -165,10 +179,10 @@ describe("decomposeDate", () => {
 
   it("reads the other ways Present gets written", () => {
     for (const stored of [
-      "Jan 2025 – Present",
+      range("Jan 2025", "Present"),
       "Jan 2025 - present",
       "Jan 2025 to Current",
-      "Jan 2025 – Ongoing",
+      range("Jan 2025", "Ongoing"),
     ]) {
       expect(decomposeDate(stored).present).toBe(true);
     }
@@ -186,9 +200,8 @@ describe("decomposeDate", () => {
   });
 
   it("does not mistake a half-readable range for a range", () => {
-    expect(decomposeDate("Jan 2025 – sometime").custom).toBe(
-      "Jan 2025 – sometime",
-    );
+    const stored = range("Jan 2025", "sometime");
+    expect(decomposeDate(stored).custom).toBe(stored);
   });
 });
 
@@ -234,6 +247,6 @@ describe("what composeDate writes stays readable by the rest of the stack", () =
 
   it("writes a Present token isPresent recognises", () => {
     const stored = composeDate({ start: jan25, present: true }) as string;
-    expect(isPresent(stored.split("–")[1])).toBe(true);
+    expect(isPresent(stored.split(DATE_RANGE_SEPARATOR)[1])).toBe(true);
   });
 });

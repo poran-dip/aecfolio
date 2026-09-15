@@ -1,3 +1,3 @@
+export * from "./cv";
 export * from "./icons";
-export * from "./templates";
-export * from "./types";
+export * from "./markdown";

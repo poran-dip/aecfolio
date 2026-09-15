@@ -4,19 +4,44 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "typecheck": "tsc"
+    "build": "pnpm build:css && tsdown",
+    "build:css": "tsx scripts/build-css.ts",
+    "preview": "tsx scripts/preview.ts",
+    "test": "pnpm build:css && vitest run",
+    "typecheck": "pnpm build:css && tsc"
   },
   "dependencies": {
     "@aecfolio/shared": "workspace:*",
-    "react": "catalog:"
+    "react": "catalog:",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
+    "zod": "catalog:"
   },
   "devDependencies": {
-    "@aecfolio/db": "workspace:*",
-    "@types/react": "catalog:",
+    "@tailwindcss/cli": "^4.3.3",
     "@types/node": "catalog:",
-    "typescript": "catalog:"
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "react-dom": "catalog:",
+    "tailwindcss": "^4.3.3",
+    "tsdown": "catalog:",
+    "tsx": "catalog:",
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
-    ".": "./src/index.ts"
-  }
+    ".": {
+      "types": "./dist/index.d.mts",
+      "import": "./dist/index.mjs"
+    },
+    "./styles/app.css": "./src/styles/app.css",
+    "./styles/tokens.css": "./src/styles/palette.css",
+    "./cv.css": "./dist/cv.css"
+  },
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "files": [
+    "dist",
+    "src/styles"
+  ]
 }

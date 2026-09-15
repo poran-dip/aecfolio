@@ -102,10 +102,6 @@ Roll first because a folder of these gets sorted and roll order is what a placem
 
 It lives here rather than in the worker because the worker is not the only thing that will name one: the export branch has to name stored objects and re-serve them from export history, and two implementations of a naming convention is one too many.
 
-`attachmentHeader()` is also where [M12](../../docs/issues/M12.md) is fixed. The worker interpolated `user.name` straight into `Content-Disposition`, and a name containing a quote or a CR/LF is the classic response-splitting vector. Going through `cvFileName` first makes that unrepresentable rather than filtered — the value is `[A-Za-z0-9-.]` by the time it reaches the header.
-
-`uniqueFileName()` suffixes a repeat so bulk export cannot put two students on one zip entry and silently lose one on extraction ([U10](../../docs/issues/U10.md)).
-
 ### Non-Latin filenames won't be supported
 
 Every account in this system is created from the college's Google Workspace, where names are stored in the Latin alphabet. There is no path by which a non-Latin name reaches this code in production. Supporting one means a second encoding, a second header parameter, a second set of cases in every test and a second way for the header to be wrong, all to serve a student who does not exist.

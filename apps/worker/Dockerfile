@@ -22,6 +22,8 @@ COPY packages/db ./packages/db
 
 RUN pnpm --filter @aecfolio/config build \
   && pnpm --filter @aecfolio/db build \
+  && pnpm --filter @aecfolio/shared build \
+  && pnpm --filter @aecfolio/ui build \
   && pnpm --filter @aecfolio/worker build
 
 FROM node:24-alpine

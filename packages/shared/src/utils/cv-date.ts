@@ -1,6 +1,9 @@
 import { isPresent } from "./date";
 
-export const DATE_RANGE_SEPARATOR = " – ";
+const EN_DASH = String.fromCharCode(0x2013);
+const EM_DASH = String.fromCharCode(0x2014);
+
+export const DATE_RANGE_SEPARATOR = ` ${EN_DASH} `;
 
 export const PRESENT_LABEL = "Present";
 
@@ -31,7 +34,10 @@ const MONTH_NAMES = [
   "Dec",
 ] as const;
 
-const SEPARATOR_PATTERN = /\s*(?:[–—-]|\bto\b)\s*/i;
+const SEPARATOR_PATTERN = new RegExp(
+  `\\s*(?:[${EN_DASH}${EM_DASH}\\-]|\\bto\\b)\\s*`,
+  "i",
+);
 
 function isValidYearMonth(
   value: YearMonth | null | undefined,

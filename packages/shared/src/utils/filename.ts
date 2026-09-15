@@ -12,7 +12,7 @@ export type CvFileNameInput = {
 function slug(value: string): string {
   return value
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/\p{M}/gu, "")
     .replace(/[^A-Za-z0-9]+/g, SEPARATOR)
     .slice(0, MAX_NAME_LENGTH)
     .replace(/-{2,}/g, SEPARATOR)

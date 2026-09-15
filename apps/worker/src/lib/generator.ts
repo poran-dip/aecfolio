@@ -1,3 +1,4 @@
+import { cvStylesheet } from "@aecfolio/ui";
 import { renderToStaticMarkup } from "react-dom/server";
 import { inlineImages } from "./inline-html";
 import { getBrowser } from "./puppeteer";
@@ -17,7 +18,9 @@ export async function generateCV(element: React.ReactElement): Promise<Buffer> {
       @font-face { font-family: 'Outfit'; font-weight: 800; src: url('/fonts/outfit/Outfit-ExtraBold.ttf') format('truetype'); }
     </style>`;
 
-    const full = `<!DOCTYPE html><html><head><meta charset="utf-8"/>${fontFaceBlock}</head><body style="margin:0">${inlined}</body></html>`;
+    const styles = `<style>${cvStylesheet}</style>`;
+
+    const full = `<!DOCTYPE html><html><head><meta charset="utf-8"/>${fontFaceBlock}${styles}</head><body style="margin:0">${inlined}</body></html>`;
 
     const dataUri = `data:text/html;charset=utf-8,${encodeURIComponent(full)}`;
     await page.emulateMediaType("screen");

@@ -1,0 +1,67 @@
+@theme static {
+  --spacing: 1px;
+
+  --color-cv-paper: var(--color-white);
+  --color-cv-ink: var(--color-neutral-900);
+  --color-cv-ink-muted: var(--color-neutral-700);
+  --color-cv-ink-subtle: var(--color-neutral-500);
+
+  --color-cv-accent: var(--color-turquoise-700);
+  --color-cv-rule: var(--color-turquoise-500);
+  --color-cv-line: var(--color-neutral-300);
+
+  --color-cv-mark: var(--color-turquoise-600);
+
+  --color-cv-tag-surface: var(--color-neutral-100);
+  --color-cv-tag-ink: var(--color-neutral-800);
+
+  --font-*: initial;
+  --font-cv:
+    "Outfit", ui-sans-serif, system-ui, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-cv-mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  --text-*: initial;
+  --text-2xs: 8px;
+  --text-2xs--line-height: 1.35;
+  --text-xs: 9px;
+  --text-xs--line-height: 1.4;
+  --text-sm: 10px;
+  --text-sm--line-height: 1.45;
+  --text-base: 11px;
+  --text-base--line-height: 1.45;
+  --text-md: 12px;
+  --text-md--line-height: 1.45;
+  --text-lg: 13px;
+  --text-lg--line-height: 1.35;
+  --text-xl: 16px;
+  --text-xl--line-height: 1.15;
+  --text-2xl: 20px;
+  --text-2xl--line-height: 1.1;
+
+  --leading-*: initial;
+  --leading-tight: 1.25;
+  --leading-snug: 1.4;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.6;
+
+  --tracking-*: initial;
+  --tracking-normal: 0;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.08em;
+
+  --radius-*: initial;
+  --radius-sm: 2px;
+  --radius-md: 3px;
+  --radius-full: 9999px;
+
+  --shadow-*: initial;
+  --breakpoint-*: initial;
+  --container-*: initial;
+  --animate-*: initial;
+  --blur-*: initial;
+  --ease-*: initial;
+  --perspective-*: initial;
+  --aspect-*: initial;
+  --drop-shadow-*: initial;
+  --inset-shadow-*: initial;
+}
