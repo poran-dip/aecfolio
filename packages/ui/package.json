@@ -7,8 +7,8 @@
     "build": "pnpm build:css && tsdown",
     "build:css": "tsx scripts/build-css.ts",
     "preview": "tsx scripts/preview.ts",
-    "test": "vitest run",
-    "typecheck": "tsc"
+    "test": "pnpm build:css && vitest run",
+    "typecheck": "pnpm build:css && tsc"
   },
   "dependencies": {
     "@aecfolio/shared": "workspace:*",

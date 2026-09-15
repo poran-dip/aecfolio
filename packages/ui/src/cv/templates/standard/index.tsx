@@ -1,4 +1,9 @@
-import { degreeLabel, formatDate } from "@aecfolio/shared";
+import {
+  DATE_RANGE_SEPARATOR,
+  degreeLabel,
+  formatDate,
+  PRESENT_LABEL,
+} from "@aecfolio/shared";
 import type { CSSProperties } from "react";
 import { ExternalLink } from "../../../icons";
 import { Markdown } from "../../../markdown";
@@ -17,15 +22,6 @@ import {
   VerifiedMark,
 } from "./parts/primitives";
 
-/**
- * Density and accent are applied as CSS custom properties on the page root
- * rather than by swapping class names.
- *
- * Tailwind only generates classes it can see as complete strings in the source,
- * so an option that picked a class name would need a lookup table of every
- * combination. Overriding the token the utilities already read costs one inline
- * style and cannot fall out of sync with the stylesheet.
- */
 type Density = {
   marginBlock: string;
   marginInline: string;
@@ -48,22 +44,6 @@ const DENSITY: Record<StandardOptions["density"], Density> = {
   },
 };
 
-/**
- * The page margin has to be stated twice, from one source.
- *
- * `@page` is what puts a margin on every printed page — element padding only
- * applies once to the element's own box, so it reaches page one and nothing
- * after it. But a browser ignores `@page`, so the screen preview draws the
- * sheet from the custom properties instead. Both come off the same `Density`
- * record here, so they cannot disagree.
- *
- * The `@page` rule is emitted per render because the margin is a template
- * option, and custom properties are no use inside `@page` — it is a page
- * context, not an element, and does not inherit from the one this is set on.
- *
- * Only ever one of two constant strings from a closed enum; nothing
- * user-supplied is interpolated into a stylesheet here.
- */
 function pageRule(density: Density): string {
   return `@page{size:210mm 297mm;margin:${density.marginBlock} ${density.marginInline};}`;
 }
@@ -77,12 +57,6 @@ function pageVariables(density: Density): CSSProperties {
   } as CSSProperties;
 }
 
-/**
- * The verified mark deliberately does *not* follow the accent into red: a red
- * checkmark next to a claim reads as a failure, which is the opposite of what
- * it means. It follows into ink, because someone who picked ink is printing in
- * grayscale and a lone blue tick would be the only thing that came out muddy.
- */
 const ACCENT: Record<StandardOptions["accent"], CSSProperties> = {
   turquoise: {} as CSSProperties,
   red: {
@@ -139,16 +113,6 @@ function renderSection(
   options: StandardOptions,
 ) {
   switch (section.kind) {
-    /*
-     * Summary and Skills read off the student row rather than a table of their
-     * own, so they have no entries to order — but they are still sections, and
-     * a student can put the summary below their projects if that is the story
-     * they want to tell.
-     *
-     * Each returns null when it has nothing to say, so an included-but-empty
-     * section costs a heading and a rule and no content. Excluding it as well
-     * is not something anyone should have to remember to do.
-     */
     case "summary": {
       if (!data.student.bio?.trim()) return null;
       return (
@@ -251,13 +215,6 @@ function renderSection(
           <EntryList>
             {items.map((cert) => (
               <Entry key={cert.id}>
-                {/*
-                 * Two links that mean different things, so they stay separate:
-                 * the checkmark opens the proof the college actually reviewed,
-                 * and the arrow opens the issuer's own credential page, which
-                 * nobody here has seen. Pointing the mark at the issuer would
-                 * make it vouch for something it does not.
-                 */}
                 <EntryHeader
                   title={cert.name}
                   subtitle={cert.issuer}
@@ -337,7 +294,9 @@ function renderSection(
             </div>
 
             <div className="flex shrink-0 flex-col items-end">
-              <EntryDate>{`${data.student.admissionYear} – Present`}</EntryDate>
+              <EntryDate>
+                {`${data.student.admissionYear}${DATE_RANGE_SEPARATOR}${PRESENT_LABEL}`}
+              </EntryDate>
             </div>
           </div>
         </Section>

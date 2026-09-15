@@ -1,6 +1,7 @@
 import {
   Branch,
   Course,
+  composeDate,
   StudentStatus,
   VerificationStatus,
 } from "@aecfolio/shared";
@@ -64,7 +65,7 @@ export function makeCvData(overrides: Partial<CvData> = {}): CvData {
         organization: "Zeta Systems",
         description:
           "Rewrote the ingestion pipeline.\n\n- Cut p99 latency from 1.8s to 240ms\n- Added `idempotency-key` handling to every write endpoint",
-        date: "Jun 2025 – Present",
+        date: composeDate({ start: { year: 2025, month: 6 }, present: true }),
         ...timestamps,
       },
     ],

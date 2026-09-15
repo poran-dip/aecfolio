@@ -1,5 +1,6 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -9,10 +10,18 @@ const INPUT = join(root, "src/styles/cv.css");
 const CSS_OUT = join(root, "dist/cv.css");
 const TS_OUT = join(root, "src/cv/generated/stylesheet.ts");
 
+function tailwindCli(): string {
+  const require = createRequire(import.meta.url);
+  const manifestPath = require.resolve("@tailwindcss/cli/package.json");
+  const { bin } = JSON.parse(readFileSync(manifestPath, "utf8"));
+  const entry = typeof bin === "string" ? bin : bin.tailwindcss;
+  return join(dirname(manifestPath), entry);
+}
+
 export function compileCvCss(): string {
   mkdirSync(dirname(CSS_OUT), { recursive: true });
 
-  execSync(`pnpm exec tailwindcss -i "${INPUT}" -o "${CSS_OUT}"`, {
+  execFileSync(process.execPath, [tailwindCli(), "-i", INPUT, "-o", CSS_OUT], {
     cwd: root,
     stdio: "inherit",
   });
@@ -22,7 +31,7 @@ export function compileCvCss(): string {
 
 export function stylesheetModule(css: string): string {
   return `/**
- * GENERATED — do not edit.
+ * GENERATED — do not edit, and do not commit.
  *
  * Built from src/styles/cv.css by scripts/build-css.ts. Run
  * \`pnpm -F @aecfolio/ui build:css\` after changing any token, any class name in

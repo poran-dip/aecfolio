@@ -1,12 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { compileCvCss } from "../../scripts/build-css";
 import { cvStylesheet } from "./generated/stylesheet";
 
-describe("the committed stylesheet", () => {
-  it("matches what src/styles/cv.css compiles to today", () => {
-    expect(cvStylesheet).toBe(compileCvCss());
-  });
-
+describe("the compiled CV stylesheet", () => {
   it("carries no Preflight", () => {
     expect(cvStylesheet).not.toContain("abbr:where([title])");
     expect(cvStylesheet).not.toContain("-moz-tab-size");
