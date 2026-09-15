@@ -5,6 +5,7 @@ node_modules/
 # output
 dist/
 dist-ssr/
+preview/
 
 # react router
 .react-router/
