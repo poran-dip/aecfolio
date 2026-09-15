@@ -11,18 +11,18 @@ Two modes, kept separate on purpose.
 ### Development
 
 ```bash
-docker compose -f compose.dev.yml up -d    # Postgres only
-cp .env.example .env                       # then fill in the three blanks
+docker compose -f compose.dev.yml up -d    # Postgres and Garage
+cp .env.example .env                       # then fill in the blanks
 pnpm install
 pnpm db:migrate
 pnpm dev
 ```
 
-web `:3000` · api `:3002` · worker `:3001` · postgres `:15432`
+web `:3000` · api `:3002` · worker `:3001` · postgres `:15432` · garage `:3900`
 
-The dev stack contains nothing but a database. Web, api and worker run on the host under `pnpm dev`, so a save reloads in milliseconds instead of rebuilding an image.
+The dev stack contains nothing but the database and the object store. Web, api and worker run on the host under `pnpm dev`, so a save reloads in milliseconds instead of rebuilding an image.
 
-The three blanks in `.env` are `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) and the two `GOOGLE_*` values. Everything else already holds a working local value. Google OAuth needs `http://localhost:3002/api/auth/callback/google` as an authorised redirect URI.
+The blanks in `.env` are `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), the two `GOOGLE_*` values, and Garage's three: `S3_ACCESS_KEY_ID` (`echo GK$(openssl rand -hex 12)`), `S3_SECRET_ACCESS_KEY` and `GARAGE_RPC_SECRET` (`openssl rand -hex 32` each). Everything else already holds a working local value. The storage secrets are blank rather than filled in because production routes the bucket publicly through nginx, and a key copied from this file would open it to anyone. Both compose files refuse to start without them. Google OAuth needs `http://localhost:3002/api/auth/callback/google` as an authorised redirect URI.
 
 ### Production
 
@@ -30,7 +30,7 @@ The three blanks in `.env` are `BETTER_AUTH_SECRET` (`openssl rand -base64 32`) 
 docker compose up -d --build
 ```
 
-Builds and runs all five services behind nginx on port 80. To point it at a real domain, change `PUBLIC_ORIGIN` in `.env` — that one value becomes the API origin, the web origin and the browser's API origin, because nginx fronts both apps. The prod Google redirect URI is `<PUBLIC_ORIGIN>/api/auth/callback/google`, with no port.
+Builds and runs every service behind nginx on port 80. To point it at a real domain, change `PUBLIC_ORIGIN` in `.env` — that one value becomes the API origin, the web origin and the browser's API origin, because nginx fronts both apps. The prod Google redirect URI is `<PUBLIC_ORIGIN>/api/auth/callback/google`, with no port.
 
 `DATABASE_URL` is ignored in production; compose builds its own connection string from the `POSTGRES_*` values.
 
@@ -83,9 +83,10 @@ aecfolio/
 │   ├── db/           Drizzle schema, migrations, client
 │   ├── shared/       Zod schemas, enums, API envelope types, utils
 │   └── ui/           CV templates + icons (consumed by web preview and worker)
+├── infra/garage/     Object store config
 ├── infra/nginx/      Reverse proxy config
 ├── scripts/          bootstrap.ts — promote the first admin/faculty
-├── compose.dev.yml   Postgres only, for the `pnpm dev` loop
+├── compose.dev.yml   Postgres and Garage, for the `pnpm dev` loop
 └── compose.yml       Full production stack
 ```
 
@@ -106,5 +107,7 @@ A few constraints are easy to break by accident:
 **No image runs `pnpm` at runtime.** Each `CMD` invokes a binary directly. pnpm re-inspects the modules directory on startup, decides it needs rewriting, and fails as the non-root user. Nothing needs installing at that point anyway.
 
 **The worker image skips puppeteer's Chromium download** and installs the system one via `apk`. Puppeteer's bundled binary is a glibc build and cannot execute on Alpine's musl. The binary has shipped under both `chromium` and `chromium-browser` across Alpine releases, so it is resolved to a stable path at build time rather than hardcoded.
+
+**Garage's access key is set once, on first start.** `--single-node --default-bucket` creates the key and the bucket from `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` and `S3_BUCKET` the first time the volume is empty, and ignores them on every start after. Changing those values in `.env` later does not rotate anything: the API starts signing with a key Garage has never heard of and every upload fails with a signature error. Rotate inside the container, or in development drop the volume. See [`infra/garage/README.md`](infra/garage/README.md).
 
 **Postgres is published on 15432 in development**, not 5432 or 6432. 5432 collides with a local install and 6432 is PgBouncer's default; a collision on either produces authentication errors that look like wrong credentials rather than like a wrong target.
