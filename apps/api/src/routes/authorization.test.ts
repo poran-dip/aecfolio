@@ -5,6 +5,7 @@ import type { Actor } from "../lib/session";
 import {
   asUser,
   createAchievement,
+  createCertification,
   createCreditScheme,
   createStaff,
   createStudent,
@@ -30,6 +31,7 @@ async function seed() {
   const { actor: student, student: studentRow } = await createStudent();
   const scheme = await createCreditScheme();
   const achievement = await createAchievement(studentRow.id);
+  const certification = await createCertification(studentRow.id);
 
   return {
     actors: {
@@ -44,6 +46,7 @@ async function seed() {
     adminRow: admin.faculty,
     scheme,
     achievement,
+    certification,
   };
 }
 
@@ -61,6 +64,29 @@ const ENDPOINTS: Endpoint[] = [
     method: "post",
     path: () => "/api/achievements",
     body: () => ({ title: "A thing", description: "It happened" }),
+  },
+  {
+    name: "POST /uploads (proof)",
+    capability: Capability.PROFILE_WRITE_SELF,
+    method: "post",
+    path: () => "/api/uploads",
+    body: () => ({
+      purpose: "proof",
+      contentType: "application/pdf",
+      size: 1024,
+    }),
+  },
+  {
+    name: "GET /achievements/:id/proof",
+    capability: Capability.PROOF_READ,
+    method: "get",
+    path: (ctx) => `/api/achievements/${ctx.achievement.id}/proof`,
+  },
+  {
+    name: "GET /certifications/:id/proof",
+    capability: Capability.PROOF_READ,
+    method: "get",
+    path: (ctx) => `/api/certifications/${ctx.certification.id}/proof`,
   },
   {
     name: "POST /results",

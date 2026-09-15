@@ -16,6 +16,24 @@ services:
       timeout: 5s
       retries: 5
 
+  garage:
+    image: dxflrs/garage:v2.3.0
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
+    restart: unless-stopped
+    environment:
+      GARAGE_RPC_SECRET: ${GARAGE_RPC_SECRET:?see .env.example}
+      GARAGE_DEFAULT_ACCESS_KEY: ${S3_ACCESS_KEY_ID:?see .env.example}
+      GARAGE_DEFAULT_SECRET_KEY: ${S3_SECRET_ACCESS_KEY:?see .env.example}
+      GARAGE_DEFAULT_BUCKET: storage
+    volumes:
+      - ./infra/garage/garage.toml:/etc/garage.toml:ro
+      - garage_data:/var/lib/garage
+    healthcheck:
+      test: ["CMD", "/garage", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   migrator:
     build:
       context: .
@@ -42,9 +60,16 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      S3_ENDPOINT: http://garage:3900
+      S3_PUBLIC_ENDPOINT: ${PUBLIC_ORIGIN:-http://localhost}
+      S3_BUCKET: storage
+      S3_ACCESS_KEY_ID: ${S3_ACCESS_KEY_ID}
+      S3_SECRET_ACCESS_KEY: ${S3_SECRET_ACCESS_KEY}
     depends_on:
       migrator:
         condition: service_completed_successfully
+      garage:
+        condition: service_healthy
     restart: unless-stopped
 
   web:
@@ -84,7 +109,10 @@ services:
         condition: service_healthy
       api:
         condition: service_healthy
+      garage:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  garage_data:

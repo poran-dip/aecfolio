@@ -49,6 +49,25 @@ const apiSchema = z.object({
   WORKER_URL: origin("origin of the worker").default("http://localhost:3001"),
 });
 
+const s3Schema = z.object({
+  S3_ENDPOINT: origin("origin the API reaches the object store on"),
+  S3_PUBLIC_ENDPOINT: origin(
+    "origin the browser reaches the object store on, used to sign upload and download URLs",
+  ),
+  S3_REGION: z.string().min(1).default("garage"),
+  S3_BUCKET: required("bucket name, e.g. storage"),
+  S3_ACCESS_KEY_ID: required(
+    "generate with `echo GK$(openssl rand -hex 12)`",
+  ).regex(
+    /^GK[0-9a-f]{24}$/,
+    "must be GK followed by 24 hex chars — generate with `echo GK$(openssl rand -hex 12)`",
+  ),
+  S3_SECRET_ACCESS_KEY: required("generate with `openssl rand -hex 32`").regex(
+    /^[0-9a-f]{64}$/,
+    "must be 64 hex chars — generate with `openssl rand -hex 32`",
+  ),
+});
+
 const workerSchema = z.object({
   NODE_ENV: nodeEnv,
   WORKER_PORT: port(3001),
@@ -99,11 +118,13 @@ function lazyEnv<T extends z.ZodType<object>>(
 export const dbEnv = lazyEnv("db", dbSchema);
 export const authEnv = lazyEnv("auth", authSchema);
 export const apiEnv = lazyEnv("api", apiSchema);
+export const s3Env = lazyEnv("s3", s3Schema);
 export const workerEnv = lazyEnv("worker", workerSchema);
 export const webEnv = lazyEnv("web", webSchema);
 
 export type DbEnv = z.infer<typeof dbSchema>;
 export type AuthEnv = z.infer<typeof authSchema>;
 export type ApiEnv = z.infer<typeof apiSchema>;
+export type S3Env = z.infer<typeof s3Schema>;
 export type WorkerEnv = z.infer<typeof workerSchema>;
 export type WebEnv = z.infer<typeof webSchema>;

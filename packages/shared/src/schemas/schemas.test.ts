@@ -10,6 +10,8 @@ import { createResultSchema } from "./result";
 import { createSemesterCreditSchemeSchema } from "./semester-credit-scheme";
 import { createSocialSchema } from "./social";
 import { createStudentSchema, updateStudentProfileSchema } from "./student";
+import { createUploadSchema } from "./upload";
+import { updateUserSchema } from "./user";
 
 describe("review decision", () => {
   it("accepts a plain verify", () => {
@@ -64,6 +66,53 @@ describe("proof is an object key, not a URL", () => {
       proofImage: "https://example.com/evil.png",
     });
     expect(parsed).not.toHaveProperty("proofImage");
+  });
+});
+
+describe("uploads", () => {
+  it("accepts a PDF proof within the size cap", () => {
+    expect(
+      createUploadSchema.safeParse({
+        purpose: "proof",
+        contentType: "Application/PDF",
+        size: 1024,
+      }).data?.contentType,
+    ).toBe("application/pdf");
+  });
+
+  it("does not accept a PDF as an avatar", () => {
+    expect(
+      createUploadSchema.safeParse({
+        purpose: "avatar",
+        contentType: "application/pdf",
+        size: 1024,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("refuses SVG, which can carry script", () => {
+    expect(
+      createUploadSchema.safeParse({
+        purpose: "proof",
+        contentType: "image/svg+xml",
+        size: 1024,
+      }).success,
+    ).toBe(false);
+  });
+
+  it("names the size limit when a file is too large", () => {
+    const parsed = createUploadSchema.safeParse({
+      purpose: "avatar",
+      contentType: "image/png",
+      size: 10 * 1024 * 1024,
+    });
+    expect(parsed.error?.issues[0]?.path).toEqual(["size"]);
+  });
+
+  it("stores an avatar as an object key rather than a URL", () => {
+    expect(updateUserSchema.parse({ image: "avatars/u_1/a.png" }).image).toBe(
+      "avatars/u_1/a.png",
+    );
   });
 });
 

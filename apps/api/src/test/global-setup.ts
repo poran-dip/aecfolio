@@ -2,6 +2,7 @@ import { fileURLToPath } from "node:url";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { Client, Pool } from "pg";
+import { testBucketName } from "./bucket";
 import {
   adminDatabaseUrl,
   databaseNameOf,
@@ -28,6 +29,10 @@ async function ensureDatabase(url: string) {
 }
 
 export default async function setup() {
+  process.env.S3_BUCKET = testBucketName();
+  const { ensureBucket } = await import("../lib/storage");
+  await ensureBucket();
+
   const url = testDatabaseUrl();
   await ensureDatabase(url);
 

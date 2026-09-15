@@ -47,4 +47,15 @@ describe("auth configuration", () => {
     );
     expect(options.account?.accountLinking?.allowDifferentEmails).toBe(false);
   });
+
+  it("never copies the Google profile over a user row, so users.image stays an uploaded object key", () => {
+    expect(options.socialProviders?.google).not.toHaveProperty(
+      "overrideUserInfoOnSignIn",
+      true,
+    );
+    expect(options.account?.accountLinking).not.toHaveProperty(
+      "updateUserInfoOnLink",
+      true,
+    );
+  });
 });

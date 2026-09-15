@@ -50,7 +50,7 @@ Domain restriction to `@aec.ac.in` is deliberately not enforced yet, to keep tes
 | `cv:export:standard`          |    —    |    ✓    |  ✓  |   ✓   |
 | `proof:read`                  |  ✓ own  |    ✓    |  ✓  |   ✓   |
 
-The last three have no endpoints yet — they arrive with MinIO and CV export.
+`cv:export:self` and `cv:export:standard` have no endpoints yet — they arrive with CV export. `proof:read` gates `GET /achievements/:id/proof` and `GET /certifications/:id/proof`; "own" for a student is enforced by the same read scope every other student-owned route uses.
 
 Two rules are finer than a capability check and live in the same file:
 
@@ -92,16 +92,35 @@ Verifying a result is the `pendingSgpa → sgpa` promotion — the `result_statu
 | `/admin`                                                                                                           | Credit schemes and cohort promotion.                                      |
 | `/achievements` `/certifications` `/results` `/experiences` `/projects` `/socials` `/interests` `/custom-sections` | Student-owned entries.                                                    |
 | `/audit-logs`                                                                                                      | Paginated, filterable by actor, entity, action and date range.            |
+| `/uploads`                                                                                                         | Presigned upload tickets for proof and avatars.                           |
 
 Student-owned entry routes take `?studentId=` for staff. Staff who name no student get a 400 — they never get every row in the table.
 
-`/cv/*` is absent: CV generation needs MinIO and lands with it.
+`/cv/*` is absent: CV generation lands with the export work.
+
+## Files
+
+Proof and avatars live in Garage (`infra/garage/README.md`). The database stores object keys, never URLs, and every byte a browser sends or receives goes directly to the bucket on a URL the API signed.
+
+**Uploading is two steps.** `POST /uploads` with `{ purpose, contentType, size }` returns a ticket: a key under the caller's own prefix (`proofs/<studentId>/` or `avatars/<userId>/`), a PUT URL valid for five minutes, and the headers to send. The signature covers `Content-Type` and `Content-Length`, so the bucket itself rejects a different type or a single byte more. Only a student can ask for a proof ticket; anyone signed in can ask for an avatar one.
+
+**Attaching is where the file is checked.** Sending the key as `proofKey` on an achievement or certification, or as `image` on `PATCH /me`, makes the API confirm that the key sits under the caller's own prefix, that the object exists, that it is within the size cap, and that its first bytes really are the JPEG, PNG, WebP or PDF it was stored as. A signed ticket is not trusted to mean a well-formed upload happened. Re-sending the key already on the row skips the check.
+
+**Reading is a redirect.** `GET /achievements/:id/proof` and `GET /certifications/:id/proof` run the same read scope and projection as the entity itself — faculty get the proof behind a verified claim and a 404 for anything else — then 302 to a GET URL signed for five minutes, with `Cache-Control: no-store`. `GET /users/:id/avatar` does the same for yourself, or for anyone if you hold `student:read`.
+
+The route is the durable address, not the signed URL. A PDF that links a checkmark to `<origin>/api/certifications/<id>/proof` keeps working after the signature it would have carried expires, keeps following the claim if the student replaces the file, and stops working the moment the claim is no longer visible to whoever clicks it.
+
+**`users.image` holds an object key.** Better Auth only writes `image` when it creates a user, which never happens here, or when `overrideUserInfoOnSignIn` / `updateUserInfoOnLink` are on, which they are not. `lib/auth.test.ts` pins both off, because turning either on would overwrite an uploaded avatar's key with a Google URL on the next sign-in.
+
+Replaced or orphaned uploads are not deleted yet.
 
 ## Tests
 
 `pnpm -F @aecfolio/api test` runs against **real Postgres**. There is no mocked database and no in-memory substitute: the status CHECKs, the unique constraints and the audit-log immutability trigger are exactly what several of these tests assert.
 
-The suite derives its database from `DATABASE_URL` by appending `_test` to the name (`aecfolio` → `aecfolio_test`), creates it on first run and applies the migrations. So with `compose.dev.yml` up, `pnpm test` works with no extra configuration and never touches dev data. Set `TEST_DATABASE_URL` to point somewhere else; the suite refuses any database whose name does not end in `_test`, because it truncates every table between tests.
+The suite derives its database from `DATABASE_URL` by appending `_test` to the name (`aecfolio` → `aecfolio_test`), creates it on first run and applies the migrations. So with `compose.dev.yml` up, `pnpm test` works with no extra configuration and never touches dev data.
+
+The storage tests run against **real Garage** the same way. The suite uses `<S3_BUCKET>-test` (or `TEST_S3_BUCKET`) and creates it on first run, so it needs the `S3_*` values from `.env` and the dev Garage up. Test objects are not cleaned between tests; every key carries a fresh cuid, so nothing collides. Set `TEST_DATABASE_URL` to point somewhere else; the suite refuses any database whose name does not end in `_test`, because it truncates every table between tests.
 
 Only the session lookup is substituted. `createApp({ sessionResolver })` lets a test act as a caller of a known role while the whole middleware, capability, handler and database stack runs for real — the alternative being an OAuth round trip in every authorization test.
 

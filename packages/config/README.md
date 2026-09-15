@@ -10,13 +10,14 @@ Two properties define it: configuration is **scoped** per process, and validatio
 
 Each export covers exactly one process's needs.
 
-| Export      | Variables                                                                           | Read by                                              |
-| ----------- | ----------------------------------------------------------------------------------- | ---------------------------------------------------- |
-| `dbEnv`     | `DATABASE_URL`                                                                      | `packages/db`, `drizzle-kit`, `scripts/bootstrap.ts` |
-| `authEnv`   | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | `apps/api`                                           |
-| `apiEnv`    | `NODE_ENV`, `API_PORT`, `CORS_ORIGIN`, `WORKER_URL`                                 | `apps/api`                                           |
-| `workerEnv` | `NODE_ENV`, `WORKER_PORT`, `PUPPETEER_EXECUTABLE_PATH`                              | `apps/worker`                                        |
-| `webEnv`    | `NODE_ENV`, `PUBLIC_API_URL`, `INTERNAL_API_URL`                                    | `apps/web`, server-side only                         |
+| Export      | Variables                                                                                                 | Read by                                              |
+| ----------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
+| `dbEnv`     | `DATABASE_URL`                                                                                            | `packages/db`, `drizzle-kit`, `scripts/bootstrap.ts` |
+| `authEnv`   | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                       | `apps/api`                                           |
+| `apiEnv`    | `NODE_ENV`, `API_PORT`, `CORS_ORIGIN`, `WORKER_URL`                                                       | `apps/api`                                           |
+| `s3Env`     | `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | `apps/api`                                           |
+| `workerEnv` | `NODE_ENV`, `WORKER_PORT`, `PUPPETEER_EXECUTABLE_PATH`                                                    | `apps/worker`                                        |
+| `webEnv`    | `NODE_ENV`, `PUBLIC_API_URL`, `INTERNAL_API_URL`                                                          | `apps/web`, server-side only                         |
 
 Scoping is not organisational tidiness — it is what makes the package usable at all. A single flat object would mean `drizzle.config.ts`, which needs only `DATABASE_URL`, failing because an unrelated auth or worker variable is absent from the environment. Running a migration must not require the Google OAuth credentials.
 
@@ -42,7 +43,7 @@ Each scope is a `Proxy` over a Zod schema; the proxy's `get` trap triggers the p
 
 ## Origins are validated as origins
 
-`BETTER_AUTH_URL`, `CORS_ORIGIN`, `WORKER_URL`, `PUBLIC_API_URL` and `INTERNAL_API_URL` all go through the same `origin()` helper, which enforces three things:
+`BETTER_AUTH_URL`, `CORS_ORIGIN`, `WORKER_URL`, `PUBLIC_API_URL`, `INTERNAL_API_URL`, `S3_ENDPOINT` and `S3_PUBLIC_ENDPOINT` all go through the same `origin()` helper, which enforces three things:
 
 **It must be an absolute `http(s)` URL.** `new URL()` alone is far too permissive here — it parses `localhost:3000` as a valid URL whose protocol is `localhost:`. That kind of value produces requests that silently go nowhere, so the protocol is checked explicitly.
 
@@ -56,6 +57,7 @@ These are the variables most likely to be set wrong on a first deployment, becau
 
 - **`BETTER_AUTH_URL` is the API's origin. `CORS_ORIGIN` is the web app's origin.** Behind a single reverse proxy they happen to be the same value, which hides the mistake until the two are split across hosts.
 - **`PUBLIC_API_URL` is how the browser reaches the API. `INTERNAL_API_URL` is how the SSR server reaches it.** In containers the second is an internal service name and the first is the public origin.
+- **`S3_PUBLIC_ENDPOINT` is how the browser reaches the object store. `S3_ENDPOINT` is how the API reaches it.** The API signs upload and download URLs against the public one, and a signature is bound to the host it was signed for, so a URL signed for `http://garage:3900` is useless to a browser. In development both are `http://localhost:3900`; in production the public one is `PUBLIC_ORIGIN`, which nginx routes to Garage.
 
 ---
 
@@ -80,6 +82,7 @@ Tests stub `process.env` with `vi.stubEnv` and reset module state between cases,
 
 - `NODE_ENV` defaults to `development` and only accepts `development`, `production` or `test`.
 - Ports are coerced from strings and range-checked, with defaults matching the ports used across the repo.
+- `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` are validated in the shape Garage accepts — `GK` plus 24 hex characters, and 64 hex characters. Garage would refuse anything else at startup, in its own logs, where a wrong value is much harder to spot.
 - `PUPPETEER_EXECUTABLE_PATH` is optional. Set it only where a system Chromium exists; leaving it unset uses the Chromium that puppeteer downloads.
 - `webEnv` carries no port. In development the port is pinned in `apps/web/vite.config.ts`; in production `react-router-serve` owns it through `PORT`.
 - `apps/web` must only touch `webEnv` from `app/lib/env.server.ts`. The `.server.ts` suffix keeps this package — which reads `process.env` — out of the browser bundle.

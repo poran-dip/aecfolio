@@ -1,5 +1,9 @@
 import { studentsTable, usersTable } from "@aecfolio/db";
-import { updateStudentProfileSchema, updateUserSchema } from "@aecfolio/shared";
+import {
+  UploadPurpose,
+  updateStudentProfileSchema,
+  updateUserSchema,
+} from "@aecfolio/shared";
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getFacultyForUser, getStudentForUser } from "../lib/actor";
@@ -12,6 +16,7 @@ import {
   projectStudentProfile,
 } from "../lib/profile";
 import { fail, getUser, ok } from "../lib/response";
+import { rejectInvalidUpload } from "../lib/uploads";
 import { validate } from "../lib/validate";
 import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
@@ -50,6 +55,16 @@ const me = new Hono<AppEnv>()
       .from(usersTable)
       .where(eq(usersTable.id, user.id))
       .limit(1);
+
+    const invalid = await rejectInvalidUpload(
+      c,
+      "image",
+      body.image,
+      UploadPurpose.AVATAR,
+      user.id,
+      before?.image,
+    );
+    if (invalid) return invalid;
 
     const [updated] = await db
       .update(usersTable)

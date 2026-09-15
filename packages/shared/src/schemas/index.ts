@@ -12,4 +12,5 @@ export * from "./result";
 export * from "./semester-credit-scheme";
 export * from "./social";
 export * from "./student";
+export * from "./upload";
 export * from "./user";
