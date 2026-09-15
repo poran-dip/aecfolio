@@ -1,6 +1,8 @@
+import { testBucketName } from "./bucket";
 import { testDatabaseUrl } from "./database-url";
 
 process.env.DATABASE_URL = testDatabaseUrl();
+process.env.S3_BUCKET = testBucketName();
 process.env.NODE_ENV = "test";
 
 process.env.BETTER_AUTH_URL ??= "http://localhost:3002";

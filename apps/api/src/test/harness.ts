@@ -43,7 +43,7 @@ export function asUser(actor: Actor | null) {
     path: string,
     body?: unknown,
     // biome-ignore lint/suspicious/noExplicitAny: assertions read arbitrary response shapes
-  ): Promise<{ status: number; body: any }> => {
+  ): Promise<{ status: number; body: any; headers: Headers }> => {
     const response = await app.request(path, {
       method,
       headers: body ? { "Content-Type": "application/json" } : undefined,
@@ -54,6 +54,7 @@ export function asUser(actor: Actor | null) {
     return {
       status: response.status,
       body: text ? JSON.parse(text) : null,
+      headers: response.headers,
     };
   };
 
@@ -189,7 +190,11 @@ export async function createAchievement(
 
 export async function createCertification(
   studentId: string,
-  overrides: Partial<{ status: VerificationStatus; reviewedBy: string }> = {},
+  overrides: Partial<{
+    status: VerificationStatus;
+    reviewedBy: string;
+    proofKey: string;
+  }> = {},
 ) {
   const status = overrides.status ?? "PENDING";
   const reviewed = status !== "PENDING";
@@ -200,6 +205,7 @@ export async function createCertification(
       studentId,
       name: unique("Certification"),
       issuer: "Some Institute",
+      proofKey: overrides.proofKey ?? null,
       status,
       reviewedBy: reviewed ? (overrides.reviewedBy ?? null) : null,
       reviewedAt: reviewed ? new Date() : null,
