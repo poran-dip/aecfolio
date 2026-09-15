@@ -57,6 +57,31 @@ Every date-shaped field on an entry is `text`. The Zod side is a shape check onl
 - `isDateRangeOrdered` returns **true** — no objection — unless _both_ sides parse and are genuinely inverted. Guessing at freehand text would reject legitimate CV entries, and there is no DB-level ordering CHECK to be consistent with any more.
 - `formatDate` is for free-text columns and leaves the student's own wording alone; `formatTimestamp` is for real `Date` columns (`createdAt`, `reviewedAt`).
 
+## Composing entry dates
+
+`utils/cv-date.ts`. The columns are `text`; the **input is a month/year picker**, and these two functions are the bridge:
+
+```
+pickers → composeDate → "Jan 2025 – Dec 2025" → decomposeDate → pickers
+```
+
+| form state              | stored                                        |
+| ----------------------- | --------------------------------------------- |
+| custom text             | that text, trimmed — the pickers are ignored  |
+| start only              | `Jan 2025`                                    |
+| start + Present         | `Jan 2025 – Present`                          |
+| start + end, same month | `Jan 2025` — collapsed, not a range to itself |
+| start + end             | `Jan 2025 – Dec 2025`                         |
+| nothing                 | `null`                                        |
+
+`composeDate` is the **only** thing that should write one of these strings. Four entities have a date field and each gets its own form; if every form does its own joining, the same span is written differently depending on which screen a student used, and a CV shows `Jan 2025 - Dec 2025` above `Feb 2025 — Mar 2025`. The separator is a spaced en dash, settled once.
+
+`decomposeDate` is what makes editing work — without it, reopening a saved entry could only drop the student into the free-text box. It reads separators it would never write (hyphen, em dash, `to`) because it also has to open values that predate it. Anything it cannot read comes back as `custom` with the text intact, which is the honest answer rather than an error: a hand-typed or imported value is a real entry and has to stay editable. A half-readable range — a good start and an unreadable end — goes to `custom` whole rather than silently losing the end.
+
+`isYearMonthOrdered` is the typed counterpart to `isDateRangeOrdered`, for the picker values **before** composition. An end before its start is the one mistake a picker can make that a free-text box could not, and after composition there is one string and nothing left to compare.
+
+`YearMonth.month` is **1-12**, not a `Date`'s 0-11. It crosses the wire as JSON and gets read by humans; an off-by-one that only surfaces in December is not worth matching `Date`'s constructor.
+
 ## Review decisions
 
 `reviewDecisionSchema` is a discriminated union rather than a flat object, so "rejected" cannot be expressed without a reason. That is the same rule as the `*_status_consistency` CHECK on `results` / `achievements` / `certifications`, restated at the layer that can return a useful message instead of a constraint violation. `PENDING` is not a decision a reviewer can send.
@@ -65,6 +90,28 @@ Every date-shaped field on an entry is `text`. The Zod side is a shape check onl
 
 `cvSectionsConfigSchema` is the jsonb payload stored on `cv_preferences.sections` and copied verbatim into `cv_exports.config`. Ordering — of sections, of entries within a section, of social links — lives only here; no entity table has an `order` column. Storing the exact config rather than a checksum of the data is what makes the "skip regeneration if unchanged" short-circuit correct, since a reorder changes the rendered document without changing any row.
 
+## Export filenames
+
+`utils/filename.ts`. A CV PDF is named **roll number first, then the name**:
+
+```bash
+23162-Poran-Boruah.pdf
+```
+
+Roll first because a folder of these gets sorted and roll order is what a placement cell wants. Digits only — roll numbers are written `23/162`, and a slash is a path separator everywhere.
+
+It lives here rather than in the worker because the worker is not the only thing that will name one: the export branch has to name stored objects and re-serve them from export history, and two implementations of a naming convention is one too many.
+
+`attachmentHeader()` is also where [M12](../../docs/issues/M12.md) is fixed. The worker interpolated `user.name` straight into `Content-Disposition`, and a name containing a quote or a CR/LF is the classic response-splitting vector. Going through `cvFileName` first makes that unrepresentable rather than filtered — the value is `[A-Za-z0-9-.]` by the time it reaches the header.
+
+`uniqueFileName()` suffixes a repeat so bulk export cannot put two students on one zip entry and silently lose one on extraction ([U10](../../docs/issues/U10.md)).
+
+### Non-Latin filenames won't be supported
+
+Every account in this system is created from the college's Google Workspace, where names are stored in the Latin alphabet. There is no path by which a non-Latin name reaches this code in production. Supporting one means a second encoding, a second header parameter, a second set of cases in every test and a second way for the header to be wrong, all to serve a student who does not exist.
+
+A name with no Latin characters still produces a working download: the roll number alone. That is a fallback so nothing crashes, not partial support for something to be finished later. `filename.test.ts` asserts the absence of the feature, so a change that re-adds it fails rather than passing quietly.
+
 ## Testing
 
-`pnpm -F @aecfolio/shared test`. Three suites: enum parity with `packages/db`, free-text date behaviour, and the schema invariants above. The tests are written to assert _intent_ — that a dropped field is really unsettable, that a rejection really needs a reason — rather than to restate the schema definitions.
+`pnpm -F @aecfolio/shared test`. Five suites: enum parity with `packages/db`, free-text date behaviour, date composition, export filenames, and the schema invariants above. The tests are written to assert _intent_ — that a dropped field is really unsettable, that a rejection really needs a reason — rather than to restate the schema definitions.
