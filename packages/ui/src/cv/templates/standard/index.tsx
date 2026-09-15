@@ -107,8 +107,6 @@ export function StandardTemplate({
   sections,
   options,
 }: StandardTemplateProps) {
-  // Socials live in the header on this template whatever their position in the
-  // ordering says — the manifest's sectionNotes tells the builder UI as much.
   const socialSection = sections.find((s) => s.kind === "socials");
   const socials = socialSection
     ? orderEntries(data.socials, socialSection.entryOrder)
@@ -125,9 +123,6 @@ export function StandardTemplate({
       className="cv-page"
       style={{ ...pageVariables(density), ...ACCENT[options.accent] }}
     >
-      {/* Injected rather than passed as a text child, which React would
-          HTML-escape. The content is one of two constants from a closed enum —
-          see pageRule. */}
       <style dangerouslySetInnerHTML={{ __html: pageRule(density) }} />
 
       <div className="flex flex-col gap-(--cv-section-gap)">
