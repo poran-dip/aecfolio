@@ -2,6 +2,8 @@ import { z } from "zod";
 import { timestampFields } from "./common";
 
 export const BUILT_IN_CV_SECTION_TYPES = [
+  "summary",
+  "skills",
   "experiences",
   "projects",
   "achievements",
@@ -55,17 +57,23 @@ export const cvSectionsConfigSchema = z
 
 export type CvSectionsConfig = z.infer<typeof cvSectionsConfigSchema>;
 
+export const cvTemplateOptionsSchema = z.record(z.string(), z.unknown());
+
+export type CvTemplateOptions = z.infer<typeof cvTemplateOptionsSchema>;
+
 export const cvPreferenceSchema = z.object({
   id: z.string(),
   studentId: z.string(),
   templateId: z.string(),
   sections: cvSectionsConfigSchema,
+  options: cvTemplateOptionsSchema,
   ...timestampFields,
 });
 
 export const upsertCvPreferenceSchema = z.object({
   templateId: z.string().trim().min(1),
   sections: cvSectionsConfigSchema,
+  options: cvTemplateOptionsSchema.optional().default({}),
 });
 
 export const cvExportSchema = z.object({
@@ -73,6 +81,7 @@ export const cvExportSchema = z.object({
   studentId: z.string(),
   templateId: z.string(),
   config: cvSectionsConfigSchema,
+  options: cvTemplateOptionsSchema,
   objectKey: z.string(),
   createdAt: z.coerce.date(),
 });

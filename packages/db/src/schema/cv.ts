@@ -20,6 +20,7 @@ export const cvPreferencesTable = pgTable(
       .references(() => studentsTable.id, { onDelete: "cascade" }),
     templateId: text("template_id").notNull(),
     sections: jsonb().notNull().default([]),
+    options: jsonb().notNull().default({}),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -45,6 +46,7 @@ export const cvExportsTable = pgTable(
       .references(() => studentsTable.id, { onDelete: "cascade" }),
     templateId: text("template_id").notNull(),
     config: jsonb().notNull(),
+    options: jsonb().notNull().default({}),
     objectKey: text("object_key").notNull(),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
