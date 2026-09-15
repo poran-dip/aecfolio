@@ -1,6 +1,7 @@
 import { certificationsTable } from "@aecfolio/db";
 import {
   createCertificationSchema,
+  UploadPurpose,
   updateCertificationSchema,
 } from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
@@ -12,6 +13,7 @@ import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { projectReviewable, viewForActor } from "../lib/profile";
 import { fail, getUser, ok } from "../lib/response";
 import { RESET_TO_PENDING } from "../lib/review";
+import { redirectToObject, rejectInvalidUpload } from "../lib/uploads";
 import { validate } from "../lib/validate";
 import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
@@ -61,6 +63,15 @@ const certifications = new Hono<AppEnv>()
       const scope = await resolveOwnStudent(c, user);
       if (!scope.ok) return scope.response;
 
+      const invalid = await rejectInvalidUpload(
+        c,
+        "proofKey",
+        body.proofKey,
+        UploadPurpose.PROOF,
+        scope.studentId,
+      );
+      if (invalid) return invalid;
+
       const [certification] = await db
         .insert(certificationsTable)
         .values({ ...body, studentId: scope.studentId })
@@ -103,6 +114,35 @@ const certifications = new Hono<AppEnv>()
     return ok(c, projected);
   })
 
+  .get("/:id/proof", requireCapability(Capability.PROOF_READ), async (c) => {
+    const user = getUser(c);
+    const id = c.req.param("id");
+
+    const [row] = await db
+      .select()
+      .from(certificationsTable)
+      .where(
+        and(
+          eq(certificationsTable.id, id),
+          isNull(certificationsTable.deletedAt),
+        ),
+      )
+      .limit(1);
+    if (!row) return fail(c, "NOT_FOUND", "Certification not found", 404);
+
+    const scope = await resolveReadScope(c, user, row.studentId);
+    if (!scope.ok) return scope.response;
+
+    const [projected] = projectReviewable(
+      [row],
+      viewForActor(user, scope.isOwn),
+    );
+    if (!projected?.proofKey)
+      return fail(c, "NOT_FOUND", "No proof attached", 404);
+
+    return redirectToObject(c, projected.proofKey);
+  })
+
   .patch(
     "/:id",
     requireCapability(Capability.PROFILE_WRITE_SELF),
@@ -118,6 +158,16 @@ const certifications = new Hono<AppEnv>()
       const { row, owned } = await findOwned(id, scope.studentId);
       if (!row) return fail(c, "NOT_FOUND", "Certification not found", 404);
       if (!owned) return fail(c, "FORBIDDEN", "Forbidden", 403);
+
+      const invalid = await rejectInvalidUpload(
+        c,
+        "proofKey",
+        body.proofKey,
+        UploadPurpose.PROOF,
+        scope.studentId,
+        row.proofKey,
+      );
+      if (invalid) return invalid;
 
       const [updated] = await db
         .update(certificationsTable)

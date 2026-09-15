@@ -14,6 +14,7 @@ import projects from "./projects";
 import results from "./results";
 import socials from "./socials";
 import students from "./students";
+import uploads from "./uploads";
 import users from "./users";
 import verifications from "./verifications";
 
@@ -33,6 +34,7 @@ const api = new Hono<AppEnv>()
   .route("/socials", socials)
   .route("/interests", interests)
   .route("/custom-sections", customSections)
-  .route("/audit-logs", auditLogs);
+  .route("/audit-logs", auditLogs)
+  .route("/uploads", uploads);
 
 export default api;

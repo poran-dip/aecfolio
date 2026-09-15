@@ -8,13 +8,15 @@ import {
   Capability,
   canChangeRole,
   canManageStaffWithRole,
+  hasCapability,
   STAFF_ROLES,
 } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";
 import { fail, getUser, ok, paginated } from "../lib/response";
+import { redirectToObject } from "../lib/uploads";
 import { validate } from "../lib/validate";
-import { requireCapability } from "../middleware/capability";
+import { requireAuth, requireCapability } from "../middleware/capability";
 import type { AppEnv } from "../types/context";
 
 const listQuerySchema = paginationQuerySchema.extend({
@@ -22,6 +24,23 @@ const listQuerySchema = paginationQuerySchema.extend({
 });
 
 const users = new Hono<AppEnv>()
+  .get("/:id/avatar", requireAuth(), async (c) => {
+    const user = getUser(c);
+    const id = c.req.param("id");
+
+    if (id !== user.id && !hasCapability(user.role, Capability.STUDENT_READ))
+      return fail(c, "FORBIDDEN", "Forbidden", 403);
+
+    const [row] = await db
+      .select({ image: usersTable.image })
+      .from(usersTable)
+      .where(and(eq(usersTable.id, id), isNull(usersTable.deletedAt)))
+      .limit(1);
+    if (!row?.image) return fail(c, "NOT_FOUND", "No avatar", 404);
+
+    return redirectToObject(c, row.image);
+  })
+
   .get(
     "/",
     requireCapability(Capability.FACULTY_MANAGE),
