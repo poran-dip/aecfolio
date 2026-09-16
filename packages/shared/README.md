@@ -90,6 +90,12 @@ pickers → composeDate → "Jan 2025 – Dec 2025" → decomposeDate → picker
 
 `cvSectionsConfigSchema` is the jsonb payload stored on `cv_preferences.sections` and copied verbatim into `cv_exports.config`. Ordering — of sections, of entries within a section, of social links — lives only here; no entity table has an `order` column. Storing the exact config rather than a checksum of the data is what makes the "skip regeneration if unchanged" short-circuit correct, since a reorder changes the rendered document without changing any row.
 
+## CV exports
+
+`createSelfCvExportSchema` takes a template id and, optionally, a section config and options — display choices only. There is no `data` field, so a client cannot supply what a CV says; the API loads it. `createStandardCvExportSchema` takes only a student id, since a standard export always uses the standard template and the student's own saved preferences. `createCvExportJobSchema` caps a bulk job at `CV_EXPORT_JOB_MAX_STUDENTS` (1,000) and refuses duplicate ids.
+
+`CvExportKind` (`SELF`, `STANDARD`) and `CvExportJobStatus` are enums with parity tests against `packages/db`, like the others.
+
 ## Uploads
 
 `schemas/upload.ts` is the contract for issuing an upload. `UPLOAD_RULES` names, per purpose, the content types allowed and the size cap: a **proof** is a JPEG, PNG, WebP or PDF up to 8 MiB, an **avatar** is a JPEG, PNG or WebP up to 2 MiB. SVG is excluded on purpose, since it is a document that can carry script, not an image.

@@ -3,7 +3,12 @@ import { EXPERIENCE_TYPE_SUGGESTIONS } from "../constants/suggestions";
 import { createAchievementSchema } from "./achievement";
 import { createCertificationSchema } from "./certification";
 import { reviewDecisionSchema } from "./common";
-import { cvSectionsConfigSchema, upsertCvPreferenceSchema } from "./cv";
+import {
+  createCvExportJobSchema,
+  createSelfCvExportSchema,
+  cvSectionsConfigSchema,
+  upsertCvPreferenceSchema,
+} from "./cv";
 import { createExperienceSchema } from "./experience";
 import { createProjectSchema } from "./project";
 import { createResultSchema } from "./result";
@@ -368,6 +373,30 @@ describe("cv preferences", () => {
         { type: "custom", customSectionId: "cs_2", include: true, order: 1 },
       ]).success,
     ).toBe(true);
+  });
+
+  it("caps a bulk export job and refuses duplicate students", () => {
+    const ids = (n: number) => Array.from({ length: n }, (_, i) => `s${i}`);
+    expect(
+      createCvExportJobSchema.safeParse({ studentIds: ids(500) }).success,
+    ).toBe(true);
+    expect(
+      createCvExportJobSchema.safeParse({ studentIds: ids(1001) }).success,
+    ).toBe(false);
+    expect(createCvExportJobSchema.safeParse({ studentIds: [] }).success).toBe(
+      false,
+    );
+    expect(
+      createCvExportJobSchema.safeParse({ studentIds: ["s1", "s1"] }).success,
+    ).toBe(false);
+  });
+
+  it("takes only display choices for a student's own export, never content", () => {
+    const parsed = createSelfCvExportSchema.parse({
+      templateId: "standard",
+      data: { user: { name: "Someone Else" } },
+    });
+    expect(parsed).not.toHaveProperty("data");
   });
 
   it("upserts against a template id", () => {

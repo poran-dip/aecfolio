@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   Branch,
   Course,
+  CvExportJobStatus,
+  CvExportKind,
   Role,
   StudentStatus,
   VerificationStatus,
@@ -57,5 +59,19 @@ describe("removed enums", () => {
     const shared = await import("./index");
     expect(shared).not.toHaveProperty("SocialType");
     expect(shared).not.toHaveProperty("ExperienceType");
+  });
+
+  it("cv export kind matches cvExportKindEnum", async () => {
+    const { cvExportKindEnum } = await pgEnums();
+    expect([...cvExportKindEnum.enumValues].sort()).toEqual(
+      Object.values(CvExportKind).sort(),
+    );
+  });
+
+  it("cv export job status matches cvExportJobStatusEnum", async () => {
+    const { cvExportJobStatusEnum } = await pgEnums();
+    expect([...cvExportJobStatusEnum.enumValues].sort()).toEqual(
+      Object.values(CvExportJobStatus).sort(),
+    );
   });
 });
