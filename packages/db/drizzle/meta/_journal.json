@@ -29,6 +29,13 @@
       "when": 1789469750754,
       "tag": "0003_illegal_johnny_storm",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789587838275,
+      "tag": "0004_needy_giant_man",
+      "breakpoints": true
     }
   ]
 }
