@@ -46,11 +46,9 @@ Raised to 10m. Students attach proof images and certificates, and nginx's 1m def
 
 ## The worker has no rule here, deliberately
 
-There is no `location` block for the PDF worker, and there must not be one until the worker has authentication of its own.
+There is no `location` block for the PDF worker, and there must not be one. Nothing outside the compose network has a reason to reach it: the API calls it directly, and browsers only ever talk to the API.
 
-The worker exposes endpoints that drive headless Chromium. It has no auth middleware and no shared secret, so anything that can reach port 3001 can drive it. Its only protection today is network topology: it publishes no port in `compose.yml` and nginx does not route to it, so it is reachable only from inside the compose network.
-
-The API calls it directly over that network. Nothing outside needs to.
+Two controls keep it that way. The worker publishes no port and nginx does not route to it, so it is reachable only from inside the network. And every route that renders anything requires `Authorization: Bearer <WORKER_SECRET>`, a secret only the API holds, so reaching the port is not enough to drive Chromium. `/` and `/health` stay open so the container healthcheck works without the secret. Adding a route here would not open the worker, but it would give anyone who learns the secret a way in from outside, so don't.
 
 ## TLS is not configured
 
