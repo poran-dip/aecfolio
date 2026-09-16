@@ -10,7 +10,12 @@ import {
 import { auditLogsTable } from "./audit";
 import { accountsTable, sessionsTable, usersTable } from "./auth";
 import { experiencesTable, projectsTable } from "./core-sections";
-import { cvExportsTable, cvPreferencesTable } from "./cv";
+import {
+  cvExportJobItemsTable,
+  cvExportJobsTable,
+  cvExportsTable,
+  cvPreferencesTable,
+} from "./cv";
 import { facultyTable } from "./faculty";
 import { resultsTable, semesterCreditSchemesTable } from "./grading";
 import { studentsTable } from "./student";
@@ -189,3 +194,24 @@ export const auditLogsRelations = relations(auditLogsTable, ({ one }) => ({
     references: [usersTable.id],
   }),
 }));
+
+export const cvExportJobsRelations = relations(
+  cvExportJobsTable,
+  ({ many }) => ({
+    items: many(cvExportJobItemsTable),
+  }),
+);
+
+export const cvExportJobItemsRelations = relations(
+  cvExportJobItemsTable,
+  ({ one }) => ({
+    job: one(cvExportJobsTable, {
+      fields: [cvExportJobItemsTable.jobId],
+      references: [cvExportJobsTable.id],
+    }),
+    export: one(cvExportsTable, {
+      fields: [cvExportJobItemsTable.exportId],
+      references: [cvExportsTable.id],
+    }),
+  }),
+);

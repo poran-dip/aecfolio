@@ -177,9 +177,16 @@ Options are stored in `cv_preferences.options` and `cv_exports.options` as an op
 
 `parseTemplateOptions()` never throws. A stored bag may have been written by an older version of this template, or by a different template entirely if the student switched; the right response to any of that is the template's defaults, not a failed export. A CV that renders with default spacing beats a 500.
 
+### Two entry points besides the main one
+
+- **`@aecfolio/ui/manifests`** is every manifest, `parseTemplateOptions`, `defaultSectionsConfig` and the `CvData` types, with no React in it. The API imports it to reject unknown templates, drop sections a template cannot draw and normalise options before they go into a cache key. `src/cv/manifests.ts` must not import a template component or the registry; `registry.test.tsx` checks that, and checks that every manifest has a renderer and every renderer a manifest.
+- **`@aecfolio/ui/fixtures`** exports `makeCvData()`, so the worker's PDF tests render the same awkward fixture the template tests do.
+
+`printsPhoto(options)` on a manifest tells the API whether this render will show the photo. The API reads the avatar out of the bucket and inlines it only when it will, since the worker fetches nothing.
+
 ### Adding a template
 
-A directory under `src/cv/templates/`, a manifest, an options schema, and one line in `registry.tsx`. Nothing outside that file needs to know — the picker reads `listTemplateManifests()`, the export path looks it up by id.
+A directory under `src/cv/templates/`, a manifest, an options schema, one line in `manifests.ts` and one line in `registry.tsx`. Nothing outside that file needs to know — the picker reads `listTemplateManifests()`, the export path looks it up by id.
 
 Template ids are stored in the database. Renaming one orphans every saved preference for it.
 
@@ -237,5 +244,4 @@ The last row exists for a **biodata template that has not been built yet** — t
 
 ## Known gaps
 
-- **Fonts still do not load in the PDF.** `--font-cv` names Outfit and the worker's `@font-face` block points at URLs a `data:` document cannot resolve. The browser preview does get Outfit, because it loads the webfont itself.
 - **`apps/web` has not moved onto any of this yet.** It still has shadcn and its own token block; `styles/app.css` is here waiting for Phase 6.

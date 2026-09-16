@@ -44,4 +44,5 @@ export const standardManifest: TemplateManifest<StandardOptions> = {
   },
 
   optionsSchema: standardOptionsSchema,
+  printsPhoto: (options) => options.showPhoto,
 };

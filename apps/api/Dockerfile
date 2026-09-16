@@ -16,9 +16,12 @@ COPY apps/api ./apps/api
 COPY packages/config ./packages/config
 COPY packages/db ./packages/db
 COPY packages/shared ./packages/shared
+COPY packages/ui ./packages/ui
 
 RUN pnpm --filter @aecfolio/config build \
   && pnpm --filter @aecfolio/db build \
+  && pnpm --filter @aecfolio/shared build \
+  && pnpm --filter @aecfolio/ui build \
   && pnpm --filter @aecfolio/api build
 
 FROM node:24-alpine

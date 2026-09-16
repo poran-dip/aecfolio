@@ -22,7 +22,7 @@ web `:3000` · api `:3002` · worker `:3001` · postgres `:15432` · garage `:39
 
 The dev stack contains nothing but the database and the object store. Web, api and worker run on the host under `pnpm dev`, so a save reloads in milliseconds instead of rebuilding an image.
 
-The blanks in `.env` are `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), the two `GOOGLE_*` values, and Garage's three: `S3_ACCESS_KEY_ID` (`echo GK$(openssl rand -hex 12)`), `S3_SECRET_ACCESS_KEY` and `GARAGE_RPC_SECRET` (`openssl rand -hex 32` each). Everything else already holds a working local value. The storage secrets are blank rather than filled in because production routes the bucket publicly through nginx, and a key copied from this file would open it to anyone. Both compose files refuse to start without them. Google OAuth needs `http://localhost:3002/api/auth/callback/google` as an authorised redirect URI.
+The blanks in `.env` are `BETTER_AUTH_SECRET` (`openssl rand -base64 32`), the two `GOOGLE_*` values, Garage's three: `S3_ACCESS_KEY_ID` (`echo GK$(openssl rand -hex 12)`), `S3_SECRET_ACCESS_KEY` and `GARAGE_RPC_SECRET` (`openssl rand -hex 32` each), and `WORKER_SECRET` (`openssl rand -hex 32`), which the api and the worker share. Everything else already holds a working local value. The storage and worker secrets are blank rather than filled in because a value copied from this file would be the same on every deployment. Compose refuses to start without them. Google OAuth needs `http://localhost:3002/api/auth/callback/google` as an authorised redirect URI.
 
 ### Production
 
@@ -77,12 +77,12 @@ aecfolio/
 ├── apps/
 │   ├── api/          Hono API — auth, CRUD, verification, CV orchestration
 │   ├── web/          React Router 7 SSR app (marketing + student + faculty)
-│   └── worker/       PDF render service (Puppeteer); internal only
+│   └── worker/       PDF render service (Puppeteer); internal, secret-protected
 ├── packages/
 │   ├── config/       Scoped, lazily-validated environment configuration
 │   ├── db/           Drizzle schema, migrations, client
 │   ├── shared/       Zod schemas, enums, API envelope types, utils
-│   └── ui/           CV templates + icons (consumed by web preview and worker)
+│   └── ui/           Design system and CV templates (worker renders them, api reads their manifests)
 ├── infra/garage/     Object store config
 ├── infra/nginx/      Reverse proxy config
 ├── scripts/          bootstrap.ts — promote the first admin/faculty

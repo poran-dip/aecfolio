@@ -10,3 +10,5 @@ process.env.BETTER_AUTH_SECRET ??= "test-secret-at-least-32-characters-long!!";
 process.env.GOOGLE_CLIENT_ID ??= "test-google-client-id";
 process.env.GOOGLE_CLIENT_SECRET ??= "test-google-client-secret";
 process.env.CORS_ORIGIN ??= "http://localhost:3000";
+process.env.WORKER_URL = "http://127.0.0.1:38401";
+process.env.WORKER_SECRET = "test-worker-secret-at-least-32-characters";

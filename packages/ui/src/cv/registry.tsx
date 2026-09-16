@@ -2,10 +2,11 @@ import type { CvSectionsConfig, CvTemplateOptions } from "@aecfolio/shared";
 import type { ReactElement } from "react";
 import type { TemplateManifest } from "./manifest";
 import { defaultSectionsConfig, parseTemplateOptions } from "./manifest";
+import type { CvTemplateId } from "./manifests";
+import { templateManifests } from "./manifests";
 import type { ResolvedSection } from "./sections";
 import { resolveSections } from "./sections";
 import { StandardTemplate } from "./templates/standard";
-import { standardManifest } from "./templates/standard/manifest";
 import type { CvData } from "./types";
 
 export type TemplateComponentProps<TOptions> = {
@@ -46,21 +47,11 @@ function defineTemplate<TOptions>(
 }
 
 export const cvTemplates = {
-  standard: defineTemplate(standardManifest, StandardTemplate),
-} satisfies Record<string, CvTemplate>;
-
-export type CvTemplateId = keyof typeof cvTemplates;
-
-export const CV_TEMPLATE_IDS = Object.keys(cvTemplates) as CvTemplateId[];
+  standard: defineTemplate(templateManifests.standard, StandardTemplate),
+} satisfies Record<CvTemplateId, CvTemplate>;
 
 export function getTemplate(id: string): CvTemplate | null {
   return Object.hasOwn(cvTemplates, id)
     ? cvTemplates[id as CvTemplateId]
     : null;
 }
-
-export function listTemplateManifests(): TemplateManifest<unknown>[] {
-  return Object.values(cvTemplates).map((t) => t.manifest);
-}
-
-export const STANDARD_TEMPLATE_ID = "standard" satisfies CvTemplateId;

@@ -42,3 +42,18 @@ export const VerificationStatus = {
 } as const;
 export type VerificationStatus =
   (typeof VerificationStatus)[keyof typeof VerificationStatus];
+
+export const CvExportKind = {
+  SELF: "SELF",
+  STANDARD: "STANDARD",
+} as const;
+export type CvExportKind = (typeof CvExportKind)[keyof typeof CvExportKind];
+
+export const CvExportJobStatus = {
+  QUEUED: "QUEUED",
+  RUNNING: "RUNNING",
+  SUCCEEDED: "SUCCEEDED",
+  FAILED: "FAILED",
+} as const;
+export type CvExportJobStatus =
+  (typeof CvExportJobStatus)[keyof typeof CvExportJobStatus];

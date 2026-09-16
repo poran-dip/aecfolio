@@ -50,7 +50,7 @@ Domain restriction to `@aec.ac.in` is deliberately not enforced yet, to keep tes
 | `cv:export:standard`          |    —    |    ✓    |  ✓  |   ✓   |
 | `proof:read`                  |  ✓ own  |    ✓    |  ✓  |   ✓   |
 
-`cv:export:self` and `cv:export:standard` have no endpoints yet — they arrive with CV export. `proof:read` gates `GET /achievements/:id/proof` and `GET /certifications/:id/proof`; "own" for a student is enforced by the same read scope every other student-owned route uses.
+`cv:export:self` gates a student's own export and `cv:export:standard` the single and bulk standard exports. `proof:read` gates `GET /achievements/:id/proof` and `GET /certifications/:id/proof`; "own" for a student is enforced by the same read scope every other student-owned route uses.
 
 Two rules are finer than a capability check and live in the same file:
 
@@ -93,10 +93,9 @@ Verifying a result is the `pendingSgpa → sgpa` promotion — the `result_statu
 | `/achievements` `/certifications` `/results` `/experiences` `/projects` `/socials` `/interests` `/custom-sections` | Student-owned entries.                                                    |
 | `/audit-logs`                                                                                                      | Paginated, filterable by actor, entity, action and date range.            |
 | `/uploads`                                                                                                         | Presigned upload tickets for proof and avatars.                           |
+| `/cv`                                                                                                              | Preferences, own and standard exports, history, bulk export jobs.         |
 
 Student-owned entry routes take `?studentId=` for staff. Staff who name no student get a 400 — they never get every row in the table.
-
-`/cv/*` is absent: CV generation lands with the export work.
 
 ## Files
 
@@ -114,11 +113,59 @@ The route is the durable address, not the signed URL. A PDF that links a checkma
 
 Replaced or orphaned uploads are not deleted yet.
 
+A user's first Google sign-in copies their Google profile picture into the bucket, if they have no avatar yet. Better Auth's `account.create.after` hook fires once, when Google is first linked to the pre-created row, and never on later sign-ins. The picture URL comes from the stored ID token's `picture` claim and is fetched only if it is `https` on `googleusercontent.com`, with redirects refused, a five-second timeout, the avatar size cap and the same magic-byte check an upload gets. It runs after the sign-in rather than inside it, and any failure just leaves the user without a photo.
+
+## CV export
+
+**Nothing about a CV's content comes from the request** (C01). A request names a template and, for a student's own export, a section config and options. The API loads the student from the database and shapes the data itself.
+
+| Route                              | Who                                                      | What                                                                                                                                                                                             |
+| ---------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /cv/preferences`              | student                                                  | Saved `(template, sections, options)` per template                                                                                                                                               |
+| `PUT /cv/preferences`              | student                                                  | Upsert one. Unknown templates are refused, sections the template cannot draw or custom sections that are not the student's are dropped, options are normalised through the template's own schema |
+| `POST /cv/exports/self`            | student                                                  | Own export, any template. `sections` / `options` in the body, else saved preferences, else the template's defaults                                                                               |
+| `POST /cv/exports/standard`        | faculty, mod, admin                                      | One student, always the standard template with the student's saved standard preferences. Anything else in the body is ignored                                                                    |
+| `GET /cv/exports`                  | student (own), staff with `student:read` (`?studentId=`) | History, newest first                                                                                                                                                                            |
+| `GET /cv/exports/:id/download`     | same scope                                               | 302 to a signed GET with `attachment; filename="23162-Poran-Boruah.pdf"`                                                                                                                         |
+| `POST /cv/jobs`                    | faculty, mod, admin                                      | Bulk standard export of up to 1,000 students. 202 with a queued job                                                                                                                              |
+| `GET /cv/jobs`, `GET /cv/jobs/:id` | whoever started the job                                  | Progress: `status`, `total`, `completed`, `failed`                                                                                                                                               |
+| `GET /cv/jobs/:id/download`        | whoever started the job                                  | A streamed zip, one PDF per student, plus `MISSING.txt` naming any that failed                                                                                                                   |
+
+Exports return `{ export, cached }` — 201 when a PDF was rendered, 200 when an unchanged one was reused. If the worker cannot be reached the answer is 502 `WORKER_UNAVAILABLE`, never a half-made file.
+
+### Two shapes, built in `lib/cv/data.ts`
+
+- **`SELF`** (decision #42) — verified and pending claims render, only verified ones carry a mark, rejected ones are absent.
+- **`STANDARD`** (#13, #39) — verified claims only, every one marked. Used for faculty, mods and admins alike: a mod reads the owner view on screen, but an institutional CV is the standard document regardless of who clicks export.
+
+In both, a mark links to `<BETTER_AUTH_URL>/api/{achievements|certifications}/:id/proof` when the claim has proof and is bare when it does not; results and the CGPA are always bare. `reviewedBy`, `reviewedAt`, `rejectionReason` and `pendingSgpa` are nulled before the data leaves the API, so no reviewer and no rejection can reach a document even if a template tried to print one. The photo is read from the bucket and inlined as a `data:` URL, and only when the template's `printsPhoto(options)` says it will be shown.
+
+### The short-circuit
+
+Every export is checksummed over the shape, the template, the resolved sections and options, the shaped data, the avatar key and the worker's render version (`GET /version`, cached 30 s). If the student already has an export with that checksum it is returned without calling the worker. The checksum is over what is rendered rather than when rows were updated, so a reorder, an option, an edit, a different shape and a template deploy each produce a new PDF, and nothing else does. PDFs are stored at `exports/<studentId>/<cuid>.pdf`. The newest 100 per student are kept across both shapes; older rows and their objects are deleted after each new export.
+
+**History is one list** shared by the student and staff. A staff member can therefore download a student's own export, which includes that student's pending claims unmarked. That was chosen on purpose; tightening it to standard exports for staff is a `where` clause in `GET /cv/exports` and the download route.
+
+### Bulk jobs
+
+`POST /cv/jobs` writes a job and one item per student in a transaction and wakes the runner. The runner lives in the API process (`startJobRunner()` in `index.ts`, not in `createApp`, so tests drive it with `runQueuedJobs()`), claims one queued job at a time with `FOR UPDATE SKIP LOCKED`, and works through it as a pipeline:
+
+- students are loaded 50 at a time, the next batch loading while the current one renders,
+- twice as many exports run at once as the worker has tabs, read from the worker's `GET /version`, so no tab waits on the database and changing `WORKER_PAGES` alone retunes both sides,
+- each item runs the same `exportCv` as a single standard export, so unchanged students skip the worker entirely,
+- a 503 from a busy worker is retried with backoff; any other failure marks that one item failed and the job carries on.
+
+A job that produced nothing is `FAILED`; one with some failures is `SUCCEEDED` with `failed` counting them. On startup, jobs left `RUNNING` by a restart go back to `QUEUED` and resume from their unfinished items. Jobs older than seven days are deleted. **This assumes one API process** — a second replica would reset the first one's running job to queued on boot.
+
+The zip is built on download, not stored: the route streams it straight from the students' stored PDFs, uncompressed (PDFs are already compressed), pulling the next object only when the client has taken the last one.
+
 ## Tests
 
 `pnpm -F @aecfolio/api test` runs against **real Postgres**. There is no mocked database and no in-memory substitute: the status CHECKs, the unique constraints and the audit-log immutability trigger are exactly what several of these tests assert.
 
 The suite derives its database from `DATABASE_URL` by appending `_test` to the name (`aecfolio` → `aecfolio_test`), creates it on first run and applies the migrations. So with `compose.dev.yml` up, `pnpm test` works with no extra configuration and never touches dev data.
+
+The CV tests start a fake worker on `WORKER_URL` (`src/test/fake-worker.ts`) that checks the shared secret, records every render payload and returns a stub PDF. That is a network stand-in, not a second seam into the code: everything in the API runs for real, and the assertions are on exactly what would have reached Chromium. Real PDFs are the worker's own suite.
 
 The storage tests run against **real Garage** the same way. The suite uses `<S3_BUCKET>-test` (or `TEST_S3_BUCKET`) and creates it on first run, so it needs the `S3_*` values from `.env` and the dev Garage up. Test objects are not cleaned between tests; every key carries a fresh cuid, so nothing collides. Set `TEST_DATABASE_URL` to point somewhere else; the suite refuses any database whose name does not end in `_test`, because it truncates every table between tests.
 

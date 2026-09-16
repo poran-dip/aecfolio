@@ -16,7 +16,7 @@ src/
     ├── core-sections.ts        experiences, projects
     ├── additional-sections.ts  achievements, certifications, interests, socials, custom_sections, custom_section_entries
     ├── grading.ts              semester_credit_schemes, results
-    ├── cv.ts                   cv_preferences, cv_exports
+    ├── cv.ts                   cv_preferences, cv_exports, cv_export_jobs, cv_export_job_items
     ├── audit.ts                audit_logs
     ├── relations.ts            Drizzle relational-query API relations for every table above (no DDL)
     └── index.ts                re-exports every file above — this is what drizzle.config.ts points at
@@ -36,6 +36,8 @@ A separate `student_personal_details` table (1:1 with `students`) was considered
 - `course` — `BTECH | MTECH | BCA | MCA`.
 - `branch` — the nine engineering/CA branches AEC offers.
 - `student_status` — `ACTIVE | ALUMNI | SUSPENDED | LEFT`. Drives the moderator bulk-promotion flow (final-semester students become `ALUMNI`) and gives real states for the two other cases a college has to track: a student temporarily barred (`SUSPENDED`) and one who withdrew or transferred out entirely (`LEFT`), as distinct from a normal graduate.
+- `cv_export_kind` — `SELF | STANDARD`. Which export shape produced a PDF: a student's own (verified and pending claims, only verified marked) or the faculty/standard one (verified claims only). Part of every export's checksum, so one shape is never served in place of the other.
+- `cv_export_job_status` — `QUEUED | RUNNING | SUCCEEDED | FAILED`. A job that finishes with some students failed is still `SUCCEEDED`, with `failed` counting them; `FAILED` means nothing could be produced at all, or the run itself broke.
 - `verification_status` — `PENDING | VERIFIED | REJECTED`. Shared by `results`, `achievements`, and `certifications` — the three entity types a faculty member reviews. See "Verification workflow" below for the full state machine, including why rejection reasons persist across resubmission.
 
 `experience_type` and `social_type` are deliberately **not** enums. Both are free-text columns with an application-level suggested-values list (Internship/Volunteer/Club/Freelance/Other for experience type; a known-platforms list for socials, used only to pick an icon). Neither is universal enough to enforce at the DB level, and application-layer lists don't need a migration to extend.
@@ -79,7 +81,8 @@ Every date-shaped field on an entry is a plain `text` column, not a Postgres `ti
 No entity table — `socials`, `projects`, `achievements`, any of them — has an `order` column. Section order, the order of entries within a section, and the order of social links are all a CV-presentation concern, not a property of the underlying data, so they live entirely in:
 
 - `cv_preferences` — one row per `(student, template)`, unique on that pair. `sections` (jsonb) holds the student's saved defaults: `[{ type, include, order, entryOrder: [id, ...], ...options }, ...]`. `entryOrder` applies uniformly across every section type, built-in and custom alike, and to the socials list.
-- `cv_exports` — one row per generated PDF, storing the **exact** `sections` config used for that specific export (not a checksum of the underlying data). This is what makes "skip regeneration if nothing changed" correct: a reorder is a real change to what gets rendered, so it must produce a new export rather than reusing a cached one keyed only on the student's data.
+- `cv_exports` — one row per generated PDF, storing the **exact** `sections` config and `options` used for that export, which export shape produced it (`kind`: `SELF` or `STANDARD`), who asked for it, and a `checksum`. The checksum covers the shape, the template, the config, the options, every field of student data the render received, the avatar's object key and the worker's render version — so a reorder, an edit, a different export shape or a template change each produce a new PDF, and an export where none of those changed reuses the stored one. A config alone is not enough to key on: the same config over edited data is a different document. The last 100 rows per student are kept, across both kinds; older rows are deleted with their objects.
+- `cv_export_jobs` / `cv_export_job_items` — bulk exports. A job is one staff member's request over a list of students, with running `completed` / `failed` counts (a CHECK keeps them within `total`); an item is one student in it, pointing at the `cv_exports` row it produced or carrying the error that stopped it. Jobs are deleted after seven days; the PDFs they point at belong to the students' histories, not to the job.
 
 `cv_preferences` is keyed per template, not per student, because different templates can support a different number of columns or a different set of sections/options — whether a given template accepts a given section is an application-level check against that template's own definition, not a DB constraint.
 
@@ -96,6 +99,9 @@ Every relation in this schema has an explicit `.references()` with a deliberate 
 | `customSectionEntries.customSectionId` → `customSections.id`                                                                                                                                             | `cascade`  | Owned data, one level deeper                                                                           |
 | `results.schemeId` → `semesterCreditSchemes.id`                                                                                                                                                          | `restrict` | A scheme in use for CGPA weighting shouldn't be deletable out from under the results that reference it |
 | `*.reviewedBy` → `users.id` (achievements, certifications, results)                                                                                                                                      | `restrict` | Preserve who made a review decision even if that user account is later removed                         |
+| `cvExports.requestedBy` → `users.id`                                                                                                                                                                     | `set null` | The export belongs to the student's history; who asked for it is incidental                            |
+| `cvExportJobs.requestedBy` → `users.id`, `cvExportJobItems.jobId` → `cvExportJobs.id`, `cvExportJobItems.studentId` → `students.id`                                                                      | `cascade`  | A job is a staff member's working state, with no meaning once they or the students are gone            |
+| `cvExportJobItems.exportId` → `cvExports.id`                                                                                                                                                             | `set null` | History pruning may remove a PDF an old job pointed at; the job's zip lists it as missing              |
 | `auditLogs.userId` → `users.id`                                                                                                                                                                          | `restrict` | The log must outlive the actor — the whole point of the immutability trigger below                     |
 
 ## Soft deletes

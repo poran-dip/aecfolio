@@ -34,6 +34,14 @@
       "types": "./dist/index.d.mts",
       "import": "./dist/index.mjs"
     },
+    "./manifests": {
+      "types": "./dist/manifests.d.mts",
+      "import": "./dist/manifests.mjs"
+    },
+    "./fixtures": {
+      "types": "./dist/fixtures.d.mts",
+      "import": "./dist/fixtures.mjs"
+    },
     "./styles/app.css": "./src/styles/app.css",
     "./styles/tokens.css": "./src/styles/palette.css",
     "./cv.css": "./dist/cv.css"

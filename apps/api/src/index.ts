@@ -2,6 +2,7 @@ import "dotenv/config";
 import { apiEnv } from "@aecfolio/config";
 import { serve } from "@hono/node-server";
 import app from "./app";
+import { startJobRunner } from "./lib/cv/jobs";
 import { ensureBucketCors } from "./lib/storage";
 
 const isProd = apiEnv.NODE_ENV === "production";
@@ -22,5 +23,7 @@ serve(
 ensureBucketCors([apiEnv.CORS_ORIGIN]).catch((err) => {
   console.error("Could not apply the storage bucket's CORS rules:", err);
 });
+
+startJobRunner();
 
 export type AppType = typeof app;

@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { makeCvData } from "./fixtures";
-import { getTemplate, listTemplateManifests } from "./registry";
+import { listTemplateManifests, templateManifests } from "./manifests";
+import { cvTemplates, getTemplate } from "./registry";
 
 function render(
   input: Parameters<NonNullable<ReturnType<typeof getTemplate>>["render"]>[0],
@@ -17,6 +20,20 @@ describe("registry", () => {
     expect(getTemplate("nope")).toBeNull();
     expect(getTemplate("constructor")).toBeNull();
     expect(getTemplate("__proto__")).toBeNull();
+  });
+
+  it("has a renderer for every manifest the API can see, and no more", () => {
+    expect(Object.keys(cvTemplates).sort()).toEqual(
+      Object.keys(templateManifests).sort(),
+    );
+  });
+
+  it("keeps the manifests entry free of React, so the API can import it", () => {
+    const source = readFileSync(
+      fileURLToPath(new URL("../manifests.ts", import.meta.url)),
+      "utf8",
+    );
+    expect(source).not.toMatch(/registry|templates\/standard["']|\.tsx/);
   });
 
   it("every manifest parses an empty options bag", () => {
@@ -37,7 +54,7 @@ describe("the verified mark", () => {
   it("links to the proof when there is one", () => {
     const html = render({ data: makeCvData() });
     expect(html).toContain(
-      'href="https://aecfolio.example/api/proof/proof%2Fa1.pdf"',
+      'href="https://aecfolio.example/api/achievements/a1/proof"',
     );
   });
 

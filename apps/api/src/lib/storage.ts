@@ -1,6 +1,7 @@
 import { s3Env } from "@aecfolio/config";
 import {
   CreateBucketCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   HeadBucketCommand,
   HeadObjectCommand,
@@ -158,5 +159,23 @@ export async function ensureBucketCors(origins: string[]) {
         ],
       },
     }),
+  );
+}
+
+export async function getObjectBytes(key: string): Promise<Uint8Array | null> {
+  try {
+    const res = await internal().send(
+      new GetObjectCommand({ Bucket: s3Env.S3_BUCKET, Key: key }),
+    );
+    return res.Body ? await res.Body.transformToByteArray() : null;
+  } catch (err) {
+    if (isNotFound(err)) return null;
+    throw err;
+  }
+}
+
+export async function deleteObject(key: string) {
+  await internal().send(
+    new DeleteObjectCommand({ Bucket: s3Env.S3_BUCKET, Key: key }),
   );
 }

@@ -42,11 +42,16 @@ const authSchema = z.object({
   GOOGLE_CLIENT_SECRET: required("Google OAuth client secret"),
 });
 
+const workerSecret = required(
+  "shared by the api and the worker — generate with `openssl rand -hex 32`",
+).min(32, "must be at least 32 chars — generate with `openssl rand -hex 32`");
+
 const apiSchema = z.object({
   NODE_ENV: nodeEnv,
   API_PORT: port(3002),
   CORS_ORIGIN: origin("origin of the web app"),
   WORKER_URL: origin("origin of the worker").default("http://localhost:3001"),
+  WORKER_SECRET: workerSecret,
 });
 
 const s3Schema = z.object({
@@ -71,6 +76,8 @@ const s3Schema = z.object({
 const workerSchema = z.object({
   NODE_ENV: nodeEnv,
   WORKER_PORT: port(3001),
+  WORKER_SECRET: workerSecret,
+  WORKER_PAGES: z.coerce.number().int().min(1).max(16).default(2),
   PUPPETEER_EXECUTABLE_PATH: z.string().min(1).optional(),
 });
 

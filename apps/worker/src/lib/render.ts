@@ -1,0 +1,40 @@
+import type { Page } from "puppeteer";
+import type { PagePool } from "./pool";
+
+export const RENDER_TIMEOUT_MS = 30_000;
+
+async function printBody(page: Page, markup: string): Promise<Uint8Array> {
+  await page.evaluate(async (html) => {
+    document.body.innerHTML = html;
+    await Promise.all(
+      Array.from(document.images, (img) => img.decode().catch(() => {})),
+    );
+    await document.fonts.ready;
+  }, markup);
+
+  return page.pdf({
+    printBackground: true,
+    preferCSSPageSize: true,
+    timeout: RENDER_TIMEOUT_MS,
+  });
+}
+
+export async function renderPdf(
+  pool: PagePool,
+  markup: string,
+): Promise<Uint8Array> {
+  return pool.run(async (page) => {
+    let timer: NodeJS.Timeout | undefined;
+    const timeout = new Promise<never>((_, reject) => {
+      timer = setTimeout(
+        () => reject(new Error(`Render exceeded ${RENDER_TIMEOUT_MS}ms`)),
+        RENDER_TIMEOUT_MS,
+      );
+    });
+    try {
+      return await Promise.race([printBody(page, markup), timeout]);
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+}

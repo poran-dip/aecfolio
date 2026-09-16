@@ -6,29 +6,33 @@
   "scripts": {
     "dev": "dotenv-run -- tsx watch src/index.ts",
     "build": "tsdown",
-    "start": "dotenv-run -- node dist/index.js",
-    "typecheck": "tsc"
+    "start": "dotenv-run -- node dist/index.mjs",
+    "typecheck": "tsc",
+    "test": "dotenv-run -- vitest run",
+    "test:watch": "dotenv-run -- vitest"
   },
   "dependencies": {
     "@aecfolio/config": "workspace:*",
+    "@aecfolio/shared": "workspace:*",
     "@aecfolio/ui": "workspace:*",
     "@dotenv-run/cli": "catalog:",
     "@hono/node-server": "catalog:",
     "dotenv": "catalog:",
     "hono": "catalog:",
-    "jszip": "^3.10.2",
-    "p-queue": "^9.3.3",
     "puppeteer": "^25.10.0",
     "react": "catalog:",
-    "react-dom": "catalog:"
+    "react-dom": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "pdfjs-dist": "^6.3.289",
     "tsdown": "catalog:",
     "tsx": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   },
   "exports": {
     ".": {

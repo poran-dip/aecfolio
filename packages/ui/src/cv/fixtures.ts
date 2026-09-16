@@ -136,7 +136,9 @@ export function makeCvData(overrides: Partial<CvData> = {}): CvData {
         reviewedBy: "mod-1",
         reviewedAt: now,
         ...timestamps,
-        mark: { proofUrl: "https://aecfolio.example/api/proof/proof%2Fa1.pdf" },
+        mark: {
+          proofUrl: "https://aecfolio.example/api/achievements/a1/proof",
+        },
       },
       {
         id: "a2",
@@ -180,7 +182,9 @@ export function makeCvData(overrides: Partial<CvData> = {}): CvData {
         reviewedBy: "mod-2",
         reviewedAt: now,
         ...timestamps,
-        mark: { proofUrl: "https://aecfolio.example/api/proof/proof%2Fc1.pdf" },
+        mark: {
+          proofUrl: "https://aecfolio.example/api/certifications/c1/proof",
+        },
       },
     ],
 

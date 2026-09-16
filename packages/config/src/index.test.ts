@@ -42,6 +42,17 @@ describe("laziness", () => {
 });
 
 describe("apiEnv", () => {
+  beforeEach(() => {
+    vi.stubEnv("WORKER_SECRET", SECRET);
+  });
+
+  it("requires the worker's shared secret", async () => {
+    vi.stubEnv("CORS_ORIGIN", "http://localhost:3000");
+    vi.stubEnv("WORKER_SECRET", undefined);
+    const { apiEnv } = await import("./index");
+    expect(() => apiEnv.API_PORT).toThrow(/WORKER_SECRET/);
+  });
+
   it("applies defaults for ports and NODE_ENV", async () => {
     vi.stubEnv("CORS_ORIGIN", "http://localhost:3000");
     vi.stubEnv("NODE_ENV", undefined);
@@ -126,6 +137,7 @@ describe("s3Env", () => {
 
   it("is not required by the api scope", async () => {
     vi.stubEnv("CORS_ORIGIN", "http://localhost:3000");
+    vi.stubEnv("WORKER_SECRET", SECRET);
     const { apiEnv } = await import("./index");
     expect(() => apiEnv.CORS_ORIGIN).not.toThrow();
   });
@@ -151,9 +163,22 @@ describe("s3Env", () => {
 
 describe("workerEnv", () => {
   it("treats PUPPETEER_EXECUTABLE_PATH as optional", async () => {
+    vi.stubEnv("WORKER_SECRET", SECRET);
     const { workerEnv } = await import("./index");
     expect(workerEnv.PUPPETEER_EXECUTABLE_PATH).toBeUndefined();
     expect(workerEnv.WORKER_PORT).toBe(3001);
+    expect(workerEnv.WORKER_PAGES).toBe(2);
+  });
+
+  it("refuses to start without a shared secret", async () => {
+    const { workerEnv } = await import("./index");
+    expect(() => workerEnv.WORKER_PORT).toThrow(/WORKER_SECRET/);
+  });
+
+  it("refuses a short shared secret", async () => {
+    vi.stubEnv("WORKER_SECRET", "hunter2");
+    const { workerEnv } = await import("./index");
+    expect(() => workerEnv.WORKER_PORT).toThrow(/WORKER_SECRET/);
   });
 });
 
