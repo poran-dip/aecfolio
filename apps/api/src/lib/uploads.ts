@@ -119,8 +119,12 @@ export async function rejectInvalidUpload(
   ]);
 }
 
-export async function redirectToObject(c: Context, key: string) {
-  const url = await presignGet(key, DOWNLOAD_URL_TTL_SECONDS);
+export async function redirectToObject(
+  c: Context,
+  key: string,
+  disposition = "inline",
+) {
+  const url = await presignGet(key, DOWNLOAD_URL_TTL_SECONDS, disposition);
   c.header("Cache-Control", "private, no-store");
   return c.redirect(url, 302);
 }
