@@ -62,6 +62,7 @@ export function asUser(actor: Actor | null) {
     get: (path: string) => call("GET", path),
     post: (path: string, body?: unknown) => call("POST", path, body ?? {}),
     patch: (path: string, body?: unknown) => call("PATCH", path, body ?? {}),
+    put: (path: string, body?: unknown) => call("PUT", path, body ?? {}),
     delete: (path: string) => call("DELETE", path),
   };
 }
