@@ -1,42 +1,31 @@
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
 import "dotenv/config";
 import { workerEnv } from "@aecfolio/config";
 import { serve } from "@hono/node-server";
-import { serveStatic } from "@hono/node-server/serve-static";
-import { Hono } from "hono";
-import { closeBrowser, getBrowser } from "./lib/puppeteer";
-import cv from "./routes/cv";
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { createApp } from "./app";
+import { createPool } from "./lib/browser";
 
 const isProd = workerEnv.NODE_ENV === "production";
 const port = workerEnv.WORKER_PORT;
 
-const app = new Hono()
-  .use("/fonts/*", serveStatic({ root: join(__dirname, "../public") }))
+const pool = createPool();
+const app = createApp({ pool });
 
-  .get("/", (c) => c.text("CV worker running"))
-
-  .get("/health", async (c) => {
-    await getBrowser();
-    return c.json({ status: "ok" });
-  })
-
-  .route("/cv", cv);
-
-export type AppType = typeof app;
+pool.warm().catch((err) => {
+  console.error("[worker] could not start Chromium:", err);
+});
 
 const server = serve({ fetch: app.fetch, port }, (info) => {
   console.log(
-    `Worker running on ${isProd ? `port ${info.port}` : `http://localhost:${info.port}`}`,
+    `Worker running on ${isProd ? `port ${info.port}` : `http://localhost:${info.port}`} with ${workerEnv.WORKER_PAGES} pages`,
   );
 });
 
 for (const signal of ["SIGINT", "SIGTERM"]) {
   process.on(signal, async () => {
-    await closeBrowser();
     server.close();
+    await pool.close();
     process.exit(0);
   });
 }
+
+export type { AppType } from "./app";
