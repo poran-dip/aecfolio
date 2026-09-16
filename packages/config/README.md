@@ -14,9 +14,9 @@ Each export covers exactly one process's needs.
 | ----------- | --------------------------------------------------------------------------------------------------------- | ---------------------------------------------------- |
 | `dbEnv`     | `DATABASE_URL`                                                                                            | `packages/db`, `drizzle-kit`, `scripts/bootstrap.ts` |
 | `authEnv`   | `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`                       | `apps/api`                                           |
-| `apiEnv`    | `NODE_ENV`, `API_PORT`, `CORS_ORIGIN`, `WORKER_URL`                                                       | `apps/api`                                           |
+| `apiEnv`    | `NODE_ENV`, `API_PORT`, `CORS_ORIGIN`, `WORKER_URL`, `WORKER_SECRET`                                      | `apps/api`                                           |
 | `s3Env`     | `S3_ENDPOINT`, `S3_PUBLIC_ENDPOINT`, `S3_REGION`, `S3_BUCKET`, `S3_ACCESS_KEY_ID`, `S3_SECRET_ACCESS_KEY` | `apps/api`                                           |
-| `workerEnv` | `NODE_ENV`, `WORKER_PORT`, `PUPPETEER_EXECUTABLE_PATH`                                                    | `apps/worker`                                        |
+| `workerEnv` | `NODE_ENV`, `WORKER_PORT`, `WORKER_SECRET`, `WORKER_PAGES`, `PUPPETEER_EXECUTABLE_PATH`                   | `apps/worker`                                        |
 | `webEnv`    | `NODE_ENV`, `PUBLIC_API_URL`, `INTERNAL_API_URL`                                                          | `apps/web`, server-side only                         |
 
 Scoping is not organisational tidiness — it is what makes the package usable at all. A single flat object would mean `drizzle.config.ts`, which needs only `DATABASE_URL`, failing because an unrelated auth or worker variable is absent from the environment. Running a migration must not require the Google OAuth credentials.
@@ -83,6 +83,8 @@ Tests stub `process.env` with `vi.stubEnv` and reset module state between cases,
 - `NODE_ENV` defaults to `development` and only accepts `development`, `production` or `test`.
 - Ports are coerced from strings and range-checked, with defaults matching the ports used across the repo.
 - `S3_ACCESS_KEY_ID` and `S3_SECRET_ACCESS_KEY` are validated in the shape Garage accepts — `GK` plus 24 hex characters, and 64 hex characters. Garage would refuse anything else at startup, in its own logs, where a wrong value is much harder to spot.
+- `WORKER_SECRET` is in both `apiEnv` and `workerEnv` and must be the same value in both processes. It is required, at least 32 characters, with no default: a worker that starts without one would render for anyone who can reach it.
+- `WORKER_PAGES` is how many Chromium tabs the worker keeps open, and so how many PDFs it prints at once. Rendering is CPU-bound, so more tabs than cores buys nothing, and the right number wants measuring on the real server. It is the only knob: the API reads the worker's tab count from `GET /version` and sizes bulk exports from it, so the two cannot drift apart.
 - `PUPPETEER_EXECUTABLE_PATH` is optional. Set it only where a system Chromium exists; leaving it unset uses the Chromium that puppeteer downloads.
 - `webEnv` carries no port. In development the port is pinned in `apps/web/vite.config.ts`; in production `react-router-serve` owns it through `PORT`.
 - `apps/web` must only touch `webEnv` from `app/lib/env.server.ts`. The `.server.ts` suffix keeps this package — which reads `process.env` — out of the browser bundle.

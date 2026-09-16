@@ -55,6 +55,7 @@ services:
       DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       API_PORT: 3002
       WORKER_URL: http://worker:3001
+      WORKER_SECRET: ${WORKER_SECRET:?see .env.example}
       BETTER_AUTH_URL: ${PUBLIC_ORIGIN:-http://localhost}
       CORS_ORIGIN: ${PUBLIC_ORIGIN:-http://localhost}
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
@@ -93,6 +94,8 @@ services:
     environment:
       NODE_ENV: production
       WORKER_PORT: 3001
+      WORKER_SECRET: ${WORKER_SECRET:?see .env.example}
+      WORKER_PAGES: ${WORKER_PAGES:-2}
     depends_on:
       api:
         condition: service_healthy
