@@ -3,7 +3,8 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { renderToStaticMarkup } from "react-dom/server";
 import { makeCvData } from "../src/cv/fixtures";
-import { getTemplate, listTemplateManifests } from "../src/cv/registry";
+import { listTemplateManifests } from "../src/cv/manifests";
+import { getTemplate } from "../src/cv/registry";
 import { compileCvCss } from "./build-css";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");

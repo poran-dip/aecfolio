@@ -8,13 +8,17 @@ export {
 } from "./manifest";
 export {
   CV_TEMPLATE_IDS,
-  type CvRenderInput,
-  type CvTemplate,
   type CvTemplateId,
-  cvTemplates,
-  getTemplate,
+  getTemplateManifest,
   listTemplateManifests,
   STANDARD_TEMPLATE_ID,
+  templateManifests,
+} from "./manifests";
+export {
+  type CvRenderInput,
+  type CvTemplate,
+  cvTemplates,
+  getTemplate,
   type TemplateComponentProps,
 } from "./registry";
 export {

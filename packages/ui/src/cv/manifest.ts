@@ -22,6 +22,7 @@ export type TemplateManifest<TOptions = unknown> = {
   defaultSections: readonly BuiltInCvSectionType[];
   sectionNotes?: Partial<Record<CvSectionKind, string>>;
   optionsSchema: z.ZodType<TOptions>;
+  printsPhoto(options: TOptions): boolean;
 };
 
 export function parseTemplateOptions<TOptions>(
