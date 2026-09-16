@@ -10,6 +10,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { betterAuth } from "better-auth";
 import { admin } from "better-auth/plugins";
 import { db } from "./db";
+import { importGoogleAvatar } from "./google-avatar";
 
 export const auth = betterAuth({
   baseURL: authEnv.BETTER_AUTH_URL,
@@ -27,6 +28,15 @@ export const auth = betterAuth({
     google: {
       clientId: authEnv.GOOGLE_CLIENT_ID,
       clientSecret: authEnv.GOOGLE_CLIENT_SECRET,
+    },
+  },
+  databaseHooks: {
+    account: {
+      create: {
+        after: async (account) => {
+          void importGoogleAvatar(account);
+        },
+      },
     },
   },
   account: {
