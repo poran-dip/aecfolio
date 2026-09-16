@@ -12,7 +12,7 @@ import {
   resetDatabase,
 } from "../test/harness";
 
-type Method = "get" | "post" | "patch" | "delete";
+type Method = "get" | "post" | "patch" | "put" | "delete";
 
 type Endpoint = {
   name: string;
@@ -87,6 +87,46 @@ const ENDPOINTS: Endpoint[] = [
     capability: Capability.PROOF_READ,
     method: "get",
     path: (ctx) => `/api/certifications/${ctx.certification.id}/proof`,
+  },
+  {
+    name: "GET /cv/preferences",
+    capability: Capability.PROFILE_WRITE_SELF,
+    method: "get",
+    path: () => "/api/cv/preferences",
+  },
+  {
+    name: "PUT /cv/preferences",
+    capability: Capability.PROFILE_WRITE_SELF,
+    method: "put",
+    path: () => "/api/cv/preferences",
+    body: () => ({ templateId: "standard", sections: [] }),
+  },
+  {
+    name: "POST /cv/exports/self",
+    capability: Capability.CV_EXPORT_SELF,
+    method: "post",
+    path: () => "/api/cv/exports/self",
+    body: () => ({ templateId: "standard" }),
+  },
+  {
+    name: "POST /cv/exports/standard",
+    capability: Capability.CV_EXPORT_STANDARD,
+    method: "post",
+    path: () => "/api/cv/exports/standard",
+    body: (ctx) => ({ studentId: ctx.studentRow.id }),
+  },
+  {
+    name: "POST /cv/jobs",
+    capability: Capability.CV_EXPORT_STANDARD,
+    method: "post",
+    path: () => "/api/cv/jobs",
+    body: (ctx) => ({ studentIds: [ctx.studentRow.id] }),
+  },
+  {
+    name: "GET /cv/jobs",
+    capability: Capability.CV_EXPORT_STANDARD,
+    method: "get",
+    path: () => "/api/cv/jobs",
   },
   {
     name: "POST /results",
@@ -247,6 +287,17 @@ const ENDPOINTS: Endpoint[] = [
   },
 ];
 
+function send(
+  client: ReturnType<typeof asUser>,
+  method: Method,
+  path: string,
+  body: unknown,
+) {
+  return method === "get" || method === "delete"
+    ? client[method](path)
+    : client[method](path, body);
+}
+
 const ROLES = [Role.STUDENT, Role.FACULTY, Role.MOD, Role.ADMIN] as const;
 
 describe("authorization matrix", () => {
@@ -263,14 +314,7 @@ describe("authorization matrix", () => {
           const path = endpoint.path(ctx);
           const body = endpoint.body?.(ctx);
 
-          const res =
-            endpoint.method === "get"
-              ? await client.get(path)
-              : endpoint.method === "delete"
-                ? await client.delete(path)
-                : endpoint.method === "post"
-                  ? await client.post(path, body)
-                  : await client.patch(path, body);
+          const res = await send(client, endpoint.method, path, body);
 
           if (allowed) {
             expect(
@@ -293,14 +337,7 @@ describe("authorization matrix", () => {
         const path = endpoint.path(ctx);
         const body = endpoint.body?.(ctx);
 
-        const res =
-          endpoint.method === "get"
-            ? await client.get(path)
-            : endpoint.method === "delete"
-              ? await client.delete(path)
-              : endpoint.method === "post"
-                ? await client.post(path, body)
-                : await client.patch(path, body);
+        const res = await send(client, endpoint.method, path, body);
 
         expect(res.status).toBe(401);
         expect(res.body.error.code).toBe("UNAUTHENTICATED");
