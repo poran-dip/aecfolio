@@ -28,3 +28,12 @@ export const verificationStatusEnum = pgEnum("verification_status", [
   "VERIFIED",
   "REJECTED",
 ]);
+
+export const cvExportKindEnum = pgEnum("cv_export_kind", ["SELF", "STANDARD"]);
+
+export const cvExportJobStatusEnum = pgEnum("cv_export_job_status", [
+  "QUEUED",
+  "RUNNING",
+  "SUCCEEDED",
+  "FAILED",
+]);
