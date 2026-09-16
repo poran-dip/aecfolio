@@ -6,6 +6,7 @@ import auditLogs from "./audit-logs";
 import authRouter from "./auth";
 import certifications from "./certifications";
 import customSections from "./custom-sections";
+import cv from "./cv";
 import experiences from "./experiences";
 import faculty from "./faculty";
 import interests from "./interests";
@@ -35,6 +36,7 @@ const api = new Hono<AppEnv>()
   .route("/interests", interests)
   .route("/custom-sections", customSections)
   .route("/audit-logs", auditLogs)
-  .route("/uploads", uploads);
+  .route("/uploads", uploads)
+  .route("/cv", cv);
 
 export default api;
