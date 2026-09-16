@@ -14,6 +14,7 @@ export const TOTAL_CREDITS_MAX = 100;
 export const FREE_TEXT_DATE_MAX = 64;
 
 export const CV_EXPORT_HISTORY_MAX = 100;
+export const CV_EXPORT_JOB_MAX_STUDENTS = 1000;
 
 export const PROOF_MAX_BYTES = 8 * 1024 * 1024;
 export const AVATAR_MAX_BYTES = 2 * 1024 * 1024;
