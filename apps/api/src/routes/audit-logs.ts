@@ -1,8 +1,8 @@
 import { auditLogsTable, usersTable } from "@aecfolio/db";
+import { Capability } from "@aecfolio/shared";
 import { and, count, desc, eq, gte, lte, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";
 import { paginated } from "../lib/response";

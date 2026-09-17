@@ -1,9 +1,12 @@
 import { socialsTable } from "@aecfolio/db";
-import { createSocialSchema, updateSocialSchema } from "@aecfolio/shared";
+import {
+  Capability,
+  createSocialSchema,
+  updateSocialSchema,
+} from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { fail, getUser, ok } from "../lib/response";

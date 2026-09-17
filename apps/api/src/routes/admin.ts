@@ -3,6 +3,7 @@ import {
   ADMISSION_YEAR_MAX,
   ADMISSION_YEAR_MIN,
   Branch,
+  Capability,
   createSemesterCreditSchemeSchema,
   SEMESTER_MAX,
   StudentStatus,
@@ -12,7 +13,6 @@ import { and, asc, count, eq, inArray, isNull, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";
 import { fail, getUser, ok, paginated } from "../lib/response";

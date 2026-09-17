@@ -67,4 +67,64 @@
   --shadow-lg:
     0 12px 20px -4px oklch(0.19 0.008 242.6 / 10%),
     0 4px 8px -4px oklch(0.19 0.008 242.6 / 6%);
+
+  --animate-fade-in: fade-in 150ms ease-out;
+  --animate-fade-out: fade-out 120ms ease-in;
+  --animate-pop-in: pop-in 150ms ease-out;
+  --animate-pop-out: pop-out 120ms ease-in;
+  --animate-slide-in-left: slide-in-left 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-slide-out-left: slide-out-left 180ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-slide-in-right: slide-in-right 220ms cubic-bezier(0.32, 0.72, 0, 1);
+  --animate-slide-out-right: slide-out-right 180ms
+    cubic-bezier(0.32, 0.72, 0, 1);
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @keyframes fade-out {
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes pop-in {
+    from {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes pop-out {
+    to {
+      opacity: 0;
+      transform: scale(0.97);
+    }
+  }
+
+  @keyframes slide-in-left {
+    from {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes slide-out-left {
+    to {
+      transform: translateX(-100%);
+    }
+  }
+
+  @keyframes slide-in-right {
+    from {
+      transform: translateX(100%);
+    }
+  }
+
+  @keyframes slide-out-right {
+    to {
+      transform: translateX(100%);
+    }
+  }
 }

@@ -1,4 +1,4 @@
-import { Role } from "@aecfolio/shared";
+import { Role } from "./enums";
 
 export const Capability = {
   PROFILE_WRITE_SELF: "profile:write:self",

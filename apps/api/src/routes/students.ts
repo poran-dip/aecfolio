@@ -1,6 +1,7 @@
 import { auditLogsTable, studentsTable, usersTable } from "@aecfolio/db";
 import {
   Branch,
+  Capability,
   Course,
   createStudentSchema,
   Role,
@@ -12,7 +13,6 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { getActorDepartment } from "../lib/actor";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { constraintOf, pgMessage } from "../lib/db-error";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";

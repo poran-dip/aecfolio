@@ -1,5 +1,6 @@
 import { resultsTable } from "@aecfolio/db";
 import {
+  Capability,
   createResultSchema,
   updateResultSchema,
   VerificationStatus,
@@ -8,7 +9,6 @@ import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { getStudentForUser } from "../lib/actor";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import {
   findSchemeForCohort,

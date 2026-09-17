@@ -1,13 +1,29 @@
-import { Outlet, redirect } from "react-router";
-import { getSession } from "~/lib/session";
+import { Outlet } from "react-router";
+import { AppShell } from "~/components/app/app-shell";
+import { requireSession } from "~/lib/guard";
 import type { Route } from "./+types/layout";
 
-export async function loader({ request }: Route.LoaderArgs) {
-  const session = await getSession(request);
-  if (!session) throw redirect("/");
-  return { user: session.user };
+function readCollapsed(request: Request): boolean {
+  const cookie = request.headers.get("cookie") ?? "";
+  return /(?:^|;\s*)sidebar_collapsed=1(?:;|$)/.test(cookie);
 }
 
-export default function AppLayout() {
-  return <Outlet />;
+export async function loader({ request }: Route.LoaderArgs) {
+  const session = await requireSession(request);
+
+  return {
+    user: session.user,
+    sidebarCollapsed: readCollapsed(request),
+  };
+}
+
+export default function AppLayout({ loaderData }: Route.ComponentProps) {
+  return (
+    <AppShell
+      user={loaderData.user}
+      defaultCollapsed={loaderData.sidebarCollapsed}
+    >
+      <Outlet />
+    </AppShell>
+  );
 }

@@ -1,6 +1,5 @@
-import { Role } from "@aecfolio/shared";
+import { Capability, hasCapability, Role } from "@aecfolio/shared";
 import { beforeEach, describe, expect, it } from "vitest";
-import { Capability, hasCapability } from "../lib/capabilities";
 import type { Actor } from "../lib/session";
 import {
   asUser,

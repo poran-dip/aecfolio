@@ -1,6 +1,10 @@
-import { createUploadSchema, UploadPurpose } from "@aecfolio/shared";
+import {
+  Capability,
+  createUploadSchema,
+  hasCapability,
+  UploadPurpose,
+} from "@aecfolio/shared";
 import { Hono } from "hono";
-import { Capability, hasCapability } from "../lib/capabilities";
 import { resolveOwnStudent } from "../lib/ownership";
 import { fail, getUser, ok } from "../lib/response";
 import { issueUpload } from "../lib/uploads";
