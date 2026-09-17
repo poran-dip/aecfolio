@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
   "scripts": {
     "build": "pnpm build:css && tsdown",
     "build:css": "tsx scripts/build-css.ts",
@@ -37,6 +40,10 @@
     "./manifests": {
       "types": "./dist/manifests.d.mts",
       "import": "./dist/manifests.mjs"
+    },
+    "./icons": {
+      "types": "./dist/icons.d.mts",
+      "import": "./dist/icons.mjs"
     },
     "./fixtures": {
       "types": "./dist/fixtures.d.mts",
