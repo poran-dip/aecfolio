@@ -6,6 +6,7 @@ node_modules/
 dist/
 dist-ssr/
 packages/ui/preview/
+apps/api/scripts/bench/.state/
 
 # react router
 .react-router/

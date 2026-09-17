@@ -159,6 +159,15 @@ A job that produced nothing is `FAILED`; one with some failures is `SUCCEEDED` w
 
 The zip is built on download, not stored: the route streams it straight from the students' stored PDFs, uncompressed (PDFs are already compressed), pulling the next object only when the client has taken the last one.
 
+### Benchmarking the pipeline
+
+`pnpm bench:cold --students <n>` seeds `<n>` fresh students with a realistic mix of achievements, certifications, results, experiences, projects, interests and socials, queues them as a real bulk job through `POST /api/cv/jobs` (chunked at `CV_EXPORT_JOB_MAX_STUDENTS` per job), and times until every job finishes — real API, real worker, real Postgres, real Garage, no mocks. `pnpm bench:warm --students <n>` resubmits the same students from the state file `bench-cold.ts` wrote, to measure the checksum short-circuit instead of a fresh render, and reports how many exports were actually reused. `pnpm bench:cleanup` removes everything either script creates. All three live in `scripts/` and, unlike the 480-student figure below, are kept as commands rather than a one-off manual run.
+
+Recorded so far, at `WORKER_PAGES=16` on a 16-core Windows machine: **500 students, 17.9 s cold, 36 ms/pdf**. Two things worth knowing before trusting that number on the college's server:
+
+- Going from `WORKER_PAGES=2` to `16` only cut per-PDF time by about a third, nowhere near the ~8x tab count would suggest. The likely reason: `packages/db/src/client.ts` creates the Postgres pool with no `max`, so node-postgres defaults to 10 connections, while `workerRenderConcurrency()` (`pages * 2`) asks for 32 concurrent exports at `WORKER_PAGES=16` — past `WORKER_PAGES=5` the DB pool is probably the real ceiling, not Chromium. Not yet fixed; raising that `max` is the first thing to try if more tabs still underperform on real hardware.
+- - Headless Chromium's PDF printing measured meaningfully slower on Windows than in the 2-core Linux sandbox used for the earlier runs, even at matched tab counts, independent of core count or power settings. Worth re-measuring on whatever OS the college server actually runs before trusting a Windows dev machine's numbers.
+
 ## Tests
 
 `pnpm -F @aecfolio/api test` runs against **real Postgres**. There is no mocked database and no in-memory substitute: the status CHECKs, the unique constraints and the audit-log immutability trigger are exactly what several of these tests assert.

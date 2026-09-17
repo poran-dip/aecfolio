@@ -9,7 +9,10 @@
     "start": "dotenv-run -- node dist/index.js",
     "typecheck": "tsc",
     "test": "dotenv-run -- vitest run",
-    "test:watch": "dotenv-run -- vitest"
+    "test:watch": "dotenv-run -- vitest",
+    "bench:cold": "dotenv-run -- tsx scripts/bench-cold.ts",
+    "bench:warm": "dotenv-run -- tsx scripts/bench-warm.ts",
+    "bench:cleanup": "dotenv-run -- tsx scripts/bench-cleanup.ts"
   },
   "dependencies": {
     "@aecfolio/config": "workspace:*",
