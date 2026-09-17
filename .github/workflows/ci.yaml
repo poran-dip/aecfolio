@@ -1,4 +1,4 @@
-name: "Lint and Typecheck PRs"
+name: "Lint, Typecheck and Test PRs"
 
 on:
   pull_request
@@ -6,9 +6,26 @@ on:
 jobs:
   lint:
     runs-on: ubuntu-latest
+    env:
+      DATABASE_URL: postgresql://aecfolio:change-me@localhost:15432/aecfolio
+      S3_ENDPOINT: http://localhost:3900
+      S3_PUBLIC_ENDPOINT: http://localhost:3900
+      S3_REGION: garage
+      S3_BUCKET: storage
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+
+      - name: Generate throwaway service secrets
+        run: |
+          {
+            echo "S3_ACCESS_KEY_ID=GK$(openssl rand -hex 12)"
+            echo "S3_SECRET_ACCESS_KEY=$(openssl rand -hex 32)"
+            echo "GARAGE_RPC_SECRET=$(openssl rand -hex 32)"
+          } >> "$GITHUB_ENV"
+
+      - name: Start Postgres and Garage
+        run: docker compose -f compose.dev.yml up -d --wait
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -33,3 +50,7 @@ jobs:
 
       - name: Run tests
         run: pnpm test
+
+      - name: Service logs on failure
+        if: failure()
+        run: docker compose -f compose.dev.yml logs --tail 100

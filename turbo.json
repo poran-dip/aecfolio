@@ -19,6 +19,18 @@
       "cache": true,
       "inputs": ["src/**", "vitest.config.ts"]
     },
+    "@aecfolio/api#test": {
+      "dependsOn": ["^build"],
+      "cache": true,
+      "inputs": ["src/**", "vitest.config.ts"],
+      "passThroughEnv": [
+        "DATABASE_URL",
+        "TEST_DATABASE_URL",
+        "ALLOW_UNSAFE_TEST_DB",
+        "S3_*",
+        "TEST_S3_BUCKET"
+      ]
+    },
     "typecheck": {
       "dependsOn": ["^build", "^typecheck"],
       "cache": false
