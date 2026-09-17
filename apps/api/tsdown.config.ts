@@ -11,7 +11,7 @@ export default defineConfig({
   treeshake: true,
   deps: {
     neverBundle: ["pg"],
-    alwaysBundle: ["@aecfolio/db", "@aecfolio/shared", "@aecfolio/ui"],
+    alwaysBundle: [/^@aecfolio\/(db|shared|ui)(\/|$)/],
   },
   target: false,
 });
