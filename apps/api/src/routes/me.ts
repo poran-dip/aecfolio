@@ -1,5 +1,6 @@
 import { studentsTable, usersTable } from "@aecfolio/db";
 import {
+  Capability,
   UploadPurpose,
   updateStudentProfileSchema,
   updateUserSchema,
@@ -8,7 +9,6 @@ import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getFacultyForUser, getStudentForUser } from "../lib/actor";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import {
   loadStudentProfile,

@@ -8,6 +8,7 @@ import {
 import {
   Branch,
   bulkReviewSchema,
+  Capability,
   reviewDecisionSchema,
   VerificationStatus,
 } from "@aecfolio/shared";
@@ -16,7 +17,6 @@ import { unionAll } from "drizzle-orm/pg-core";
 import { Hono } from "hono";
 import { z } from "zod";
 import { getActorDepartment } from "../lib/actor";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";
 import { fail, getUser, ok } from "../lib/response";

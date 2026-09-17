@@ -1,5 +1,6 @@
 import { achievementsTable } from "@aecfolio/db";
 import {
+  Capability,
   createAchievementSchema,
   UploadPurpose,
   updateAchievementSchema,
@@ -7,7 +8,6 @@ import {
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { projectReviewable, viewForActor } from "../lib/profile";

@@ -1,7 +1,6 @@
-import { Role } from "@aecfolio/shared";
+import { Capability, hasCapability, Role } from "@aecfolio/shared";
 import type { Context } from "hono";
 import { getStudentForUser } from "./actor";
-import { Capability, hasCapability } from "./capabilities";
 import { fail } from "./response";
 import type { Actor } from "./session";
 

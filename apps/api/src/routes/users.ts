@@ -1,16 +1,17 @@
 import { usersTable } from "@aecfolio/db";
-import { Role, setUserRoleSchema } from "@aecfolio/shared";
-import { and, count, desc, eq, inArray, isNull, type SQL } from "drizzle-orm";
-import { Hono } from "hono";
-import { z } from "zod";
-import { AuditAction, AuditEntity, createAuditLog } from "../lib/audit";
 import {
   Capability,
   canChangeRole,
   canManageStaffWithRole,
   hasCapability,
+  Role,
   STAFF_ROLES,
-} from "../lib/capabilities";
+  setUserRoleSchema,
+} from "@aecfolio/shared";
+import { and, count, desc, eq, inArray, isNull, type SQL } from "drizzle-orm";
+import { Hono } from "hono";
+import { z } from "zod";
+import { AuditAction, AuditEntity, createAuditLog } from "../lib/audit";
 import { db } from "../lib/db";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";
 import { fail, getUser, ok, paginated } from "../lib/response";

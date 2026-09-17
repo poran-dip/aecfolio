@@ -1,5 +1,5 @@
+import { type Capability, hasCapability } from "@aecfolio/shared";
 import type { MiddlewareHandler } from "hono";
-import { type Capability, hasCapability } from "../lib/capabilities";
 import { fail } from "../lib/response";
 import type { AppEnv } from "../types/context";
 

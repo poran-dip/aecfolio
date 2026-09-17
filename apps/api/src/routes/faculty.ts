@@ -1,6 +1,8 @@
 import { auditLogsTable, facultyTable, usersTable } from "@aecfolio/db";
 import {
   Branch,
+  Capability,
+  canManageStaffWithRole,
   createFacultySchema,
   Role,
   updateFacultySchema,
@@ -9,7 +11,6 @@ import { and, count, desc, eq, isNull, type SQL } from "drizzle-orm";
 import { Hono } from "hono";
 import { z } from "zod";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability, canManageStaffWithRole } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { constraintOf, pgMessage } from "../lib/db-error";
 import { paginationQuerySchema, toOffset, toPage } from "../lib/pagination";

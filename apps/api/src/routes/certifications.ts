@@ -1,5 +1,6 @@
 import { certificationsTable } from "@aecfolio/db";
 import {
+  Capability,
   createCertificationSchema,
   UploadPurpose,
   updateCertificationSchema,
@@ -7,7 +8,6 @@ import {
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
 import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
-import { Capability } from "../lib/capabilities";
 import { db } from "../lib/db";
 import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { projectReviewable, viewForActor } from "../lib/profile";

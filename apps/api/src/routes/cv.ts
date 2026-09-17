@@ -7,6 +7,7 @@ import {
 } from "@aecfolio/db";
 import {
   attachmentHeader,
+  Capability,
   CvExportJobStatus,
   CvExportKind,
   type CvSectionsConfig,
@@ -20,7 +21,6 @@ import {
 import { STANDARD_TEMPLATE_ID } from "@aecfolio/ui/manifests";
 import { and, desc, eq, inArray, isNull } from "drizzle-orm";
 import { type Context, Hono } from "hono";
-import { Capability } from "../lib/capabilities";
 import { loadCvSources } from "../lib/cv/data";
 import {
   exportCv,
