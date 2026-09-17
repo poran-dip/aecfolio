@@ -24,13 +24,21 @@ Browsers upload proof and avatars straight to Garage with a presigned PUT, and d
 
 Three things in that block are load-bearing:
 
-- **`proxy_pass` has no URI part.** nginx passes the path through untouched. A signature covers the path, so rewriting `/storage/` away would invalidate every URL.
+- **`proxy_pass` has no URI part.** The upstream variable holds only a scheme, host and port, so nginx passes the original request URI, query string included, through untouched. A signature covers the path, so rewriting `/storage/` away would invalidate every URL.
 - **`Host` is `$http_host`, not `$host`.** The signature also covers the host, including a port if the browser used one. `$host` drops the port.
 - **The bucket name is fixed.** `compose.yml` hardcodes `S3_BUCKET: storage` and `GARAGE_DEFAULT_BUCKET: storage` rather than reading them from `.env`, because this location block cannot follow a rename.
 
 Request buffering is off so an upload streams to Garage instead of spooling to disk first. The size cap is enforced twice upstream of this: the signature pins the exact `Content-Length` the API agreed to, and the API checks the stored object's size again before it will attach the key to anything.
 
 Being public does not make the bucket readable. Garage refuses any request without a valid signature, and only the API holds the key.
+
+## Upstreams are resolved per request
+
+`proxy_pass` points at variables (`$api_upstream`, `$garage_upstream`, `$web_upstream`) with `resolver 127.0.0.11`, Docker's embedded DNS, rather than at `http://web:3000` directly. This is deliberate, and reverting it brings back a 502.
+
+With a literal hostname, nginx looks `web` up once when it starts and keeps that IP for the life of the process. `docker compose up -d --build` recreates `api` and `web` whenever their images change, and a recreated container usually gets a new IP, but nginx's own config is unchanged, so compose leaves the nginx container running. nginx then sends every request to an address nothing is listening on, and the whole site returns 502 while every container reports healthy. With a variable, nginx asks the resolver again, caching the answer for `valid=10s`, so a recreated container is picked up within seconds.
+
+`ipv6=off` because the compose network has no IPv6 and a AAAA lookup only adds a failed attempt. If you add an upstream, give it a `set` at server level like the others, not a literal hostname in `proxy_pass`.
 
 ## `server_name _`
 

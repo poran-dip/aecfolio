@@ -1,14 +1,4 @@
-import type { ApiError, ApiResponse, PaginatedData } from "@aecfolio/shared";
-import { apiBase } from "./config";
-
-function resolveUrl(url: string): string {
-  if (/^https?:\/\//.test(url)) return url;
-  return `${apiBase}${url.startsWith("/") ? "" : "/"}${url}`;
-}
-
-async function request(url: string, options?: RequestInit): Promise<Response> {
-  return fetch(resolveUrl(url), { credentials: "include", ...options });
-}
+import type { ApiResponse } from "@aecfolio/shared";
 
 export class ApiErrorWithDetails extends Error {
   code: string;
@@ -22,53 +12,11 @@ export class ApiErrorWithDetails extends Error {
   }
 }
 
-export async function fetchApi<T>(
-  url: string,
-  options?: RequestInit,
-): Promise<T> {
-  const res = await request(url, options);
-  const json: ApiResponse<T> = await res.json();
-
-  if (!json.success) {
-    const error = json as unknown as { error: ApiError["error"] };
-    throw new ApiErrorWithDetails(
-      error.error.message,
-      error.error.code,
-      error.error.details,
-    );
-  }
-
-  return json.data;
-}
-
-export async function fetchApiPaginated<T>(
-  url: string,
-  options?: RequestInit,
-): Promise<PaginatedData<T>> {
-  const res = await request(url, options);
-  const json: ApiResponse<PaginatedData<T>> = await res.json();
-
-  if (!json.success) {
-    const error = json as unknown as { error: ApiError["error"] };
-    throw new ApiErrorWithDetails(
-      error.error.message,
-      error.error.code,
-      error.error.details,
-    );
-  }
-
-  return json.data;
-}
-
 export async function parseApi<T>(res: Response): Promise<T> {
-  const json: ApiResponse<T> = await res.json();
+  const json = (await res.json()) as ApiResponse<T>;
   if (!json.success) {
-    const error = json as unknown as { error: ApiError["error"] };
-    throw new ApiErrorWithDetails(
-      error.error.message,
-      error.error.code,
-      error.error.details,
-    );
+    const { error } = json;
+    throw new ApiErrorWithDetails(error.message, error.code, error.details);
   }
   return json.data;
 }

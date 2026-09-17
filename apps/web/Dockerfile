@@ -18,6 +18,8 @@ COPY packages/shared ./packages/shared
 COPY packages/ui ./packages/ui
 
 RUN pnpm --filter @aecfolio/config build \
+  && pnpm --filter @aecfolio/shared build \
+  && pnpm --filter @aecfolio/ui build \
   && pnpm --filter @aecfolio/web build
 
 FROM node:24-alpine

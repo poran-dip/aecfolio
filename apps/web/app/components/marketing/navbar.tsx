@@ -1,32 +1,20 @@
-import { Link, useRouteLoaderData } from "react-router";
-import { SignIn } from "~/components/auth-components";
-import ThemeToggle from "~/components/theme-toggle";
+import { Link } from "react-router";
+import { Logo } from "~/components/brand/logo";
 import { Button } from "~/components/ui/button";
-import type { loader } from "~/routes/marketing/route";
+import { SignInButton } from "./sign-in-button";
 
-export function MarketingNavbar() {
-  const data = useRouteLoaderData<typeof loader>("routes/marketing/route");
-  const session = data?.session;
-
+export function Navbar({ signedIn }: { signedIn: boolean }) {
   return (
-    <header className="fixed top-0 w-full z-30 flex items-center justify-between px-3 sm:px-6 h-16 bg-background/60 backdrop-blur-sm shadow-sm">
-      <Link to="/" className="flex items-center gap-3">
-        <img src="/logo.png" alt="AEC logo" className="w-7 h-7" />
-        <span className="text-lg font-bold text-foreground/80 tracking-wide">
-          AECFolio
-        </span>
-      </Link>
-
-      <div className="flex items-center gap-2 sm:gap-3">
-        {session ? (
-          <Link to="/dashboard">
-            <Button className="cursor-pointer">Open Dashboard</Button>
-          </Link>
+    <header className="sticky top-0 z-40 bg-surface/90 backdrop-blur-md shadow-md">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex h-16 items-center justify-between gap-4">
+        <Logo />
+        {signedIn ? (
+          <Button asChild size="sm">
+            <Link to="/dashboard">Dashboard</Link>
+          </Button>
         ) : (
-          <SignIn />
+          <SignInButton size="sm" />
         )}
-
-        <ThemeToggle />
       </div>
     </header>
   );

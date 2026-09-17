@@ -20,6 +20,7 @@
   --color-primary-ink: var(--color-white);
   --color-primary-text: var(--color-turquoise-700);
   --color-primary-surface: var(--color-turquoise-50);
+  --color-primary-surface-strong: var(--color-turquoise-100);
   --color-primary-line: var(--color-turquoise-200);
 
   --color-accent: var(--color-red-500);

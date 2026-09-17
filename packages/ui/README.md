@@ -2,7 +2,7 @@
 
 The design system and the CV templates. One place where visual decisions live, so a second web app — an alumni portal, say — inherits them rather than reinventing them.
 
-Two consumers today: `apps/worker` renders a template to a PDF, and `apps/web` will import the app stylesheet in Phase 6.
+Two consumers today: `apps/worker` renders a template to a PDF, and `apps/web` imports the app stylesheet and the icons.
 
 ```bash
 src/
@@ -126,7 +126,7 @@ Every icon takes one prop, `className`, and nothing else. Size comes from the cl
 
 `socialIcon(title)` picks the icon for a social link from its free-text title. The map is keyed off `SOCIAL_PLATFORMS` in `@aecfolio/shared`, so adding a platform there fails to typecheck here until it has an icon — which is the only way a social link on a CV cannot end up unlabelled. An unrecognised title is normal, not an error, and gets the generic link mark.
 
-`apps/web` keeps its own icon library. This constraint is about the render path the worker uses, not about the app.
+The icons have their own entry point, `@aecfolio/ui/icons`, so a web app can use the brand marks without pulling in the CV templates. `apps/web` uses these for brand icons and `lucide-react` for UI glyphs. The no-library constraint is about the render path the worker uses, not about the app.
 
 ---
 
