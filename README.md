@@ -34,6 +34,19 @@ Builds and runs every service behind nginx on port 80. To point it at a real dom
 
 `DATABASE_URL` is ignored in production; compose builds its own connection string from the `POSTGRES_*` values.
 
+### Published images
+
+Every push to `main` publishes `ghcr.io/poran-dip/aecfolio-{api,web,worker,migrator}` (`linux/amd64`), tagged `latest` and `sha-<short commit>`. `compose.yml` names these images next to its `build:` sections, so the same file serves both ways of running it: `docker compose up -d --build` builds from source and tags the result with those names, while a server pulls instead:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Pin a release with `AECFOLIO_TAG=sha-<short commit>` in `.env`; it defaults to `latest`. A server still needs a checkout (or copy) of `compose.yml`, `infra/nginx/default.conf` and `infra/garage/garage.toml`, which are mounted rather than baked into images.
+
+Two workflows keep the images honest. `.github/workflows/docker.yaml` builds all four on every PR, boots this stack from them with throwaway secrets (`docker compose up --wait`, so a failed migration or healthcheck fails the run), requests `/` and `/api/health` through nginx, checks the worker launches Chromium and accepts its secret, and fails if the api or worker bundle imports any workspace package other than `@aecfolio/config` at runtime. `.github/workflows/publish.yaml` builds the same Dockerfiles on `main` and pushes. Both share a per-image GitHub Actions layer cache, so a PR reuses what `main` last built.
+
 ### Which `.env` values go where
 
 `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB` initialise the Postgres container in both stacks, and in production also build the API's connection string. `DATABASE_URL` is read only by processes on your host — `pnpm dev`, `db:migrate`, `db:studio`, `bootstrap`. Its credentials must match the `POSTGRES_*` values, since both address the same database by different routes: `localhost:15432` from outside, `postgres:5432` from within.
