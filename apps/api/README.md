@@ -180,6 +180,12 @@ The storage tests run against **real Garage** the same way. The suite uses `<S3_
 
 Only the session lookup is substituted. `createApp({ sessionResolver })` lets a test act as a caller of a known role while the whole middleware, capability, handler and database stack runs for real — the alternative being an OAuth round trip in every authorization test.
 
+### In CI, and without a `.env`
+
+Locally the variables come from `.env`, which `dotenv-run` reads inside the test process. Anywhere without a `.env`, CI included, they have to come from the shell, and Turbo runs tasks in strict env mode, which strips every variable a task does not declare. That is why `@aecfolio/api#test` in `turbo.json` lists `DATABASE_URL`, `S3_*` and the `TEST_*` overrides under `passThroughEnv`. They are declared for the api's test task only, not the generic one: `packages/config`'s tests assert that missing variables throw, and would fail if the real values reached them.
+
+`.github/workflows/ci.yaml` starts the same `compose.dev.yml` services with `docker compose up --wait`, generates throwaway Garage keys for that run, and sets the rest as job env. It needs no repository secrets.
+
 ## Build note
 
 `packages/shared` is a built package. `apps/api` bundles it into `dist`, and the declaration bundler cannot compile a dependency's TypeScript source from inside this package's `tsconfig`, so shared has to ship its own `.d.mts`. If shared ever goes back to being source-only, `pnpm -F @aecfolio/api build` fails with `tsgo did not generate dts file`.
