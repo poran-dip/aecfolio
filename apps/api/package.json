@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "dotenv-run -- tsx watch src/index.ts",
     "build": "tsdown",
-    "start": "dotenv-run -- node dist/index.js",
+    "start": "dotenv-run -- node dist/index.mjs",
     "typecheck": "tsc",
     "test": "dotenv-run -- vitest run",
     "test:watch": "dotenv-run -- vitest",
