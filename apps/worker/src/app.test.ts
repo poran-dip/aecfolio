@@ -62,7 +62,7 @@ afterAll(async () => {
   await pool.close();
 });
 
-describe("authentication (C04)", () => {
+describe("authentication", () => {
   it("refuses a render with no secret", async () => {
     const res = await render({ data: makeCvData() }, null);
     expect(res.status).toBe(401);
@@ -106,7 +106,7 @@ describe("render requests", () => {
   });
 });
 
-describe("fonts (U05)", () => {
+describe("fonts", () => {
   it("embeds Outfit in the PDF rather than falling back to a system face", async () => {
     const pdf = await readPdf(await renderPdfOf(makeCvData()));
     expect(pdf.embedsFont("Outfit")).toBe(true);
@@ -139,7 +139,7 @@ describe("the verified mark in the PDF", () => {
   });
 });
 
-describe("no network from inside Chromium (C03)", () => {
+describe("no network from inside Chromium", () => {
   let server: Server;
   let hits: string[];
   let origin: string;

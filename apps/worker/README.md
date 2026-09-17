@@ -41,11 +41,11 @@ Measured on a 2-core sandbox with the standard template's fixture: the old path 
 
 ## Chromium makes no network requests
 
-Every request a tab makes is intercepted, and anything that is not a `data:` URL is aborted. An `<img src="http://api:3002/...">` in a template, a stylesheet `url()`, a link prefetch — none of them leave the container. This is C03's fix: there is no fetch path to harden, because there is no fetch. The photo arrives already inlined by the API, and a test runs a local HTTP server and asserts it receives nothing while a CV pointing at it renders.
+Every request a tab makes is intercepted, and anything that is not a `data:` URL is aborted. An `<img src="http://api:3002/...">` in a template, a stylesheet `url()`, a link prefetch — none of them leave the container. There is no fetch path to harden, because there is no fetch. The photo arrives already inlined by the API, and a test runs a local HTTP server and asserts it receives nothing while a CV pointing at it renders.
 
 ## Fonts
 
-The shell document embeds the four Outfit faces from `public/fonts/outfit` as base64 `@font-face` rules. A `data:` or shell document cannot resolve a relative URL, which is why the old `/fonts/*` static route never worked (U05). Because the shell loads once per tab, the ~300 KB of font data is parsed once per tab rather than once per PDF. A test asserts Outfit is embedded in the output.
+The shell document embeds the four Outfit faces from `public/fonts/outfit` as base64 `@font-face` rules. A `data:` or shell document cannot resolve a relative URL, which is why the old `/fonts/*` static route never worked. Because the shell loads once per tab, the ~300 KB of font data is parsed once per tab rather than once per PDF. A test asserts Outfit is embedded in the output.
 
 ## The render version
 
