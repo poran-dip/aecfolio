@@ -1,87 +1,66 @@
-import { Download, FileText, LogIn, Mail, UserPlus } from "lucide-react";
-import { Badge } from "~/components/ui/badge";
-import { Card, CardContent } from "~/components/ui/card";
+import { m } from "motion/react";
 
 const steps = [
   {
-    icon: Mail,
-    title: "Get your college email",
-    description:
-      "You'll need an active @aec.ac.in email address. Only accounts on the college domain are permitted to access AECFolio.",
+    title: "Sign in with your college email",
+    body: "Sign in with your college Google account ending in @aec.ac.in.",
   },
   {
-    icon: UserPlus,
-    title: "Wait for your account to be created",
-    description:
-      "Your department faculty advisor will create your AECFolio account. You'll receive an email notification once it's ready — no action needed on your end.",
-  },
-  {
-    icon: LogIn,
-    title: "Sign in with Google",
-    description:
-      "Once your account is set up, sign in using your @aec.ac.in email via Google. No passwords to remember.",
-  },
-  {
-    icon: FileText,
     title: "Build your profile",
-    description:
-      "Fill in your academic history, projects, skills, and internship experience. Your CGPA and academic records will be verified and locked by your faculty advisor.",
+    body: "Add your semester results, projects, experience, certifications and achievements, with proof where it applies.",
   },
   {
-    icon: Download,
-    title: "Download your CV in one click",
-    description:
-      "Pick the sections you want to include, select your experiences and projects, choose a format, and download a clean, department-branded PDF resume.",
+    title: "Get verified and export your CV",
+    body: "The college reviews your results and certificates. Verified entries are marked on every CV you export.",
   },
 ];
 
-const HowItWorksSection = () => {
+export function HowItWorks() {
   return (
-    <section
-      id="how-it-works"
-      className="py-24 px-4 flex flex-col items-center gap-12 bg-background/60 backdrop-blur-sm"
+    <m.section
+      aria-labelledby="how-it-works"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-xl border border-line bg-surface-raised p-5 shadow-sm sm:p-6"
     >
-      <div className="flex flex-col items-center gap-3 text-center">
-        <Badge>How it works</Badge>
-        <p className="text-sm text-foreground max-w-md">
-          Getting started with AECFolio is straightforward. Here's everything
-          you need to know.
-        </p>
-      </div>
-
-      <div className="flex flex-col w-full max-w-md gap-0">
+      <h2
+        id="how-it-works"
+        className="text-sm font-semibold uppercase tracking-wider text-primary-text"
+      >
+        How it works
+      </h2>
+      <ol className="mt-5 flex flex-col">
         {steps.map((step, index) => (
-          <div key={step.title} className="flex gap-4">
-            {/* Left: number + connector line */}
+          <m.li
+            key={step.title}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.4,
+              delay: 0.3 + index * 0.08,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="group relative flex gap-3.5 pb-5 last:pb-0"
+          >
             <div className="flex flex-col items-center">
-              <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-xs font-bold shrink-0">
+              <span className="grid size-7 shrink-0 place-items-center rounded-full border border-primary-line bg-primary-surface text-sm font-semibold text-primary-text">
                 {index + 1}
-              </div>
-              {index < steps.length - 1 && (
-                <div className="w-px flex-1 bg-border my-2" />
-              )}
+              </span>
+              <span
+                aria-hidden="true"
+                className="mt-1.5 w-px flex-1 bg-line group-last:hidden"
+              />
             </div>
-
-            {/* Right: content */}
-            <Card className="bg-background/40 backdrop-blur-sm border-border mb-6 flex-1">
-              <CardContent className="px-3 py-1 flex flex-col gap-2">
-                <div className="flex items-center gap-2 text-foreground">
-                  <step.icon className="w-5 h-5" />
-                  <p className="text-sm font-semibold">{step.title}</p>
-                </div>
-                <p className="text-sm text-foreground/70">{step.description}</p>
-              </CardContent>
-            </Card>
-          </div>
+            <div className="flex flex-col gap-1 pt-0.5">
+              <h3 className="text-base font-semibold text-ink">{step.title}</h3>
+              <p className="text-sm leading-relaxed text-ink-muted">
+                {step.body}
+              </p>
+            </div>
+          </m.li>
         ))}
-
-        {/* Closing note */}
-        <p className="text-sm text-center text-foreground/70 italic">
-          All the best for your internships and placements!
-        </p>
-      </div>
-    </section>
+      </ol>
+    </m.section>
   );
-};
-
-export default HowItWorksSection;
+}
