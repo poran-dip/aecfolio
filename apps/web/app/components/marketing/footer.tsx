@@ -1,111 +1,106 @@
-import { Briefcase, Building2, Info, Phone } from "lucide-react";
-import { Link, useRouteLoaderData } from "react-router";
-import { SignIn } from "~/components/auth-components";
-import { Button } from "~/components/ui/button";
-import { Separator } from "~/components/ui/separator";
-import type { loader } from "~/routes/marketing/route";
+import { ArrowUpRight } from "lucide-react";
+import type { ReactNode } from "react";
+import { Link } from "react-router";
+import { Logo } from "~/components/brand/logo";
+import { REPO_URL } from "~/lib/links";
 
-export function MarketingFooter() {
-  const data = useRouteLoaderData<typeof loader>("routes/marketing/route");
-  const session = data?.session;
+type FooterLink = { label: string; to: string; external?: boolean };
 
+const columns: { title: string; links: FooterLink[] }[] = [
+  {
+    title: "AECFolio",
+    links: [
+      { label: "Home", to: "/" },
+      { label: "About", to: "/about" },
+      { label: "Source code", to: REPO_URL, external: true },
+    ],
+  },
+  {
+    title: "College",
+    links: [
+      {
+        label: "Assam Engineering College",
+        to: "https://aec.ac.in",
+        external: true,
+      },
+      {
+        label: "Training & Placement Cell",
+        to: "https://placement.aec.ac.in",
+        external: true,
+      },
+    ],
+  },
+];
+
+function FooterAnchor({ link }: { link: FooterLink }) {
+  const className =
+    "text-sm text-ink transition-colors hover:text-primary-text";
+  const content: ReactNode = (
+    <>
+      {link.label}
+      {link.external && (
+        <ArrowUpRight className="ml-1 inline size-3.5 align-[-2px] text-ink-subtle" />
+      )}
+    </>
+  );
+
+  if (link.external) {
+    return (
+      <a
+        href={link.to}
+        target="_blank"
+        rel="noreferrer noopener"
+        className={className}
+      >
+        {content}
+      </a>
+    );
+  }
   return (
-    <footer className="w-full bg-background/60 border-t border-border/60 px-4 sm:px-6 pt-12 pb-8">
-      {/* Top */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-        {/* Branding */}
-        <div className="flex flex-col items-start gap-4">
-          {/* Logo + Name */}
-          <Link to="/" className="inline-flex items-center gap-3 w-fit">
-            <img src="/logo.png" alt="AEC" className="w-7 h-7" />
-            <h3 className="text-lg font-bold tracking-wide">AECFolio</h3>
-          </Link>
+    <Link to={link.to} className={className}>
+      {content}
+    </Link>
+  );
+}
 
-          {/* Description */}
-          <p className="text-sm text-foreground/70">
-            The student information and portfolio system for Assam Engineering
-            College.
-          </p>
+export function Footer() {
+  return (
+    <footer className="border-t border-line bg-surface">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-[3fr_1fr_1fr]">
+          <div className="flex flex-col gap-3 md:col-span-1">
+            <Logo />
+            <p className="max-w-md text-sm leading-relaxed text-ink-muted">
+              The student portfolio and records system of Assam Engineering
+              College, Guwahati.
+            </p>
+          </div>
+          {columns.map((column) => (
+            <div key={column.title} className="flex flex-col gap-3">
+              <h2 className="text-sm font-semibold text-ink">{column.title}</h2>
+              <ul className="flex flex-col gap-2.5">
+                {column.links.map((link) => (
+                  <li key={link.label}>
+                    <FooterAnchor link={link} />
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
 
-          {/* CTAs */}
-          {session ? (
-            <Link to="/dashboard">
-              <Button className="cursor-pointer">Open Dashboard</Button>
+        <div className="mt-10 flex flex-col gap-2 border-t border-line pt-6 text-sm text-ink-subtle sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} AECFolio</p>
+          <p>
+            Built and maintained by{" "}
+            <Link
+              to="/about#credits"
+              className="font-medium text-ink transition-colors hover:text-primary-text"
+            >
+              Poran Dip Boruah
             </Link>
-          ) : (
-            <SignIn extended />
-          )}
+          </p>
         </div>
-
-        {/* Links */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-0 space-y-8 sm:gap-4 sm:space-y-0">
-          {/* About */}
-          <div className="flex flex-col gap-4">
-            <p className="text-sm font-bold">ABOUT</p>
-            <ul className="flex flex-col gap-3 text-sm text-foreground/70">
-              <li>
-                <Link
-                  to="https://aec.ac.in"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="flex items-center gap-2 hover:text-foreground transition-colors"
-                >
-                  <Building2 className="w-4 h-4 shrink-0" />
-                  <p>About AEC</p>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/info"
-                  className="flex items-center gap-2 hover:text-foreground transition-colors"
-                >
-                  <Info className="w-4 h-4 shrink-0" />
-                  <p>About AECFolio</p>
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div className="flex flex-col gap-4">
-            <p className="text-sm font-bold">RESOURCES</p>
-            <ul className="flex flex-col gap-3 text-sm text-foreground/70">
-              <li>
-                <Link
-                  to="https://placement.aec.ac.in/"
-                  target="_blank"
-                  rel="noreferrer noopener"
-                  className="flex items-center gap-2 hover:text-foreground transition-colors"
-                >
-                  <Briefcase className="w-4 h-4 shrink-0" />
-                  <p>Placement Cell</p>
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/info#get-in-touch"
-                  className="flex items-center gap-2 hover:text-foreground transition-colors"
-                >
-                  <Phone className="w-4 h-4 shrink-0" />
-                  <p>Contact Us</p>
-                </Link>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </div>
-
-      <Separator className="mt-12 mb-8" />
-
-      {/* Bottom */}
-      <div className="flex flex-col sm:flex-row items-center sm:justify-between gap-2 px-4">
-        <p className="text-sm text-foreground/70">
-          © {new Date().getFullYear()} AECFolio. All Rights Reserved.
-        </p>
-
-        <p className="text-center sm:text-start text-sm text-foreground/70">
-          Designed & developed by the CSE batch of 2027, AEC.
-        </p>
       </div>
     </footer>
   );
