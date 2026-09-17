@@ -117,7 +117,7 @@ A user's first Google sign-in copies their Google profile picture into the bucke
 
 ## CV export
 
-**Nothing about a CV's content comes from the request** (C01). A request names a template and, for a student's own export, a section config and options. The API loads the student from the database and shapes the data itself.
+**Nothing about a CV's content comes from the request**. A request names a template and, for a student's own export, a section config and options. The API loads the student from the database and shapes the data itself.
 
 | Route                              | Who                                                      | What                                                                                                                                                                                             |
 | ---------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
