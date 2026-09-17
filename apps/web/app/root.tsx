@@ -10,8 +10,8 @@ import {
 
 import type { Route } from "./+types/root";
 import "./app.css";
-import { Toaster } from "sonner";
-import { TooltipProvider } from "./components/ui/tooltip";
+import { Button } from "./components/ui/button";
+import { Container } from "./components/ui/container";
 import { getPublicEnv } from "./lib/env.server";
 
 export function loader() {
@@ -19,16 +19,6 @@ export function loader() {
 }
 
 export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap",
-  },
   {
     rel: "icon",
     type: "image/png",
@@ -56,14 +46,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="theme-color" content="#ffffff" />
         <Meta />
         <Links />
       </head>
       <body>
-        <TooltipProvider>
-          {children}
-          <Toaster />
-        </TooltipProvider>
+        {children}
         <ScrollRestoration />
         <PublicEnvScript />
         <Scripts />
@@ -77,30 +65,37 @@ export default function App() {
 }
 
 export function ErrorBoundary({ error }: Route.ErrorBoundaryProps) {
-  let message = "Oops!";
-  let details = "An unexpected error occurred.";
+  let title = "Something went wrong";
+  let details = "An unexpected error occurred. Please try again in a moment.";
   let stack: string | undefined;
 
   if (isRouteErrorResponse(error)) {
-    message = error.status === 404 ? "404" : "Error";
-    details =
-      error.status === 404
-        ? "The requested page could not be found."
-        : error.statusText || details;
-  } else if (import.meta.env.DEV && error && error instanceof Error) {
+    if (error.status === 404) {
+      title = "Page not found";
+      details =
+        "The page you are looking for does not exist or has been moved.";
+    } else if (error.statusText) {
+      details = error.statusText;
+    }
+  } else if (import.meta.env.DEV && error instanceof Error) {
     details = error.message;
     stack = error.stack;
   }
 
   return (
-    <main className="pt-16 p-4 container mx-auto">
-      <h1>{message}</h1>
-      <p>{details}</p>
+    <Container className="flex min-h-svh flex-col items-start justify-center gap-4 py-12">
+      <h1 className="text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
+        {title}
+      </h1>
+      <p className="max-w-md text-base text-ink-muted sm:text-lg">{details}</p>
+      <Button asChild>
+        <a href="/">Back to home</a>
+      </Button>
       {stack && (
-        <pre className="w-full p-4 overflow-x-auto">
+        <pre className="w-full overflow-x-auto rounded-lg bg-surface-sunken p-4 text-sm text-ink">
           <code>{stack}</code>
         </pre>
       )}
-    </main>
+    </Container>
   );
 }
