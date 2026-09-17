@@ -13,7 +13,7 @@ export const projectSchema = z.object({
 
 export const createProjectSchema = z.object({
   title: z.string().trim().min(1),
-  description: z.string().trim().min(1),
+  description: z.string().trim(),
   link: z.url().nullable().optional(),
 });
 

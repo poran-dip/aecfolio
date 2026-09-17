@@ -10,7 +10,7 @@ import {
   upsertCvPreferenceSchema,
 } from "./cv";
 import { createExperienceSchema } from "./experience";
-import { createProjectSchema } from "./project";
+import { createProjectSchema, updateProjectSchema } from "./project";
 import { createResultSchema } from "./result";
 import { createSemesterCreditSchemeSchema } from "./semester-credit-scheme";
 import { createSocialSchema } from "./social";
@@ -406,5 +406,49 @@ describe("cv preferences", () => {
         sections: [section],
       }).templateId,
     ).toBe("standard");
+  });
+});
+
+describe("a title is required, a description is not", () => {
+  const cases = [
+    ["project", createProjectSchema, { title: "Portfolio site" }],
+    ["achievement", createAchievementSchema, { title: "Hackathon winner" }],
+    [
+      "experience",
+      createExperienceSchema,
+      { type: "Internship", title: "Intern", organization: "ACME" },
+    ],
+  ] as const;
+
+  for (const [name, schema, rest] of cases) {
+    it(`accepts an empty description on a ${name}`, () => {
+      expect(schema.parse({ ...rest, description: "" }).description).toBe("");
+      expect(schema.parse({ ...rest, description: "   " }).description).toBe(
+        "",
+      );
+    });
+
+    it(`still rejects an empty title on a ${name}`, () => {
+      const titleKey = "title";
+      expect(
+        schema.safeParse({ ...rest, [titleKey]: "", description: "x" }).success,
+      ).toBe(false);
+      expect(
+        schema.safeParse({ ...rest, [titleKey]: "  ", description: "x" })
+          .success,
+      ).toBe(false);
+    });
+  }
+
+  it("keeps a certification's issuer required — it is the queue's evidence", () => {
+    expect(
+      createCertificationSchema.safeParse({ name: "AWS SAA", issuer: "" })
+        .success,
+    ).toBe(false);
+  });
+
+  it("does not default a description on update, so a PATCH cannot wipe one", () => {
+    const parsed = updateProjectSchema.parse({ title: "Renamed" });
+    expect(parsed).not.toHaveProperty("description");
   });
 });

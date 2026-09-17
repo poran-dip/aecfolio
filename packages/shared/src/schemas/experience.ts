@@ -17,7 +17,7 @@ export const createExperienceSchema = z.object({
   type: z.string().trim().min(1),
   title: z.string().trim().min(1),
   organization: z.string().trim().min(1),
-  description: z.string().trim().min(1),
+  description: z.string().trim(),
   date: freeTextDate.nullable().optional(),
 });
 
