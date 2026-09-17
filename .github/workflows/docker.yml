@@ -1,0 +1,133 @@
+name: "Build and Smoke-Test Docker Images"
+
+on:
+  pull_request
+
+concurrency:
+  group: docker-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: migrator
+            dockerfile: packages/db/Dockerfile
+          - image: api
+            dockerfile: apps/api/Dockerfile
+          - image: web
+            dockerfile: apps/web/Dockerfile
+          - image: worker
+            dockerfile: apps/worker/Dockerfile
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: ${{ matrix.dockerfile }}
+          platforms: linux/amd64
+          tags: ghcr.io/poran-dip/aecfolio-${{ matrix.image }}:ci
+          outputs: type=docker,dest=${{ runner.temp }}/${{ matrix.image }}.tar
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,scope=${{ matrix.image }},mode=max
+
+      - name: Upload image
+        uses: actions/upload-artifact@v7
+        with:
+          name: image-${{ matrix.image }}
+          path: ${{ runner.temp }}/${{ matrix.image }}.tar
+          retention-days: 1
+
+  smoke:
+    name: Boot the production stack
+    needs: build
+    runs-on: ubuntu-latest
+    env:
+      AECFOLIO_TAG: ci
+      POSTGRES_USER: aecfolio
+      POSTGRES_DB: aecfolio
+      PUBLIC_ORIGIN: http://localhost
+      GOOGLE_CLIENT_ID: ci-dummy-client-id
+      GOOGLE_CLIENT_SECRET: ci-dummy-client-secret
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Download images
+        uses: actions/download-artifact@v8
+        with:
+          pattern: image-*
+          path: ${{ runner.temp }}/images
+          merge-multiple: true
+
+      - name: Load images
+        run: |
+          for tar in "$RUNNER_TEMP"/images/*.tar; do
+            docker load --input "$tar"
+          done
+
+      - name: Generate throwaway secrets
+        run: |
+          {
+            echo "POSTGRES_PASSWORD=$(openssl rand -hex 16)"
+            echo "BETTER_AUTH_SECRET=$(openssl rand -base64 32)"
+            echo "S3_ACCESS_KEY_ID=GK$(openssl rand -hex 12)"
+            echo "S3_SECRET_ACCESS_KEY=$(openssl rand -hex 32)"
+            echo "GARAGE_RPC_SECRET=$(openssl rand -hex 32)"
+            echo "WORKER_SECRET=$(openssl rand -hex 32)"
+          } >> "$GITHUB_ENV"
+
+      - name: Start the stack
+        run: docker compose up -d --wait --wait-timeout 180 --no-build
+
+      - name: Web through nginx
+        run: curl -fsS --retry 5 --retry-all-errors -o /dev/null http://localhost/
+
+      - name: API through nginx
+        run: curl -fsS --retry 5 --retry-all-errors http://localhost/api/health
+
+      - name: Worker launches Chromium and accepts the shared secret
+        run: |
+          docker compose exec -T worker node -e '
+            const base = "http://127.0.0.1:3001";
+            const check = async (path, init) => {
+              const res = await fetch(base + path, init);
+              if (!res.ok) throw new Error(`${path}: ${res.status} ${await res.text()}`);
+              console.log(path, await res.text());
+            };
+            (async () => {
+              await check("/health");
+              await check("/version", { headers: { authorization: `Bearer ${process.env.WORKER_SECRET}` } });
+            })().catch((err) => { console.error(err); process.exit(1); });
+          '
+
+      - name: Bundles inline every workspace package but config
+        run: |
+          for svc in api worker; do
+            imports=$(docker compose run --rm --no-deps --entrypoint sh "$svc" -c \
+              "grep -ohE '[\"'\'']@aecfolio/[a-z/-]+[\"'\'']' apps/$svc/dist/*.mjs || [ \$? -eq 1 ]")
+            leaked=$(printf '%s\n' "$imports" | tr -d "\"'" | sort -u | grep -vx -e '@aecfolio/config' -e '' || true)
+            if [ -n "$leaked" ]; then
+              echo "::error::$svc bundle imports $leaked at runtime"
+              exit 1
+            fi
+          done
+
+      - name: Stack status and logs on failure
+        if: failure()
+        run: |
+          docker compose ps -a
+          docker compose logs --tail 200
