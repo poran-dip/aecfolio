@@ -41,6 +41,16 @@ Zod strips unknown keys, so a field that is _absent_ from a create schema is a f
 - **`students.status` / `semester` / `rollNo` / `course` / `branch`** — academic record. Absent from `updateStudentProfileSchema` (what a student may change about themselves), present in `updateStudentSchema` (what faculty may change).
 - **`status` / `reviewedBy` / `reviewedAt` / `rejectionReason`** — set by the review handlers via `reviewDecisionSchema`, never by the submitter.
 
+## A title is required, a description is not
+
+`projects.description`, `achievements.description` and `experiences.description` accept the empty string. They are `z.string().trim()` on purpose and **`.min(1)` must not be added back**: a student listing ten projects should be able to name one without writing a paragraph about it, and the templates already skip an empty body — `Markdown` returns `null` for whitespace, so nothing renders a blank block.
+
+The identifying field stays required everywhere, and that asymmetry is what keeps the rest of the system honest. `projects.title`, `achievements.title`, `experiences.title`, `certifications.name`, `socials.title`, `interests.title`, `custom_sections.name` and a custom section entry's `title` are all still `.min(1)`. So is `certifications.issuer`, because it is the evidence the verification queue shows a mod as that claim's `detail` — an empty issuer is a claim with nothing to review. So are `experiences.type` and `experiences.organization`.
+
+This is also what makes the web app's no-save-button model safe. A new entry is a local draft until its title is non-empty, so nothing untitled is ever POSTed, and clearing a title while retyping pauses the autosave rather than writing the blank. There is therefore no such thing as a titleless row in the database, and no filtering for one in the projections, the verification queue or the export builders.
+
+**Neither create schema gives `description` a default.** `update<Entity>Schema` is `.partial()` of create and the update handlers call `.set(body)` directly, so a default would turn every PATCH that happens not to mention a description into one that erases it. The key is required at create time and optional on update; a test in `schemas.test.ts` asserts the absence of the default.
+
 ## Free text with suggestions, not enums
 
 `experiences.type` and `socials.title` are free-text columns (packages/db README, "Enums"). `constants/suggestions.ts` holds the values the UI offers and the platform list that maps a social title to an icon. **Nothing in `schemas/` narrows a field to those values**, and nothing should: a student in a non-tech branch has experience types nobody predicted, and a new coding platform should not need a migration.

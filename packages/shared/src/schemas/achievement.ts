@@ -19,7 +19,7 @@ export const achievementSchema = z.object({
 
 export const createAchievementSchema = z.object({
   title: z.string().trim().min(1),
-  description: z.string().trim().min(1),
+  description: z.string().trim(),
   proofKey: objectKey.nullable().optional(),
 });
 
