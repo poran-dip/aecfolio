@@ -63,6 +63,21 @@ export function formatRelative(
   return RELATIVE.format(Math.round(seconds / 31557600), "year");
 }
 
+const BYTE_UNITS = ["B", "KB", "MB", "GB"];
+
+export function formatBytes(value: number | null | undefined): string {
+  if (value == null || !Number.isFinite(value)) return "—";
+
+  let size = value;
+  let unit = 0;
+  while (size >= 1024 && unit < BYTE_UNITS.length - 1) {
+    size /= 1024;
+    unit += 1;
+  }
+
+  return `${size < 10 && unit > 0 ? size.toFixed(1) : Math.round(size)} ${BYTE_UNITS[unit]}`;
+}
+
 export function formatGpa(value: number | null | undefined): string {
   return typeof value === "number" ? value.toFixed(2) : "—";
 }
