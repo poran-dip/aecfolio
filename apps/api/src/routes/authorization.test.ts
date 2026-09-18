@@ -128,6 +128,12 @@ const ENDPOINTS: Endpoint[] = [
     path: () => "/api/cv/jobs",
   },
   {
+    name: "GET /cv/jobs/:id/failures",
+    capability: Capability.CV_EXPORT_STANDARD,
+    method: "get",
+    path: () => "/api/cv/jobs/missing/failures",
+  },
+  {
     name: "POST /results",
     capability: Capability.RESULT_SUBMIT_SELF,
     method: "post",

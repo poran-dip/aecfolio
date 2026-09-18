@@ -62,6 +62,19 @@ describe("student profile projections", () => {
     expect(achievements[0]).not.toHaveProperty("rejectionReason");
   });
 
+  it("names the reviewer, so a checkmark can say who signed it off", async () => {
+    const s = await scenario();
+
+    for (const actor of [s.faculty.actor, s.mod.actor]) {
+      const res = await asUser(actor).get(`/api/students/${s.student.id}`);
+      const verified = res.body.data.achievements.find(
+        (row: { title: string }) => row.title === "Verified claim",
+      );
+      expect(verified.reviewer.id).toBe(s.mod.actor.id);
+      expect(verified.reviewer.name).toBe(s.mod.actor.name);
+    }
+  });
+
   it("gives mods every status, with rejection reasons", async () => {
     const s = await scenario();
 

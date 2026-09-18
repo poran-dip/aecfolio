@@ -546,6 +546,52 @@ describe("cohort promotion", () => {
       .where(eq(studentsTable.id, finishing.student.id));
     expect(alumni.status).toBe("ALUMNI");
   });
+
+  it("names the missing schemes on a dry run without promoting anyone", async () => {
+    const admin = await createStaff(Role.ADMIN);
+    const { student } = await createStudent({
+      branch: "CSE",
+      admissionYear: 2023,
+      semester: 3,
+    });
+
+    const res = await asUser(admin.actor).post("/api/admin/promotions", {
+      admissionYear: 2023,
+      dryRun: true,
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.dryRun).toBe(true);
+    expect(res.body.data.promoted).toBe(1);
+    expect(res.body.data.missingSchemes).toEqual([
+      { branch: "CSE", semester: 4 },
+    ]);
+
+    const [unmoved] = await db
+      .select({ semester: studentsTable.semester })
+      .from(studentsTable)
+      .where(eq(studentsTable.id, student.id));
+    expect(unmoved.semester).toBe(3);
+  });
+
+  it("counts schemes a dry run was handed, and does not write them", async () => {
+    const admin = await createStaff(Role.ADMIN);
+    await createStudent({ branch: "CSE", admissionYear: 2023, semester: 3 });
+
+    const res = await asUser(admin.actor).post("/api/admin/promotions", {
+      admissionYear: 2023,
+      dryRun: true,
+      creditSchemes: [
+        { branch: "CSE", admissionYear: 2023, semester: 4, totalCredits: 24 },
+      ],
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.body.data.missingSchemes).toHaveLength(0);
+
+    const schemes = await asUser(admin.actor).get("/api/admin/credit-schemes");
+    expect(schemes.body.data.items).toHaveLength(0);
+  });
 });
 
 describe("audit trail", () => {

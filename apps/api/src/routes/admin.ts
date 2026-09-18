@@ -34,6 +34,7 @@ const promoteSchema = z.object({
   branch: z.enum(Branch).optional(),
   creditSchemes: z.array(createSemesterCreditSchemeSchema).optional(),
   requireSchemes: z.boolean().default(true),
+  dryRun: z.boolean().default(false),
 });
 
 const admin = new Hono<AppEnv>()
@@ -150,7 +151,7 @@ const admin = new Hono<AppEnv>()
       const user = getUser(c);
       const body = c.req.valid("json");
 
-      if (body.creditSchemes?.length)
+      if (body.creditSchemes?.length && !body.dryRun)
         for (const scheme of body.creditSchemes)
           await db
             .insert(semesterCreditSchemesTable)
@@ -185,6 +186,7 @@ const admin = new Hono<AppEnv>()
           promoted: 0,
           graduated: 0,
           missingSchemes: [],
+          dryRun: body.dryRun,
           message: "No active students matched that cohort",
         });
 
@@ -213,9 +215,22 @@ const admin = new Hono<AppEnv>()
         existing.map((row) => `${row.branch}:${row.semester}`),
       );
 
+      if (body.dryRun)
+        for (const scheme of body.creditSchemes ?? [])
+          if (scheme.admissionYear === body.admissionYear)
+            have.add(`${scheme.branch}:${scheme.semester}`);
+
       const missingSchemes = [...targets.entries()]
         .filter(([key]) => !have.has(key))
         .map(([, value]) => value);
+
+      if (body.dryRun)
+        return ok(c, {
+          promoted: advancing.length,
+          graduated: graduating.length,
+          missingSchemes,
+          dryRun: true,
+        });
 
       if (missingSchemes.length > 0 && body.requireSchemes)
         return fail(
@@ -272,6 +287,7 @@ const admin = new Hono<AppEnv>()
         promoted: advancing.length,
         graduated: graduating.length,
         missingSchemes,
+        dryRun: false,
       });
     },
   );
