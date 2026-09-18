@@ -1,27 +1,22 @@
-import type { ParsedRow } from "./types";
+import {
+  ADMISSION_YEAR_MAX,
+  ADMISSION_YEAR_MIN,
+  Branch,
+  Course,
+  SEMESTER_MAX,
+  SEMESTER_MIN,
+} from "@aecfolio/shared";
+import type { ImportField, ParsedRow, RowValues } from "./types";
 
-export const COURSES = ["BTECH", "MTECH", "BCA", "MCA"] as const;
-export const BRANCHES = [
-  "CSE",
-  "ETE",
-  "EE",
-  "IE",
-  "ME",
-  "CE",
-  "IPE",
-  "CHE",
-  "CA",
-] as const;
-
-type Course = (typeof COURSES)[number];
-type Branch = (typeof BRANCHES)[number];
+export const COURSES = Object.values(Course);
+export const BRANCHES = Object.values(Branch);
 
 const FIELD_ALIASES: Record<string, string> = {};
 
-const addAliases = (canonical: string, aliases: string[]) => {
-  for (const a of aliases)
-    FIELD_ALIASES[a.toLowerCase().replace(/[\s_\-.]/g, "")] = canonical;
-};
+function addAliases(canonical: string, aliases: string[]) {
+  for (const alias of aliases)
+    FIELD_ALIASES[alias.toLowerCase().replace(/[\s_\-.]/g, "")] = canonical;
+}
 
 addAliases("name", [
   "name",
@@ -29,10 +24,6 @@ addAliases("name", [
   "full name",
   "studentname",
   "student name",
-  "firstname",
-  "first name",
-  "lastname",
-  "last name",
 ]);
 addAliases("email", [
   "email",
@@ -72,20 +63,24 @@ addAliases("semester", [
   "semno",
   "sem no",
 ]);
-addAliases("cgpa", ["cgpa", "gpa", "cpi", "aggregate", "percentage"]);
-addAliases("firstName", [
-  "firstname",
-  "first name",
-  "fname",
-  "given name",
-  "givenname",
+addAliases("admissionYear", [
+  "admissionyear",
+  "admission year",
+  "yearofadmission",
+  "year of admission",
+  "admitted",
+  "batch",
+  "batchyear",
+  "joiningyear",
+  "joining year",
+  "intakeyear",
 ]);
+addAliases("firstName", ["firstname", "first name", "fname", "givenname"]);
 addAliases("lastName", [
   "lastname",
   "last name",
   "lname",
   "surname",
-  "family name",
   "familyname",
 ]);
 
@@ -95,75 +90,134 @@ function normalizeKey(raw: string): string {
 
 function mapColumns(headers: string[]): Record<string, string> {
   const map: Record<string, string> = {};
-  for (const h of headers) {
-    const normalized = normalizeKey(h);
-    if (FIELD_ALIASES[normalized]) map[h] = FIELD_ALIASES[normalized];
+
+  for (const header of headers) {
+    const canonical = FIELD_ALIASES[normalizeKey(header)];
+    if (canonical) map[header] = canonical;
   }
+
   return map;
 }
 
 function normalizeValue(field: string, raw: string): string {
-  const v = raw.trim();
+  const value = raw.trim();
+
   if (field === "course") {
-    const upper = v.toUpperCase();
-    if (upper === "B.TECH" || upper === "BE") return "BTECH";
-    if (upper === "M.TECH" || upper === "ME") return "MTECH";
+    const upper = value.toUpperCase().replace(/[\s.]/g, "");
+    if (upper === "BTECH" || upper === "BE") return Course.BTECH;
+    if (upper === "MTECH" || upper === "ME") return Course.MTECH;
     return upper;
   }
-  if (field === "branch") return v.toUpperCase();
-  return v;
+
+  if (field === "branch") return value.toUpperCase();
+
+  if (field === "admissionYear") {
+    const match = value.match(/\d{4}/);
+    return match ? match[0] : value;
+  }
+
+  return value;
 }
 
-export function validateRow(row: Omit<ParsedRow, "_errors" | "_id">): string[] {
+export function validateRow(row: RowValues): string[] {
   const errors: string[] = [];
+
   if (!row.name.trim()) errors.push("Missing name");
+
   if (!row.email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(row.email))
     errors.push("Invalid email");
+
   if (!row.rollNo.trim()) errors.push("Missing roll number");
-  if (!COURSES.includes(row.course as Course))
+
+  if (!(COURSES as string[]).includes(row.course))
     errors.push(`Invalid course: ${row.course || "empty"}`);
-  if (!BRANCHES.includes(row.branch as Branch))
+
+  if (!(BRANCHES as string[]).includes(row.branch))
     errors.push(`Invalid branch: ${row.branch || "empty"}`);
-  const sem = parseInt(row.semester, 10);
-  if (Number.isNaN(sem) || sem < 1 || sem > 8)
-    errors.push("Semester must be 1–8");
+
+  const semester = Number.parseInt(row.semester, 10);
   if (
-    row.cgpa &&
-    (Number.isNaN(parseFloat(row.cgpa)) ||
-      parseFloat(row.cgpa) < 0 ||
-      parseFloat(row.cgpa) > 10)
+    Number.isNaN(semester) ||
+    semester < SEMESTER_MIN ||
+    semester > SEMESTER_MAX
   )
-    errors.push("CGPA must be 0–10");
+    errors.push(`Semester must be ${SEMESTER_MIN}–${SEMESTER_MAX}`);
+
+  const year = Number.parseInt(row.admissionYear, 10);
+  if (
+    Number.isNaN(year) ||
+    year < ADMISSION_YEAR_MIN ||
+    year > ADMISSION_YEAR_MAX
+  )
+    errors.push(
+      `Admission year must be ${ADMISSION_YEAR_MIN}–${ADMISSION_YEAR_MAX}`,
+    );
+
   return errors;
+}
+
+export function emptyRow(defaults: Partial<RowValues> = {}): ParsedRow {
+  const values: RowValues = {
+    name: "",
+    email: "",
+    rollNo: "",
+    course: "",
+    branch: "",
+    semester: "",
+    admissionYear: "",
+    ...defaults,
+  };
+
+  return {
+    _id: `row-${crypto.randomUUID()}`,
+    ...values,
+    _errors: [],
+  };
+}
+
+export function withErrors(row: ParsedRow): ParsedRow {
+  return { ...row, _errors: validateRow(row) };
+}
+
+export function isBlank(row: ParsedRow): boolean {
+  return (
+    !row.name.trim() &&
+    !row.email.trim() &&
+    !row.rollNo.trim() &&
+    !row.course &&
+    !row.branch &&
+    !row.semester &&
+    !row.admissionYear
+  );
 }
 
 export function parseRawRows(rawRows: Record<string, string>[]): ParsedRow[] {
   if (rawRows.length === 0) return [];
-  const colMap = mapColumns(Object.keys(rawRows[0]));
+  const columns = mapColumns(Object.keys(rawRows[0]));
 
-  return rawRows.map((raw, i) => {
-    const get = (field: string) => {
-      const header = Object.entries(colMap).find(([, f]) => f === field)?.[0];
+  return rawRows.map((raw) => {
+    const read = (field: ImportField | "firstName" | "lastName") => {
+      const header = Object.entries(columns).find(
+        ([, mapped]) => mapped === field,
+      )?.[0];
       return header ? normalizeValue(field, raw[header] ?? "") : "";
     };
 
-    let name = get("name");
+    let name = read("name");
     if (!name) {
-      const first = get("firstName");
-      const last = get("lastName");
-      name = [first, last].filter(Boolean).join(" ");
+      name = [read("firstName"), read("lastName")].filter(Boolean).join(" ");
     }
 
-    const row = {
-      name,
-      email: get("email"),
-      rollNo: get("rollNo"),
-      course: get("course"),
-      branch: get("branch"),
-      semester: get("semester"),
-      cgpa: get("cgpa"),
-    };
-
-    return { _id: `row-${i}-${Date.now()}`, ...row, _errors: validateRow(row) };
+    return withErrors(
+      emptyRow({
+        name,
+        email: read("email"),
+        rollNo: read("rollNo"),
+        course: read("course"),
+        branch: read("branch"),
+        semester: read("semester"),
+        admissionYear: read("admissionYear"),
+      }),
+    );
   });
 }

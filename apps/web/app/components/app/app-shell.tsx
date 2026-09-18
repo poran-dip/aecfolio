@@ -78,6 +78,7 @@ export function AppShell({
       <div className="min-h-svh bg-background">
         {/* Desktop sidebar — full height, the top bar starts where it ends */}
         <aside
+          aria-label="Sidebar"
           className={cn(
             "fixed inset-y-0 left-0 z-40 hidden flex-col border-r border-line bg-surface transition-[width] duration-200 lg:flex",
             collapsed ? "w-16" : "w-60",
