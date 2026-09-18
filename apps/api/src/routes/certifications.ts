@@ -4,6 +4,7 @@ import {
   createCertificationSchema,
   UploadPurpose,
   updateCertificationSchema,
+  VerificationStatus,
 } from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
@@ -77,12 +78,6 @@ const certifications = new Hono<AppEnv>()
         .values({ ...body, studentId: scope.studentId })
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.CREATE,
-        entity: AuditEntity.CERTIFICATION,
-        entityId: certification.id,
-      });
       return ok(c, certification, 201);
     },
   )
@@ -175,13 +170,14 @@ const certifications = new Hono<AppEnv>()
         .where(eq(certificationsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.CERTIFICATION,
-        entityId: id,
-        metadata: diff(row, updated),
-      });
+      if (row.status === VerificationStatus.VERIFIED)
+        await createAuditLog({
+          userId: user.id,
+          action: AuditAction.UPDATE,
+          entity: AuditEntity.CERTIFICATION,
+          entityId: id,
+          metadata: diff(row, updated),
+        });
       return ok(c, updated);
     },
   )
@@ -206,12 +202,6 @@ const certifications = new Hono<AppEnv>()
         .where(eq(certificationsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.DELETE,
-        entity: AuditEntity.CERTIFICATION,
-        entityId: id,
-      });
       return ok(c, deleted);
     },
   );

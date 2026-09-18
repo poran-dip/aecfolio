@@ -8,7 +8,6 @@ import {
 } from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
-import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
 import { db } from "../lib/db";
 import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { fail, getUser, ok } from "../lib/response";
@@ -85,12 +84,6 @@ const customSections = new Hono<AppEnv>()
         .values({ ...body, studentId: scope.studentId })
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.CREATE,
-        entity: AuditEntity.CUSTOM_SECTION,
-        entityId: section.id,
-      });
       return ok(c, section, 201);
     },
   )
@@ -117,13 +110,6 @@ const customSections = new Hono<AppEnv>()
         .where(eq(customSectionsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.CUSTOM_SECTION,
-        entityId: id,
-        metadata: diff(row, updated),
-      });
       return ok(c, updated);
     },
   )
@@ -148,12 +134,6 @@ const customSections = new Hono<AppEnv>()
         .where(eq(customSectionsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.DELETE,
-        entity: AuditEntity.CUSTOM_SECTION,
-        entityId: id,
-      });
       return ok(c, deleted);
     },
   )
@@ -180,12 +160,6 @@ const customSections = new Hono<AppEnv>()
         .values({ ...body, customSectionId: sectionId })
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.CREATE,
-        entity: AuditEntity.CUSTOM_SECTION_ENTRY,
-        entityId: entry.id,
-      });
       return ok(c, entry, 201);
     },
   )
@@ -217,13 +191,6 @@ const customSections = new Hono<AppEnv>()
         .where(eq(customSectionEntriesTable.id, entryId))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.CUSTOM_SECTION_ENTRY,
-        entityId: entryId,
-        metadata: diff(row, updated),
-      });
       return ok(c, updated);
     },
   )
@@ -253,12 +220,6 @@ const customSections = new Hono<AppEnv>()
         .where(eq(customSectionEntriesTable.id, entryId))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.DELETE,
-        entity: AuditEntity.CUSTOM_SECTION_ENTRY,
-        entityId: entryId,
-      });
       return ok(c, deleted);
     },
   );

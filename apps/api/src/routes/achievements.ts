@@ -4,6 +4,7 @@ import {
   createAchievementSchema,
   UploadPurpose,
   updateAchievementSchema,
+  VerificationStatus,
 } from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
@@ -74,12 +75,6 @@ const achievements = new Hono<AppEnv>()
         .values({ ...body, studentId: scope.studentId })
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.CREATE,
-        entity: AuditEntity.ACHIEVEMENT,
-        entityId: achievement.id,
-      });
       return ok(c, achievement, 201);
     },
   )
@@ -166,13 +161,14 @@ const achievements = new Hono<AppEnv>()
         .where(eq(achievementsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.ACHIEVEMENT,
-        entityId: id,
-        metadata: diff(row, updated),
-      });
+      if (row.status === VerificationStatus.VERIFIED)
+        await createAuditLog({
+          userId: user.id,
+          action: AuditAction.UPDATE,
+          entity: AuditEntity.ACHIEVEMENT,
+          entityId: id,
+          metadata: diff(row, updated),
+        });
       return ok(c, updated);
     },
   )
@@ -197,12 +193,6 @@ const achievements = new Hono<AppEnv>()
         .where(eq(achievementsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.DELETE,
-        entity: AuditEntity.ACHIEVEMENT,
-        entityId: id,
-      });
       return ok(c, deleted);
     },
   );

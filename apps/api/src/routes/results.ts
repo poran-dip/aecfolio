@@ -102,12 +102,6 @@ const results = new Hono<AppEnv>()
         })
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.CREATE,
-        entity: AuditEntity.RESULT,
-        entityId: result.id,
-      });
       return ok(c, result, 201);
     },
   )
@@ -156,16 +150,16 @@ const results = new Hono<AppEnv>()
         .where(eq(resultsTable.id, id))
         .returning();
 
-      if (row.status === VerificationStatus.VERIFIED)
+      if (row.status === VerificationStatus.VERIFIED) {
         await recomputeCgpa(scope.studentId);
-
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.RESULT,
-        entityId: id,
-        metadata: diff(row, updated),
-      });
+        await createAuditLog({
+          userId: user.id,
+          action: AuditAction.UPDATE,
+          entity: AuditEntity.RESULT,
+          entityId: id,
+          metadata: diff(row, updated),
+        });
+      }
       return ok(c, updated);
     },
   )
@@ -190,15 +184,17 @@ const results = new Hono<AppEnv>()
         .where(eq(resultsTable.id, id))
         .returning();
 
-      if (row.status === VerificationStatus.VERIFIED)
+      if (row.status === VerificationStatus.VERIFIED) {
         await recomputeCgpa(scope.studentId);
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.DELETE,
-        entity: AuditEntity.RESULT,
-        entityId: id,
-      });
+        await createAuditLog({
+          userId: user.id,
+          action: AuditAction.DELETE,
+          entity: AuditEntity.RESULT,
+          entityId: id,
+        });
+      }
+
       return ok(c, deleted);
     },
   );
