@@ -4,9 +4,11 @@ import { getStudentForUser } from "./actor";
 import { fail } from "./response";
 import type { Actor } from "./session";
 
+export type ScopeFailure = ReturnType<typeof fail>;
+
 export type Scope =
   | { ok: true; studentId: string; isOwn: boolean }
-  | { ok: false; response: Response };
+  | { ok: false; response: ScopeFailure };
 
 export async function resolveReadScope(
   c: Context,

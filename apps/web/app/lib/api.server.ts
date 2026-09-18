@@ -13,10 +13,10 @@ type JsonResponse = { json: () => Promise<unknown> };
 type JsonOf<R> = R extends { json: () => Promise<infer J> } ? J : never;
 
 type DataOf<R> =
-  Extract<JsonOf<R>, { success: true }> extends {
-    data: infer D;
-  }
-    ? D
+  JsonOf<R> extends infer J
+    ? J extends { success: true; data: infer D }
+      ? D
+      : never
     : never;
 
 export function api(request: Request) {

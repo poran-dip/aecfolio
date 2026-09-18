@@ -101,6 +101,12 @@ const ENDPOINTS: Endpoint[] = [
     body: () => ({ templateId: "standard", sections: [] }),
   },
   {
+    name: "GET /cv/preview",
+    capability: Capability.CV_EXPORT_SELF,
+    method: "get",
+    path: () => "/api/cv/preview",
+  },
+  {
     name: "POST /cv/exports/self",
     capability: Capability.CV_EXPORT_SELF,
     method: "post",

@@ -14,6 +14,16 @@ export const CV_SECTION_KINDS: readonly CvSectionKind[] = [
   "custom",
 ];
 
+export type CvOptionControl =
+  | { key: string; label: string; kind: "boolean"; hint?: string }
+  | {
+      key: string;
+      label: string;
+      kind: "choice";
+      hint?: string;
+      choices: readonly { value: string | number; label: string }[];
+    };
+
 export type TemplateManifest<TOptions = unknown> = {
   id: string;
   name: string;
@@ -21,6 +31,7 @@ export type TemplateManifest<TOptions = unknown> = {
   supportedSections: readonly CvSectionKind[];
   defaultSections: readonly BuiltInCvSectionType[];
   sectionNotes?: Partial<Record<CvSectionKind, string>>;
+  optionControls: readonly CvOptionControl[];
   optionsSchema: z.ZodType<TOptions>;
   printsPhoto(options: TOptions): boolean;
 };

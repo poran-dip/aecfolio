@@ -43,6 +43,47 @@ export const standardManifest: TemplateManifest<StandardOptions> = {
       "Your skills list, and your spoken languages if you have that option on. Disappears on its own if you have neither.",
   },
 
+  optionControls: [
+    {
+      key: "accent",
+      label: "Accent",
+      kind: "choice",
+      choices: [
+        { value: "turquoise", label: "Turquoise" },
+        { value: "red", label: "Red" },
+        { value: "ink", label: "Black" },
+      ],
+    },
+    {
+      key: "density",
+      label: "Spacing",
+      kind: "choice",
+      hint: "Compact fits more on a page.",
+      choices: [
+        { value: "comfortable", label: "Comfortable" },
+        { value: "compact", label: "Compact" },
+      ],
+    },
+    {
+      key: "contactColumns",
+      label: "Contact columns",
+      kind: "choice",
+      choices: [
+        { value: 2, label: "Two" },
+        { value: 3, label: "Three" },
+      ],
+    },
+    { key: "showPhoto", label: "Show photo", kind: "boolean" },
+    { key: "showLocation", label: "Show location", kind: "boolean" },
+    { key: "showLanguages", label: "Show spoken languages", kind: "boolean" },
+    {
+      key: "showSemesterResults",
+      label: "Show every semester result",
+      kind: "boolean",
+      hint: "Off, only the degree and CGPA print.",
+    },
+  ],
+
   optionsSchema: standardOptionsSchema,
   printsPhoto: (options) => options.showPhoto,
 };

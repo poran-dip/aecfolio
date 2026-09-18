@@ -14,6 +14,9 @@ import { usersTable } from "./auth";
 import { cvExportJobStatusEnum, cvExportKindEnum } from "./enums";
 import { studentsTable } from "./student";
 
+type JsonArray = readonly unknown[];
+type JsonObject = Record<string, unknown>;
+
 export const cvPreferencesTable = pgTable(
   "cv_preferences",
   {
@@ -24,8 +27,8 @@ export const cvPreferencesTable = pgTable(
       .notNull()
       .references(() => studentsTable.id, { onDelete: "cascade" }),
     templateId: text("template_id").notNull(),
-    sections: jsonb().notNull().default([]),
-    options: jsonb().notNull().default({}),
+    sections: jsonb().$type<JsonArray>().notNull().default([]),
+    options: jsonb().$type<JsonObject>().notNull().default({}),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at")
       .defaultNow()
@@ -51,8 +54,8 @@ export const cvExportsTable = pgTable(
       .references(() => studentsTable.id, { onDelete: "cascade" }),
     templateId: text("template_id").notNull(),
     kind: cvExportKindEnum().notNull(),
-    config: jsonb().notNull(),
-    options: jsonb().notNull().default({}),
+    config: jsonb().$type<JsonArray>().notNull(),
+    options: jsonb().$type<JsonObject>().notNull().default({}),
     checksum: text().notNull(),
     objectKey: text("object_key").notNull(),
     sizeBytes: integer("size_bytes").notNull(),
