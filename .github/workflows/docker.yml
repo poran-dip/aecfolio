@@ -49,6 +49,16 @@ jobs:
           tags: ghcr.io/poran-dip/aecfolio-migrator:ci
           cache-from: type=gha,scope=migrator
 
+      - name: Build bootstrap
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          file: scripts/Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: ghcr.io/poran-dip/aecfolio-bootstrap:ci
+          cache-from: type=gha,scope=bootstrap
+
       - name: Build api
         uses: docker/build-push-action@v7
         with:
@@ -113,6 +123,12 @@ jobs:
               await check("/version", { headers: { authorization: `Bearer ${process.env.WORKER_SECRET}` } });
             })().catch((err) => { console.error(err); process.exit(1); });
           '
+
+      - name: Bootstrap creates a staff account with a faculty profile
+        run: |
+          docker compose run --rm bootstrap \
+            --email admin@aec.ac.in --name "CI Admin" --role ADMIN \
+            --employee-id CI-ADM-001 --designation Registrar --department CSE
 
       - name: Bundles inline every workspace package but config
         run: |

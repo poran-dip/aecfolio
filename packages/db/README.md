@@ -32,7 +32,7 @@ A separate `student_personal_details` table (1:1 with `students`) was considered
 
 ## Enums (`enums.ts`)
 
-- `role` — `STUDENT | FACULTY | MOD | ADMIN`. No `PENDING`. Self-service sign-up doesn't exist in this product: every account is created with an explicit role by whoever has authority to create it (faculty create students, mod/admin create faculty, the bootstrap script creates the first admin). There is no intermediate "signed up, not yet approved" state to model.
+- `role` — `STUDENT | FACULTY | MOD | ADMIN`. No `PENDING`. Self-service sign-up doesn't exist in this product: every account is created with an explicit role by whoever has authority to create it (faculty create students, mod/admin create faculty, `scripts/bootstrap.ts` creates the first admin — and any later admin/mod/faculty account, faculty row included). There is no intermediate "signed up, not yet approved" state to model.
 - `course` — `BTECH | MTECH | BCA | MCA`.
 - `branch` — the nine engineering/CA branches AEC offers.
 - `student_status` — `ACTIVE | ALUMNI | SUSPENDED | LEFT`. Drives the moderator bulk-promotion flow (final-semester students become `ALUMNI`) and gives real states for the two other cases a college has to track: a student temporarily barred (`SUSPENDED`) and one who withdrew or transferred out entirely (`LEFT`), as distinct from a normal graduate.
