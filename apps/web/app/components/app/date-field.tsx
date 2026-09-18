@@ -24,7 +24,7 @@ export function DateField({
 }) {
   const id = useId();
   const [draft, setDraft] = useState<CvDateInput>(() => decomposeDate(value));
-  const custom = Boolean(draft.custom);
+  const custom = typeof draft.custom === "string";
 
   function emit(next: CvDateInput) {
     setDraft(next);
