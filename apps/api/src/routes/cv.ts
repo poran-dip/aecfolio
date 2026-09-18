@@ -374,7 +374,7 @@ const cv = new Hono<AppEnv>()
       return new Response(zipStream(entries), {
         headers: {
           "Content-Type": "application/zip",
-          "Content-Disposition": jobZipDisposition(job.id),
+          "Content-Disposition": jobZipDisposition(),
           "Cache-Control": "private, no-store",
         },
       });

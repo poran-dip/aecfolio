@@ -106,6 +106,35 @@ describe("render requests", () => {
   });
 });
 
+describe("PDF title", () => {
+  it("is the student's name plus 'Resume', not the browser default", async () => {
+    const base = makeCvData();
+    const data: CvData = { ...base, user: { ...base.user, name: "Rita Devi" } };
+
+    const pdf = await readPdf(await renderPdfOf(data));
+    expect(pdf.title).toBe("Rita Devi Resume");
+  });
+
+  it("strips markdown out of the name for the title", async () => {
+    const base = makeCvData();
+    const data: CvData = {
+      ...base,
+      user: { ...base.user, name: "Ananya **Borah**" },
+    };
+
+    const pdf = await readPdf(await renderPdfOf(data));
+    expect(pdf.title).toBe("Ananya Borah Resume");
+  });
+
+  it("falls back to plain 'Resume' when there is no name", async () => {
+    const base = makeCvData();
+    const data: CvData = { ...base, user: { ...base.user, name: "" } };
+
+    const pdf = await readPdf(await renderPdfOf(data));
+    expect(pdf.title).toBe("Resume");
+  });
+});
+
 describe("fonts", () => {
   it("embeds Outfit in the PDF rather than falling back to a system face", async () => {
     const pdf = await readPdf(await renderPdfOf(makeCvData()));

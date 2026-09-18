@@ -36,6 +36,13 @@ export function attachmentHeader(filename: string): string {
   return `attachment; filename="${filename}"`;
 }
 
+export function zipExportFileName(now = new Date()): string {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const date = `${now.getUTCFullYear()}${pad(now.getUTCMonth() + 1)}${pad(now.getUTCDate())}`;
+  const time = `${pad(now.getUTCHours())}${pad(now.getUTCMinutes())}${pad(now.getUTCSeconds())}`;
+  return `aec-cvs-${date}-${time}.zip`;
+}
+
 export function uniqueFileName(taken: Set<string>, candidate: string): string {
   if (!taken.has(candidate)) {
     taken.add(candidate);

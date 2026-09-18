@@ -13,6 +13,7 @@ import {
   type CvTemplateOptions,
   cvFileName,
   uniqueFileName,
+  zipExportFileName,
 } from "@aecfolio/shared";
 import { STANDARD_TEMPLATE_ID } from "@aecfolio/ui/manifests";
 import { and, asc, eq, inArray, isNull, lt, sql } from "drizzle-orm";
@@ -338,5 +339,4 @@ export function zipStream(
   });
 }
 
-export const jobZipDisposition = (jobId: string) =>
-  attachmentHeader(`cv-export-${jobId}.zip`);
+export const jobZipDisposition = () => attachmentHeader(zipExportFileName());
