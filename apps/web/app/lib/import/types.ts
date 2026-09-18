@@ -24,5 +24,5 @@ export const FIELD_LABELS: Record<ImportField, string> = {
   course: "Course",
   branch: "Branch",
   semester: "Sem",
-  admissionYear: "Admitted",
+  admissionYear: "Admission Year",
 };

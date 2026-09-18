@@ -291,7 +291,7 @@ export default function StudentDetailRoute({
                 {BRANCH_LABELS[student.branch]}
               </p>
               <p className="text-sm text-ink-subtle">
-                {semesterLabel(student.semester)} semester · admitted{" "}
+                {semesterLabel(student.semester)} semester · admission year{" "}
                 {student.admissionYear} · {student.user.email}
                 {student.user.phone ? ` · ${student.user.phone}` : ""}
               </p>
