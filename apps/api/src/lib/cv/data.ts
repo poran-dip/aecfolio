@@ -48,6 +48,10 @@ function proofUrl(entity: "achievements" | "certifications", id: string) {
   return `${authEnv.BETTER_AUTH_URL}/api/${entity}/${id}/proof`;
 }
 
+function avatarUrl(userId: string) {
+  return `${authEnv.BETTER_AUTH_URL}/api/users/${userId}/avatar`;
+}
+
 function shape<T extends Reviewable>(
   rows: T[],
   kind: CvExportKind,
@@ -84,7 +88,7 @@ export function buildCvData(source: CvSource, kind: CvExportKind): CvData {
 
   return {
     student,
-    user: { ...user, image: null },
+    user: { ...user, image: user.image ? avatarUrl(user.id) : null },
     institution: DEFAULT_INSTITUTION,
 
     experiences,

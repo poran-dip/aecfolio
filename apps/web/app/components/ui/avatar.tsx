@@ -46,7 +46,6 @@ export function Avatar({
         <AvatarPrimitive.Image
           src={src}
           alt={name}
-          crossOrigin="use-credentials"
           className="aspect-square size-full object-cover"
         />
       )}
@@ -61,8 +60,8 @@ export function Avatar({
 }
 
 /**
- * An avatar for a user row. `hasImage` comes from the user's `image` column,
- * which holds an object key — the file itself is fetched through the API.
+ * API redirects the image key to a presigned Garage URL.
+ * Avoid `crossOrigin` — Garage doesn't expose CORS headers.
  */
 export function UserAvatar({
   userId,
