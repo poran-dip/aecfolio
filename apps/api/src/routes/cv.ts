@@ -22,7 +22,7 @@ import {
 import { STANDARD_TEMPLATE_ID } from "@aecfolio/ui/manifests";
 import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { type Context, Hono } from "hono";
-import { loadCvSources } from "../lib/cv/data";
+import { buildCvData, loadCvSources } from "../lib/cv/data";
 import {
   exportCv,
   resolveConfig,
@@ -66,6 +66,16 @@ function publicExport(row: typeof cvExportsTable.$inferSelect) {
 }
 
 const cv = new Hono<AppEnv>()
+  .get("/preview", requireCapability(Capability.CV_EXPORT_SELF), async (c) => {
+    const scope = await resolveOwnStudent(c, getUser(c));
+    if (!scope.ok) return scope.response;
+
+    const source = await loadSource(scope.studentId);
+    if (!source) return fail(c, "NOT_FOUND", "Student not found", 404);
+
+    return ok(c, buildCvData(source, CvExportKind.SELF));
+  })
+
   .get(
     "/preferences",
     requireCapability(Capability.PROFILE_WRITE_SELF),
