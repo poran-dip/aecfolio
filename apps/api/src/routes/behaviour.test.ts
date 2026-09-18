@@ -12,6 +12,7 @@ import { pgMessage } from "../lib/db-error";
 import {
   asUser,
   createAchievement,
+  createCertification,
   createCreditScheme,
   createResult,
   createStaff,
@@ -597,20 +598,26 @@ describe("cohort promotion", () => {
 describe("audit trail", () => {
   beforeEach(resetDatabase);
 
-  it("labels certification entries as certifications, not achievements", async () => {
+  it("does not log a student submitting, editing, or removing their own claim", async () => {
     const { actor } = await createStudent();
 
-    const res = await asUser(actor).post("/api/certifications", {
+    const created = await asUser(actor).post("/api/certifications", {
       name: "AWS Cloud Practitioner",
       issuer: "Amazon",
     });
-    expect(res.status).toBe(201);
+    expect(created.status).toBe(201);
+    const id = created.body.data.id as string;
 
-    const [log] = await db
-      .select({ entity: auditLogsTable.entity })
+    await asUser(actor).patch(`/api/certifications/${id}`, {
+      name: "AWS Cloud Practitioner (renewed)",
+    });
+    await asUser(actor).delete(`/api/certifications/${id}`);
+
+    const logs = await db
+      .select({ id: auditLogsTable.id })
       .from(auditLogsTable)
-      .where(eq(auditLogsTable.entityId, res.body.data.id));
-    expect(log.entity).toBe("Certification");
+      .where(eq(auditLogsTable.entityId, id));
+    expect(logs).toHaveLength(0);
   });
 
   it("404s a missing certification as a certification, not an achievement", async () => {
@@ -619,21 +626,69 @@ describe("audit trail", () => {
     expect(res.body.error.message).toBe("Certification not found");
   });
 
-  it("populates metadata with a before/after diff", async () => {
-    const { actor } = await createStudent();
+  it("logs a certification entry as a certification, not an achievement, when an edit resets it to pending", async () => {
+    const mod = await createStaff(Role.MOD);
+    const { actor, student } = await createStudent();
+    const certification = await createCertification(student.id, {
+      status: "VERIFIED",
+      reviewedBy: mod.actor.id,
+    });
 
-    await asUser(actor).patch("/api/me/student", { bio: "First" });
-    await asUser(actor).patch("/api/me/student", { bio: "Second" });
+    await asUser(actor).patch(`/api/certifications/${certification.id}`, {
+      name: "Renamed after verification",
+    });
+
+    const [log] = await db
+      .select({ entity: auditLogsTable.entity })
+      .from(auditLogsTable)
+      .where(eq(auditLogsTable.entityId, certification.id));
+    expect(log.entity).toBe("Certification");
+  });
+
+  it("does not log a student editing their own pending or rejected claim", async () => {
+    const { actor, student } = await createStudent();
+    const pending = await createAchievement(student.id, { status: "PENDING" });
+
+    await asUser(actor).patch(`/api/achievements/${pending.id}`, {
+      title: "Edited while still pending",
+    });
 
     const logs = await db
+      .select({ id: auditLogsTable.id })
+      .from(auditLogsTable)
+      .where(eq(auditLogsTable.entityId, pending.id));
+    expect(logs).toHaveLength(0);
+  });
+
+  it("populates metadata with a before/after diff when a verified claim is edited back to pending", async () => {
+    const mod = await createStaff(Role.MOD);
+    const { actor, student } = await createStudent();
+    const achievement = await createAchievement(student.id, {
+      status: "VERIFIED",
+      reviewedBy: mod.actor.id,
+      title: "First",
+    });
+
+    await asUser(actor).patch(`/api/achievements/${achievement.id}`, {
+      title: "Second",
+    });
+
+    const [log] = await db
       .select({ metadata: auditLogsTable.metadata })
       .from(auditLogsTable)
-      .where(eq(auditLogsTable.userId, actor.id));
+      .where(eq(auditLogsTable.entityId, achievement.id));
 
-    const last = logs.at(-1)?.metadata as {
-      changed: { bio: { from: string; to: string } };
+    const metadata = log.metadata as {
+      changed: {
+        title: { from: string; to: string };
+        status: { from: string; to: string };
+      };
     };
-    expect(last.changed.bio).toEqual({ from: "First", to: "Second" });
+    expect(metadata.changed.title).toEqual({ from: "First", to: "Second" });
+    expect(metadata.changed.status).toEqual({
+      from: "VERIFIED",
+      to: "PENDING",
+    });
   });
 
   it("records who changed a role, and from what", async () => {
@@ -657,13 +712,16 @@ describe("audit trail", () => {
   });
 
   it("keeps audit rows immutable", async () => {
-    const { actor } = await createStudent();
-    await asUser(actor).patch("/api/me/student", { bio: "Anything" });
+    const admin = await createStaff(Role.ADMIN);
+    const faculty = await createStaff(Role.FACULTY);
+    await asUser(admin.actor).patch(`/api/users/${faculty.actor.id}/role`, {
+      role: Role.MOD,
+    });
 
     const [log] = await db
       .select({ id: auditLogsTable.id })
       .from(auditLogsTable)
-      .where(eq(auditLogsTable.userId, actor.id));
+      .where(eq(auditLogsTable.userId, admin.actor.id));
 
     const update = await db
       .update(auditLogsTable)

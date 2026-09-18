@@ -8,7 +8,6 @@ import {
 import { eq } from "drizzle-orm";
 import { Hono } from "hono";
 import { getFacultyForUser, getStudentForUser } from "../lib/actor";
-import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
 import { db } from "../lib/db";
 import {
   loadStudentProfile,
@@ -72,13 +71,6 @@ const me = new Hono<AppEnv>()
       .where(eq(usersTable.id, user.id))
       .returning();
 
-    await createAuditLog({
-      userId: user.id,
-      action: AuditAction.UPDATE,
-      entity: AuditEntity.USER,
-      entityId: user.id,
-      metadata: diff(before, updated),
-    });
     return ok(c, updated);
   })
 
@@ -112,25 +104,12 @@ const me = new Hono<AppEnv>()
       if (!student)
         return fail(c, "NOT_FOUND", "Student profile not found", 404);
 
-      const [before] = await db
-        .select()
-        .from(studentsTable)
-        .where(eq(studentsTable.id, student.id))
-        .limit(1);
-
       const [updated] = await db
         .update(studentsTable)
         .set(body)
         .where(eq(studentsTable.id, student.id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.STUDENT,
-        entityId: student.id,
-        metadata: diff(before, updated),
-      });
       return ok(c, updated);
     },
   )

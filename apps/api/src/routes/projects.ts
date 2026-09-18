@@ -6,7 +6,6 @@ import {
 } from "@aecfolio/shared";
 import { and, eq, isNull } from "drizzle-orm";
 import { Hono } from "hono";
-import { AuditAction, AuditEntity, createAuditLog, diff } from "../lib/audit";
 import { db } from "../lib/db";
 import { resolveOwnStudent, resolveReadScope } from "../lib/ownership";
 import { fail, getUser, ok } from "../lib/response";
@@ -59,12 +58,6 @@ const projects = new Hono<AppEnv>()
         .values({ ...body, studentId: scope.studentId })
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.CREATE,
-        entity: AuditEntity.PROJECT,
-        entityId: row.id,
-      });
       return ok(c, row, 201);
     },
   )
@@ -108,13 +101,6 @@ const projects = new Hono<AppEnv>()
         .where(eq(projectsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.UPDATE,
-        entity: AuditEntity.PROJECT,
-        entityId: id,
-        metadata: diff(row, updated),
-      });
       return ok(c, updated);
     },
   )
@@ -139,12 +125,6 @@ const projects = new Hono<AppEnv>()
         .where(eq(projectsTable.id, id))
         .returning();
 
-      await createAuditLog({
-        userId: user.id,
-        action: AuditAction.DELETE,
-        entity: AuditEntity.PROJECT,
-        entityId: id,
-      });
       return ok(c, deleted);
     },
   );
