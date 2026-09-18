@@ -145,6 +145,7 @@ const students = new Hono<AppEnv>()
         db
           .select({
             id: studentsTable.id,
+            userId: studentsTable.userId,
             rollNo: studentsTable.rollNo,
             course: studentsTable.course,
             branch: studentsTable.branch,
@@ -155,6 +156,7 @@ const students = new Hono<AppEnv>()
             titleSought: studentsTable.titleSought,
             name: usersTable.name,
             email: usersTable.email,
+            image: usersTable.image,
           })
           .from(studentsTable)
           .innerJoin(usersTable, eq(studentsTable.userId, usersTable.id))

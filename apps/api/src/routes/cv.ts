@@ -1,4 +1,5 @@
 import {
+  cvExportJobItemsTable,
   cvExportJobsTable,
   cvExportsTable,
   cvPreferencesTable,
@@ -19,7 +20,7 @@ import {
   upsertCvPreferenceSchema,
 } from "@aecfolio/shared";
 import { STANDARD_TEMPLATE_ID } from "@aecfolio/ui/manifests";
-import { and, desc, eq, inArray, isNull } from "drizzle-orm";
+import { and, desc, eq, inArray, isNotNull, isNull } from "drizzle-orm";
 import { type Context, Hono } from "hono";
 import { loadCvSources } from "../lib/cv/data";
 import {
@@ -297,6 +298,47 @@ const cv = new Hono<AppEnv>()
         .limit(1);
       if (!job) return fail(c, "NOT_FOUND", "Export job not found", 404);
       return ok(c, job);
+    },
+  )
+
+  .get(
+    "/jobs/:id/failures",
+    requireCapability(Capability.CV_EXPORT_STANDARD),
+    async (c) => {
+      const [job] = await db
+        .select({ id: cvExportJobsTable.id })
+        .from(cvExportJobsTable)
+        .where(
+          and(
+            eq(cvExportJobsTable.id, c.req.param("id")),
+            eq(cvExportJobsTable.requestedBy, getUser(c).id),
+          ),
+        )
+        .limit(1);
+      if (!job) return fail(c, "NOT_FOUND", "Export job not found", 404);
+
+      const rows = await db
+        .select({
+          studentId: cvExportJobItemsTable.studentId,
+          rollNo: studentsTable.rollNo,
+          name: usersTable.name,
+          error: cvExportJobItemsTable.error,
+        })
+        .from(cvExportJobItemsTable)
+        .innerJoin(
+          studentsTable,
+          eq(cvExportJobItemsTable.studentId, studentsTable.id),
+        )
+        .innerJoin(usersTable, eq(studentsTable.userId, usersTable.id))
+        .where(
+          and(
+            eq(cvExportJobItemsTable.jobId, job.id),
+            isNotNull(cvExportJobItemsTable.error),
+          ),
+        )
+        .orderBy(cvExportJobItemsTable.position);
+
+      return ok(c, rows);
     },
   )
 

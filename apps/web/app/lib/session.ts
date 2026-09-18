@@ -10,9 +10,18 @@ export type SessionData = {
   };
 };
 
-export async function getSession(
-  request: Request,
-): Promise<SessionData | null> {
+const inFlight = new WeakMap<Request, Promise<SessionData | null>>();
+
+export function getSession(request: Request): Promise<SessionData | null> {
+  const cached = inFlight.get(request);
+  if (cached) return cached;
+
+  const pending = resolveSession(request);
+  inFlight.set(request, pending);
+  return pending;
+}
+
+async function resolveSession(request: Request): Promise<SessionData | null> {
   const cookie = request.headers.get("cookie") ?? "";
 
   try {
