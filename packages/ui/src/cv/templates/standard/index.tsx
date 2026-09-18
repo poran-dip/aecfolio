@@ -16,7 +16,6 @@ import {
   Entry,
   EntryDate,
   EntryHeader,
-  EntryKind,
   EntryList,
   Section,
   VerifiedMark,
@@ -155,12 +154,7 @@ function renderSection(
                 <EntryHeader
                   title={exp.title}
                   subtitle={exp.organization}
-                  meta={
-                    <>
-                      <EntryDate>{formatDate(exp.date)}</EntryDate>
-                      <EntryKind>{exp.type}</EntryKind>
-                    </>
-                  }
+                  meta={<EntryDate>{formatDate(exp.date)}</EntryDate>}
                 />
                 <Markdown>{exp.description}</Markdown>
               </Entry>
