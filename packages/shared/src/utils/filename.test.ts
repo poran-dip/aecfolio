@@ -5,6 +5,7 @@ import {
   cvFileName,
   rollNoDigits,
   uniqueFileName,
+  zipExportFileName,
 } from "./filename";
 
 describe("rollNoDigits", () => {
@@ -146,5 +147,21 @@ describe("uniqueFileName — zip collision", () => {
   it("handles a name with no extension", () => {
     const taken = new Set(["x"]);
     expect(uniqueFileName(taken, "x")).toBe("x-2");
+  });
+});
+
+describe("zipExportFileName", () => {
+  it("is a readable, timestamped name instead of a bare job id", () => {
+    const at = new Date(Date.UTC(2026, 8, 18, 19, 19, 26));
+    expect(zipExportFileName(at)).toBe("aec-cvs-20260918-191926.zip");
+  });
+
+  it("pads single-digit month, day, hour, minute and second", () => {
+    const at = new Date(Date.UTC(2026, 0, 5, 3, 4, 5));
+    expect(zipExportFileName(at)).toBe("aec-cvs-20260105-030405.zip");
+  });
+
+  it("defaults to now, down to the second", () => {
+    expect(zipExportFileName()).toMatch(/^aec-cvs-\d{8}-\d{6}\.zip$/);
   });
 });

@@ -38,12 +38,15 @@ export async function readPdf(bytes: Uint8Array) {
         .map((a) => a.url as string),
     });
   }
+  const metadata = await doc.getMetadata();
+  const info = metadata.info as { Title?: string } | undefined;
   await task.destroy();
 
   return {
     pages,
     text: pages.map((p) => p.text).join("\n"),
     links: pages.flatMap((p) => p.links),
+    title: info?.Title ?? "",
     embedsFont: (name: string) =>
       Buffer.from(bytes).toString("latin1").includes(name),
   };

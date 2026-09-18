@@ -3,14 +3,22 @@ import type { PagePool } from "./pool";
 
 export const RENDER_TIMEOUT_MS = 30_000;
 
-async function printBody(page: Page, markup: string): Promise<Uint8Array> {
-  await page.evaluate(async (html) => {
-    document.body.innerHTML = html;
-    await Promise.all(
-      Array.from(document.images, (img) => img.decode().catch(() => {})),
-    );
-    await document.fonts.ready;
-  }, markup);
+async function printBody(
+  page: Page,
+  markup: string,
+  title: string,
+): Promise<Uint8Array> {
+  await page.evaluate(
+    async ({ html, title }) => {
+      document.title = title;
+      document.body.innerHTML = html;
+      await Promise.all(
+        Array.from(document.images, (img) => img.decode().catch(() => {})),
+      );
+      await document.fonts.ready;
+    },
+    { html: markup, title },
+  );
 
   return page.pdf({
     printBackground: true,
@@ -22,6 +30,7 @@ async function printBody(page: Page, markup: string): Promise<Uint8Array> {
 export async function renderPdf(
   pool: PagePool,
   markup: string,
+  title: string,
 ): Promise<Uint8Array> {
   return pool.run(async (page) => {
     let timer: NodeJS.Timeout | undefined;
@@ -32,7 +41,7 @@ export async function renderPdf(
       );
     });
     try {
-      return await Promise.race([printBody(page, markup), timeout]);
+      return await Promise.race([printBody(page, markup, title), timeout]);
     } finally {
       clearTimeout(timer);
     }

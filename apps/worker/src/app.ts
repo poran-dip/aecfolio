@@ -2,6 +2,7 @@ import { workerEnv } from "@aecfolio/config";
 import {
   cvSectionsConfigSchema,
   cvTemplateOptionsSchema,
+  stripInlineMarkdown,
 } from "@aecfolio/shared";
 import type { CvData } from "@aecfolio/ui";
 import { getTemplate } from "@aecfolio/ui";
@@ -79,9 +80,16 @@ export function createApp({ pool, secret }: CreateAppOptions) {
           return c.json({ error: "Template could not render this data" }, 422);
         }
 
+        const rawName = (data.user as { name?: unknown }).name;
+        const studentName =
+          typeof rawName === "string" && rawName.trim()
+            ? stripInlineMarkdown(rawName.trim())
+            : "";
+        const title = studentName ? `${studentName} Resume` : "Resume";
+
         const started = performance.now();
         try {
-          const pdf = await renderPdf(pool, markup);
+          const pdf = await renderPdf(pool, markup, title);
           return new Response(new Uint8Array(pdf), {
             headers: {
               "Content-Type": "application/pdf",
