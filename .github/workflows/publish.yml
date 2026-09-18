@@ -22,6 +22,8 @@ jobs:
         include:
           - image: migrator
             dockerfile: packages/db/Dockerfile
+          - image: bootstrap
+            dockerfile: scripts/Dockerfile
           - image: api
             dockerfile: apps/api/Dockerfile
           - image: web

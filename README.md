@@ -34,9 +34,23 @@ Builds and runs every service behind nginx on port 80. To point it at a real dom
 
 `DATABASE_URL` is ignored in production; compose builds its own connection string from the `POSTGRES_*` values.
 
+### First admin (or any staff account)
+
+`bootstrap` is a one-shot image, like `migrator` — it never starts with `docker compose up`, only when named directly:
+
+```bash
+docker compose run --rm bootstrap \
+  --email you@aec.ac.in --name "Your Name" --role ADMIN \
+  --employee-id E001 [--designation "Registrar"] [--department CSE]
+```
+
+`--role` is `ADMIN`, `MOD` or `FACULTY` (default `ADMIN`); students are never created this way — they're added through the staff import flow. `--employee-id` is required for every role, because every staff account gets a `faculty` row alongside its `users` row — omitting it (the old behaviour) left the account unable to load its own `/profile`. Designation and department are optional. Re-running against an existing email updates that user's role and faculty record instead of failing, so it also works to promote an account or fix a typo'd department later.
+
+In development, the same script runs on the host: `pnpm bootstrap --email you@aec.ac.in --name "Your Name" --role ADMIN --employee-id E001`.
+
 ### Published images
 
-Every push to `main` publishes `ghcr.io/poran-dip/aecfolio-{api,web,worker,migrator}` (`linux/amd64`), tagged `latest` and `sha-<short commit>`. `compose.yml` names these images next to its `build:` sections, so the same file serves both ways of running it: `docker compose up -d --build` builds from source and tags the result with those names, while a server pulls instead:
+Every push to `main` publishes `ghcr.io/poran-dip/aecfolio-{api,web,worker,migrator,bootstrap}` (`linux/amd64`), tagged `latest` and `sha-<short commit>`. `compose.yml` names these images next to its `build:` sections, so the same file serves both ways of running it: `docker compose up -d --build` builds from source and tags the result with those names, while a server pulls instead:
 
 ```bash
 docker compose pull
@@ -45,7 +59,7 @@ docker compose up -d
 
 Pin a release with `AECFOLIO_TAG=sha-<short commit>` in `.env`; it defaults to `latest`. A server still needs a checkout (or copy) of `compose.yml`, `infra/nginx/default.conf` and `infra/garage/garage.toml`, which are mounted rather than baked into images.
 
-Two workflows keep the images honest. `.github/workflows/docker.yaml` builds all four on every PR, boots this stack from them with throwaway secrets (`docker compose up --wait`, so a failed migration or healthcheck fails the run), requests `/` and `/api/health` through nginx, checks the worker launches Chromium and accepts its secret, and fails if the api or worker bundle imports any workspace package other than `@aecfolio/config` at runtime. `.github/workflows/publish.yaml` builds the same Dockerfiles on `main` and pushes. Both share a per-image GitHub Actions layer cache, so a PR reuses what `main` last built.
+Two workflows keep the images honest. `.github/workflows/docker.yml` builds all five on every PR, boots this stack from them with throwaway secrets (`docker compose up --wait`, so a failed migration or healthcheck fails the run), requests `/` and `/api/health` through nginx, checks the worker launches Chromium and accepts its secret, runs `bootstrap` against the live stack to prove it still works outside dev, and fails if the api or worker bundle imports any workspace package other than `@aecfolio/config` at runtime. `.github/workflows/publish.yml` builds the same Dockerfiles on `main` and pushes. Both share a per-image GitHub Actions layer cache, so a PR reuses what `main` last built.
 
 ### Which `.env` values go where
 
@@ -63,19 +77,19 @@ The browser gets the API origin at **runtime**, not build time: `apps/web/app/li
 
 ## Scripts
 
-| Command                      | What it does                                            |
-| ---------------------------- | ------------------------------------------------------- |
-| `pnpm dev`                   | All apps in watch mode                                  |
-| `pnpm build`                 | Turbo build: config → db → shared/ui → worker, api, web |
-| `pnpm start`                 | Run built apps                                          |
-| `pnpm lint` / `pnpm lint:ci` | Biome, with and without `--write`                       |
-| `pnpm typecheck`             | `tsc` across every package                              |
-| `pnpm test`                  | Vitest across every package                             |
-| `pnpm db:generate`           | Generate a migration from schema changes                |
-| `pnpm db:migrate`            | Apply migrations                                        |
-| `pnpm db:push`               | Push schema without a migration (dev only)              |
-| `pnpm db:studio`             | Drizzle Studio                                          |
-| `pnpm bootstrap`             | Promote the first admin/faculty                         |
+| Command                      | What it does                                                                                                                      |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm dev`                   | All apps in watch mode                                                                                                            |
+| `pnpm build`                 | Turbo build: config → db → shared/ui → worker, api, web                                                                           |
+| `pnpm start`                 | Run built apps                                                                                                                    |
+| `pnpm lint` / `pnpm lint:ci` | Biome, with and without `--write`                                                                                                 |
+| `pnpm typecheck`             | `tsc` across every package                                                                                                        |
+| `pnpm test`                  | Vitest across every package                                                                                                       |
+| `pnpm db:generate`           | Generate a migration from schema changes                                                                                          |
+| `pnpm db:migrate`            | Apply migrations                                                                                                                  |
+| `pnpm db:push`               | Push schema without a migration (dev only)                                                                                        |
+| `pnpm db:studio`             | Drizzle Studio                                                                                                                    |
+| `pnpm bootstrap`             | Create/promote a staff account (admin, mod or faculty), with its faculty profile — see "First admin (or any staff account)" above |
 
 `dev`, `typecheck` and `test` all declare `^build` in `turbo.json`, so any of them works on a fresh clone without a separate build step first.
 
@@ -98,7 +112,7 @@ aecfolio/
 │   └── ui/           Design system and CV templates (worker renders them, api reads their manifests)
 ├── infra/garage/     Object store config
 ├── infra/nginx/      Reverse proxy config
-├── scripts/          bootstrap.ts — promote the first admin/faculty
+├── scripts/          bootstrap.ts + its own Dockerfile — create/promote a staff account
 ├── compose.dev.yml   Postgres and Garage, for the `pnpm dev` loop
 └── compose.yml       Full production stack
 ```
@@ -109,7 +123,7 @@ aecfolio/
 
 ## Containers
 
-Four images: `api`, `web`, `worker`, and a one-shot `migrator` that runs to completion before the API starts. Each runs as a non-root `node` user with a `HEALTHCHECK`, and `depends_on` waits on `service_healthy` rather than merely "started".
+Five images: `api`, `web`, `worker`, and two one-shot images that run to completion rather than staying up — `migrator`, before the API starts, and `bootstrap`, run by name whenever a staff account needs creating. Each runs as a non-root `node` user with a `HEALTHCHECK` (the two one-shot images have no long-running process to health-check), and `depends_on` waits on `service_healthy` rather than merely "started".
 
 A few constraints are easy to break by accident:
 

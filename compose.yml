@@ -47,6 +47,21 @@ services:
         condition: service_healthy
     restart: "no"
 
+  bootstrap:
+    image: ghcr.io/poran-dip/aecfolio-bootstrap:${AECFOLIO_TAG:-latest}
+    build:
+      context: .
+      dockerfile: scripts/Dockerfile
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+    profiles:
+      - tools
+
   api:
     image: ghcr.io/poran-dip/aecfolio-api:${AECFOLIO_TAG:-latest}
     build:
