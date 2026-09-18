@@ -6,7 +6,7 @@ import {
   VerificationStatus,
 } from "@aecfolio/shared";
 import { FileDown, Pencil, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFetcher, useRevalidator } from "react-router";
 import { ClaimCard, type ClaimView } from "~/components/app/claim-card";
 import { Page } from "~/components/app/page";
@@ -171,10 +171,13 @@ export default function StudentDetailRoute({
   const [rectifying, setRectifying] = useState(false);
   const busy = fetcher.state !== "idle";
   const submitReview = reviewSubmitter(fetcher);
+  const handledResultRef = useRef<typeof fetcher.data>(undefined);
 
   useEffect(() => {
     const result = fetcher.data;
     if (!result || fetcher.state !== "idle") return;
+    if (handledResultRef.current === result) return;
+    handledResultRef.current = result;
 
     if (!result.ok) {
       toast.error(result.message);

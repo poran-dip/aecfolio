@@ -7,7 +7,7 @@ import {
   Role,
 } from "@aecfolio/shared";
 import { Save, ShieldCheck, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFetcher, useRevalidator } from "react-router";
 import { Page } from "~/components/app/page";
 import { UserAvatar } from "~/components/ui/avatar";
@@ -113,10 +113,13 @@ export default function FacultyDetailRoute({
   const [nextRole, setNextRole] = useState<string | undefined>();
 
   const busy = fetcher.state !== "idle";
+  const handledResultRef = useRef<typeof fetcher.data>(undefined);
 
   useEffect(() => {
     const result = fetcher.data;
     if (!result || fetcher.state !== "idle") return;
+    if (handledResultRef.current === result) return;
+    handledResultRef.current = result;
 
     if (result.ok) {
       toast.success("Saved");

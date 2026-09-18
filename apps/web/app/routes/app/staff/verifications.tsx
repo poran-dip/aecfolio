@@ -5,7 +5,7 @@ import {
   VerificationStatus,
 } from "@aecfolio/shared";
 import { BadgeCheck, FileText, TriangleAlert } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Link,
   useFetcher,
@@ -117,10 +117,13 @@ export default function VerificationsRoute({
   const busy = fetcher.state !== "idle";
   const submitReview = reviewSubmitter(fetcher);
   const open = items.find((row) => row.id === openId) ?? null;
+  const handledResultRef = useRef<typeof fetcher.data>(undefined);
 
   useEffect(() => {
     const result = fetcher.data;
     if (!result || fetcher.state !== "idle") return;
+    if (handledResultRef.current === result) return;
+    handledResultRef.current = result;
 
     if (!result.ok) {
       toast.error(result.message);
@@ -133,8 +136,6 @@ export default function VerificationsRoute({
     revalidator.revalidate();
   }, [fetcher.data, fetcher.state, revalidator]);
 
-  // Bulk review goes through one endpoint per kind, so a mixed selection has
-  // no single call to make. Selection is confined to one tab at a time.
   const selectedKind = filters.kind;
   const selectable = Boolean(selectedKind);
   const selectedIds = [...selected];
