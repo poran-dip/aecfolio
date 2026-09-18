@@ -1,6 +1,7 @@
 export { cvStylesheet } from "./generated/stylesheet";
 export {
   CV_SECTION_KINDS,
+  type CvOptionControl,
   type CvSectionKind,
   defaultSectionsConfig,
   parseTemplateOptions,

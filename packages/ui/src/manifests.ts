@@ -1,5 +1,6 @@
 export {
   CV_SECTION_KINDS,
+  type CvOptionControl,
   type CvSectionKind,
   defaultSectionsConfig,
   parseTemplateOptions,
