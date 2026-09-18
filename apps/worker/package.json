@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "dotenv-run -- tsx src/index.ts",
+    "dev": "node scripts/dev.mjs",
     "build": "tsdown",
     "start": "dotenv-run -- node dist/index.mjs",
     "typecheck": "tsc",
@@ -25,9 +25,11 @@
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/cross-spawn": "^6.0.6",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "cross-spawn": "^7.0.6",
     "pdfjs-dist": "^6.3.289",
     "tsdown": "catalog:",
     "tsx": "catalog:",
