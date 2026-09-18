@@ -4,10 +4,14 @@ import {
   BRANCH_LABELS,
   Branch,
   Capability,
+  SEMESTER_MAX,
+  SEMESTER_MIN,
+  TOTAL_CREDITS_MAX,
+  TOTAL_CREDITS_MIN,
 } from "@aecfolio/shared";
-import { ArrowUpRight, Eye, TriangleAlert } from "lucide-react";
-import { useEffect, useState } from "react";
-import { useFetcher } from "react-router";
+import { ArrowUpRight, Eye, Pencil, Plus, TriangleAlert } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useFetcher, useRevalidator } from "react-router";
 import { Page } from "~/components/app/page";
 import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
@@ -55,6 +59,35 @@ export async function action({ request }: Route.ActionArgs) {
   await requireCapability(request, Capability.COHORT_PROMOTE);
   const form = await request.formData();
   const client = api(request);
+  const intent = String(form.get("intent") ?? "promote");
+
+  if (intent === "createScheme") {
+    const result = await attempt(async () =>
+      unwrap(
+        await client.api.admin["credit-schemes"].$post({
+          json: {
+            branch: String(form.get("branch")) as Branch,
+            admissionYear: Number(form.get("admissionYear")),
+            semester: Number(form.get("semester")),
+            totalCredits: Number(form.get("totalCredits")),
+          },
+        }),
+      ),
+    );
+    return { ...result, intent: "createScheme" as const };
+  }
+
+  if (intent === "updateScheme") {
+    const result = await attempt(async () =>
+      unwrap(
+        await client.api.admin["credit-schemes"][":id"].$patch({
+          param: { id: String(form.get("id")) },
+          json: { totalCredits: Number(form.get("totalCredits")) },
+        }),
+      ),
+    );
+    return { ...result, intent: "updateScheme" as const };
+  }
 
   const admissionYear = Number(form.get("admissionYear"));
   const branchValue = String(form.get("branch") ?? "");
@@ -81,12 +114,22 @@ export async function action({ request }: Route.ActionArgs) {
     ),
   );
 
-  return result.ok ? { ...result, dryRun } : result;
+  return result.ok
+    ? { ...result, dryRun, intent: "promote" as const }
+    : { ...result, intent: "promote" as const };
 }
+
+const EMPTY_SCHEME_FORM = {
+  branch: "" as string,
+  admissionYear: String(new Date().getFullYear() - 3),
+  semester: "",
+  totalCredits: "",
+};
 
 export default function CohortRoute({ loaderData }: Route.ComponentProps) {
   const { schemes } = loaderData;
   const fetcher = useFetcher<typeof action>();
+  const revalidator = useRevalidator();
 
   const [admissionYear, setAdmissionYear] = useState(
     String(new Date().getFullYear() - 3),
@@ -100,14 +143,33 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
   } | null>(null);
   const [confirming, setConfirming] = useState(false);
 
+  const [schemeForm, setSchemeForm] = useState(EMPTY_SCHEME_FORM);
+  const [editingSchemeId, setEditingSchemeId] = useState<string | null>(null);
+  const [editingCredits, setEditingCredits] = useState("");
+
   const busy = fetcher.state !== "idle";
+  const handledResultRef = useRef<typeof fetcher.data>(undefined);
 
   useEffect(() => {
     const result = fetcher.data;
     if (!result || fetcher.state !== "idle") return;
+    if (handledResultRef.current === result) return;
+    handledResultRef.current = result;
 
     if (!result.ok) {
       toast.error(result.message);
+      return;
+    }
+
+    if (result.intent === "createScheme" || result.intent === "updateScheme") {
+      toast.success(
+        result.intent === "createScheme"
+          ? "Credit scheme saved"
+          : "Credit scheme updated",
+      );
+      setSchemeForm(EMPTY_SCHEME_FORM);
+      setEditingSchemeId(null);
+      revalidator.revalidate();
       return;
     }
 
@@ -122,7 +184,7 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
     setPreview(null);
     setCredits({});
     setConfirming(false);
-  }, [fetcher.data, fetcher.state]);
+  }, [fetcher.data, fetcher.state, revalidator]);
 
   function schemePayload() {
     return Object.entries(credits)
@@ -147,6 +209,24 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
     fetcher.submit(body, { method: "post" });
   }
 
+  function submitScheme() {
+    const body = new FormData();
+    body.set("intent", "createScheme");
+    body.set("branch", schemeForm.branch);
+    body.set("admissionYear", schemeForm.admissionYear);
+    body.set("semester", schemeForm.semester);
+    body.set("totalCredits", schemeForm.totalCredits);
+    fetcher.submit(body, { method: "post" });
+  }
+
+  function submitSchemeEdit(id: string) {
+    const body = new FormData();
+    body.set("intent", "updateScheme");
+    body.set("id", id);
+    body.set("totalCredits", editingCredits);
+    fetcher.submit(body, { method: "post" });
+  }
+
   const missing = preview?.missingSchemes ?? [];
   const allFilled = missing.every(
     (row) => (credits[`${row.branch}:${row.semester}`] ?? "").trim() !== "",
@@ -154,6 +234,21 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
   const yearValid =
     Number(admissionYear) >= ADMISSION_YEAR_MIN &&
     Number(admissionYear) <= ADMISSION_YEAR_MAX;
+
+  const schemeYear = Number(schemeForm.admissionYear);
+  const schemeSemester = Number(schemeForm.semester);
+  const schemeCredits = Number(schemeForm.totalCredits);
+  const schemeFormValid =
+    Boolean(schemeForm.branch) &&
+    Number.isInteger(schemeYear) &&
+    schemeYear >= ADMISSION_YEAR_MIN &&
+    schemeYear <= ADMISSION_YEAR_MAX &&
+    Number.isInteger(schemeSemester) &&
+    schemeSemester >= SEMESTER_MIN &&
+    schemeSemester <= SEMESTER_MAX &&
+    Number.isInteger(schemeCredits) &&
+    schemeCredits >= TOTAL_CREDITS_MIN &&
+    schemeCredits <= TOTAL_CREDITS_MAX;
 
   return (
     <Page description="Promoting a cohort moves every active student in it up one semester, and graduates anyone finishing their final one. A semester with no credit scheme cannot accept SGPA submissions, so the preview names every gap before anything moves.">
@@ -314,23 +409,167 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
             <CardTitle>Credit schemes</CardTitle>
             <CardDescription>
               Every (department, admission year, semester) that can accept an
-              SGPA, and the total credits its CGPA is weighted by.
+              SGPA, and the total credits its CGPA is weighted by. Add one
+              directly here — useful for a semester a new import needs before
+              any promotion has run — or edit an existing one's credits. Saving
+              one for a triple that already exists just updates it.
             </CardDescription>
           </CardHeader>
-          <CardContent>
+          <CardContent className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-end gap-3">
+              <Field label="Department" className="w-44">
+                {(props) => (
+                  <Select
+                    {...props}
+                    value={schemeForm.branch || undefined}
+                    onValueChange={(value) =>
+                      setSchemeForm((previous) => ({
+                        ...previous,
+                        branch: value ?? "",
+                      }))
+                    }
+                    placeholder="Department"
+                    options={Object.values(Branch).map((value) => ({
+                      value,
+                      label: BRANCH_LABELS[value],
+                    }))}
+                  />
+                )}
+              </Field>
+
+              <Field label="Admission year" className="w-32">
+                {(props) => (
+                  <Input
+                    {...props}
+                    type="number"
+                    min={ADMISSION_YEAR_MIN}
+                    max={ADMISSION_YEAR_MAX}
+                    value={schemeForm.admissionYear}
+                    onChange={(event) =>
+                      setSchemeForm((previous) => ({
+                        ...previous,
+                        admissionYear: event.target.value,
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+
+              <Field label="Semester" className="w-28">
+                {(props) => (
+                  <Input
+                    {...props}
+                    type="number"
+                    min={SEMESTER_MIN}
+                    max={SEMESTER_MAX}
+                    value={schemeForm.semester}
+                    onChange={(event) =>
+                      setSchemeForm((previous) => ({
+                        ...previous,
+                        semester: event.target.value,
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+
+              <Field label="Total credits" className="w-32">
+                {(props) => (
+                  <Input
+                    {...props}
+                    type="number"
+                    min={TOTAL_CREDITS_MIN}
+                    max={TOTAL_CREDITS_MAX}
+                    value={schemeForm.totalCredits}
+                    onChange={(event) =>
+                      setSchemeForm((previous) => ({
+                        ...previous,
+                        totalCredits: event.target.value,
+                      }))
+                    }
+                  />
+                )}
+              </Field>
+
+              <Button
+                disabled={busy || !schemeFormValid}
+                onClick={submitScheme}
+              >
+                <Plus />
+                Save scheme
+              </Button>
+            </div>
+
             {schemes.items.length === 0 ? (
               <p className="text-sm text-ink-subtle">
-                No credit schemes exist yet. They are created as part of a
-                promotion.
+                No credit schemes exist yet.
               </p>
             ) : (
               <div className="flex flex-wrap gap-2">
-                {schemes.items.map((scheme) => (
-                  <Badge key={scheme.id} variant="neutral">
-                    {scheme.branch} · {scheme.admissionYear} ·{" "}
-                    {semesterLabel(scheme.semester)} · {scheme.totalCredits}cr
-                  </Badge>
-                ))}
+                {schemes.items.map((scheme) =>
+                  editingSchemeId === scheme.id ? (
+                    <div
+                      key={scheme.id}
+                      className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pr-1 pl-3 text-sm"
+                    >
+                      <span>
+                        {scheme.branch} · {scheme.admissionYear} ·{" "}
+                        {semesterLabel(scheme.semester)}
+                      </span>
+                      <Input
+                        type="number"
+                        min={TOTAL_CREDITS_MIN}
+                        max={TOTAL_CREDITS_MAX}
+                        aria-label={`Total credits for ${scheme.branch} ${scheme.admissionYear} ${semesterLabel(scheme.semester)}`}
+                        className="h-7 w-20"
+                        value={editingCredits}
+                        onChange={(event) =>
+                          setEditingCredits(event.target.value)
+                        }
+                      />
+                      <Button
+                        size="sm"
+                        disabled={
+                          busy ||
+                          !Number.isInteger(Number(editingCredits)) ||
+                          Number(editingCredits) < TOTAL_CREDITS_MIN ||
+                          Number(editingCredits) > TOTAL_CREDITS_MAX
+                        }
+                        onClick={() => submitSchemeEdit(scheme.id)}
+                      >
+                        Save
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={busy}
+                        onClick={() => setEditingSchemeId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <button
+                      key={scheme.id}
+                      type="button"
+                      className="group"
+                      onClick={() => {
+                        setEditingSchemeId(scheme.id);
+                        setEditingCredits(String(scheme.totalCredits));
+                      }}
+                    >
+                      <Badge
+                        variant="neutral"
+                        className="gap-1.5 group-hover:bg-surface-sunken"
+                      >
+                        {scheme.branch} · {scheme.admissionYear} ·{" "}
+                        {semesterLabel(scheme.semester)} · {scheme.totalCredits}
+                        cr
+                        <Pencil className="size-3 text-ink-faint" />
+                      </Badge>
+                    </button>
+                  ),
+                )}
               </div>
             )}
           </CardContent>
