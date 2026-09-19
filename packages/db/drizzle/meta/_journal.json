@@ -5,36 +5,15 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1789308343558,
-      "tag": "0000_wealthy_pete_wisdom",
+      "when": 1789825553250,
+      "tag": "0000_mushy_solo",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "7",
-      "when": 1789308549958,
-      "tag": "0001_auditlog_immutable_trigger",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1789325875369,
-      "tag": "0002_pale_wallop",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1789469750754,
-      "tag": "0003_illegal_johnny_storm",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1789587838275,
-      "tag": "0004_needy_giant_man",
+      "when": 1789825563868,
+      "tag": "0001_immutable_audit_logs",
       "breakpoints": true
     }
   ]

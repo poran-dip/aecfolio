@@ -1,6 +1,6 @@
 {
-  "id": "aa84e8f7-1242-48da-97dd-c0a0d1918743",
-  "prevId": "ff12650f-0fa7-46b3-9302-c873ecce23de",
+  "id": "21c1aa20-eded-4f43-b067-6640c543b755",
+  "prevId": "c3e6d859-33d0-4dd0-adaa-afa4035257e7",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -190,12 +190,6 @@
         },
         "issue_date": {
           "name": "issue_date",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "expiry_date": {
-          "name": "expiry_date",
           "type": "text",
           "primaryKey": false,
           "notNull": false
@@ -1474,6 +1468,272 @@
       },
       "isRLSEnabled": false
     },
+    "public.cv_export_job_items": {
+      "name": "cv_export_job_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "position": {
+          "name": "position",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "student_id": {
+          "name": "student_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "export_id": {
+          "name": "export_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "cv_export_job_items_job_position_idx": {
+          "name": "cv_export_job_items_job_position_idx",
+          "columns": [
+            {
+              "expression": "job_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "position",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "cv_export_job_items_job_id_cv_export_jobs_id_fk": {
+          "name": "cv_export_job_items_job_id_cv_export_jobs_id_fk",
+          "tableFrom": "cv_export_job_items",
+          "columnsFrom": [
+            "job_id"
+          ],
+          "tableTo": "cv_export_jobs",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "cv_export_job_items_student_id_students_id_fk": {
+          "name": "cv_export_job_items_student_id_students_id_fk",
+          "tableFrom": "cv_export_job_items",
+          "columnsFrom": [
+            "student_id"
+          ],
+          "tableTo": "students",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        },
+        "cv_export_job_items_export_id_cv_exports_id_fk": {
+          "name": "cv_export_job_items_export_id_cv_exports_id_fk",
+          "tableFrom": "cv_export_job_items",
+          "columnsFrom": [
+            "export_id"
+          ],
+          "tableTo": "cv_exports",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "set null"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "cv_export_job_items_job_student_unique": {
+          "name": "cv_export_job_items_job_student_unique",
+          "columns": [
+            "job_id",
+            "student_id"
+          ],
+          "nullsNotDistinct": false
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.cv_export_jobs": {
+      "name": "cv_export_jobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "requested_by": {
+          "name": "requested_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "cv_export_job_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'QUEUED'"
+        },
+        "total": {
+          "name": "total",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completed": {
+          "name": "completed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "failed": {
+          "name": "failed",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "finished_at": {
+          "name": "finished_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "cv_export_jobs_requested_by_idx": {
+          "name": "cv_export_jobs_requested_by_idx",
+          "columns": [
+            {
+              "expression": "requested_by",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        },
+        "cv_export_jobs_status_idx": {
+          "name": "cv_export_jobs_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "created_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
+        }
+      },
+      "foreignKeys": {
+        "cv_export_jobs_requested_by_users_id_fk": {
+          "name": "cv_export_jobs_requested_by_users_id_fk",
+          "tableFrom": "cv_export_jobs",
+          "columnsFrom": [
+            "requested_by"
+          ],
+          "tableTo": "users",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "cascade"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "cv_export_job_progress": {
+          "name": "cv_export_job_progress",
+          "value": "\"cv_export_jobs\".\"completed\" >= 0 AND \"cv_export_jobs\".\"failed\" >= 0 AND \"cv_export_jobs\".\"completed\" + \"cv_export_jobs\".\"failed\" <= \"cv_export_jobs\".\"total\""
+        }
+      },
+      "isRLSEnabled": false
+    },
     "public.cv_exports": {
       "name": "cv_exports",
       "schema": "",
@@ -1496,9 +1756,29 @@
           "primaryKey": false,
           "notNull": true
         },
+        "kind": {
+          "name": "kind",
+          "type": "cv_export_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
         "config": {
           "name": "config",
           "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "options": {
+          "name": "options",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "checksum": {
+          "name": "checksum",
+          "type": "text",
           "primaryKey": false,
           "notNull": true
         },
@@ -1507,6 +1787,18 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "requested_by": {
+          "name": "requested_by",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         },
         "created_at": {
           "name": "created_at",
@@ -1552,6 +1844,27 @@
           "with": {},
           "method": "btree",
           "concurrently": false
+        },
+        "cv_exports_student_checksum_idx": {
+          "name": "cv_exports_student_checksum_idx",
+          "columns": [
+            {
+              "expression": "student_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "checksum",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "with": {},
+          "method": "btree",
+          "concurrently": false
         }
       },
       "foreignKeys": {
@@ -1567,6 +1880,19 @@
           ],
           "onUpdate": "no action",
           "onDelete": "cascade"
+        },
+        "cv_exports_requested_by_users_id_fk": {
+          "name": "cv_exports_requested_by_users_id_fk",
+          "tableFrom": "cv_exports",
+          "columnsFrom": [
+            "requested_by"
+          ],
+          "tableTo": "users",
+          "columnsTo": [
+            "id"
+          ],
+          "onUpdate": "no action",
+          "onDelete": "set null"
         }
       },
       "compositePrimaryKeys": {},
@@ -1603,6 +1929,13 @@
           "primaryKey": false,
           "notNull": true,
           "default": "'[]'::jsonb"
+        },
+        "options": {
+          "name": "options",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
         },
         "created_at": {
           "name": "created_at",
@@ -2341,6 +2674,24 @@
         "MTECH",
         "BCA",
         "MCA"
+      ]
+    },
+    "public.cv_export_job_status": {
+      "name": "cv_export_job_status",
+      "schema": "public",
+      "values": [
+        "QUEUED",
+        "RUNNING",
+        "SUCCEEDED",
+        "FAILED"
+      ]
+    },
+    "public.cv_export_kind": {
+      "name": "cv_export_kind",
+      "schema": "public",
+      "values": [
+        "SELF",
+        "STANDARD"
       ]
     },
     "public.role": {

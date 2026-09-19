@@ -1,5 +1,7 @@
 CREATE TYPE "public"."branch" AS ENUM('CSE', 'ETE', 'EE', 'IE', 'ME', 'CE', 'IPE', 'CHE', 'CA');--> statement-breakpoint
 CREATE TYPE "public"."course" AS ENUM('BTECH', 'MTECH', 'BCA', 'MCA');--> statement-breakpoint
+CREATE TYPE "public"."cv_export_job_status" AS ENUM('QUEUED', 'RUNNING', 'SUCCEEDED', 'FAILED');--> statement-breakpoint
+CREATE TYPE "public"."cv_export_kind" AS ENUM('SELF', 'STANDARD');--> statement-breakpoint
 CREATE TYPE "public"."role" AS ENUM('STUDENT', 'FACULTY', 'MOD', 'ADMIN');--> statement-breakpoint
 CREATE TYPE "public"."student_status" AS ENUM('ACTIVE', 'ALUMNI', 'SUSPENDED', 'LEFT');--> statement-breakpoint
 CREATE TYPE "public"."verification_status" AS ENUM('PENDING', 'VERIFIED', 'REJECTED');--> statement-breakpoint
@@ -30,7 +32,6 @@ CREATE TABLE "certifications" (
 	"name" text NOT NULL,
 	"issuer" text NOT NULL,
 	"issue_date" text,
-	"expiry_date" text,
 	"credential_link" text,
 	"proof_key" text,
 	"status" "verification_status" DEFAULT 'PENDING' NOT NULL,
@@ -187,12 +188,42 @@ CREATE TABLE "projects" (
 	CONSTRAINT "project_deletedat_past" CHECK ("projects"."deleted_at" IS NULL OR "projects"."deleted_at" <= now())
 );
 --> statement-breakpoint
+CREATE TABLE "cv_export_job_items" (
+	"id" text PRIMARY KEY NOT NULL,
+	"job_id" text NOT NULL,
+	"position" integer NOT NULL,
+	"student_id" text NOT NULL,
+	"export_id" text,
+	"error" text,
+	"finished_at" timestamp,
+	CONSTRAINT "cv_export_job_items_job_student_unique" UNIQUE("job_id","student_id")
+);
+--> statement-breakpoint
+CREATE TABLE "cv_export_jobs" (
+	"id" text PRIMARY KEY NOT NULL,
+	"requested_by" text NOT NULL,
+	"status" "cv_export_job_status" DEFAULT 'QUEUED' NOT NULL,
+	"total" integer NOT NULL,
+	"completed" integer DEFAULT 0 NOT NULL,
+	"failed" integer DEFAULT 0 NOT NULL,
+	"error" text,
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"started_at" timestamp,
+	"finished_at" timestamp,
+	CONSTRAINT "cv_export_job_progress" CHECK ("cv_export_jobs"."completed" >= 0 AND "cv_export_jobs"."failed" >= 0 AND "cv_export_jobs"."completed" + "cv_export_jobs"."failed" <= "cv_export_jobs"."total")
+);
+--> statement-breakpoint
 CREATE TABLE "cv_exports" (
 	"id" text PRIMARY KEY NOT NULL,
 	"student_id" text NOT NULL,
 	"template_id" text NOT NULL,
+	"kind" "cv_export_kind" NOT NULL,
 	"config" jsonb NOT NULL,
+	"options" jsonb DEFAULT '{}'::jsonb NOT NULL,
+	"checksum" text NOT NULL,
 	"object_key" text NOT NULL,
+	"size_bytes" integer NOT NULL,
+	"requested_by" text,
 	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
@@ -201,6 +232,7 @@ CREATE TABLE "cv_preferences" (
 	"student_id" text NOT NULL,
 	"template_id" text NOT NULL,
 	"sections" jsonb DEFAULT '[]'::jsonb NOT NULL,
+	"options" jsonb DEFAULT '{}'::jsonb NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "cv_preferences_student_template_unique" UNIQUE("student_id","template_id")
@@ -305,7 +337,12 @@ ALTER TABLE "accounts" ADD CONSTRAINT "accounts_user_id_users_id_fk" FOREIGN KEY
 ALTER TABLE "sessions" ADD CONSTRAINT "sessions_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "experiences" ADD CONSTRAINT "experiences_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "projects" ADD CONSTRAINT "projects_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cv_export_job_items" ADD CONSTRAINT "cv_export_job_items_job_id_cv_export_jobs_id_fk" FOREIGN KEY ("job_id") REFERENCES "public"."cv_export_jobs"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cv_export_job_items" ADD CONSTRAINT "cv_export_job_items_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cv_export_job_items" ADD CONSTRAINT "cv_export_job_items_export_id_cv_exports_id_fk" FOREIGN KEY ("export_id") REFERENCES "public"."cv_exports"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cv_export_jobs" ADD CONSTRAINT "cv_export_jobs_requested_by_users_id_fk" FOREIGN KEY ("requested_by") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cv_exports" ADD CONSTRAINT "cv_exports_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "cv_exports" ADD CONSTRAINT "cv_exports_requested_by_users_id_fk" FOREIGN KEY ("requested_by") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "cv_preferences" ADD CONSTRAINT "cv_preferences_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "faculty" ADD CONSTRAINT "faculty_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "results" ADD CONSTRAINT "results_student_id_students_id_fk" FOREIGN KEY ("student_id") REFERENCES "public"."students"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
@@ -329,8 +366,12 @@ CREATE INDEX "verifications_identifier_idx" ON "verifications" USING btree ("ide
 CREATE INDEX "experiences_student_id_idx" ON "experiences" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "experiences_student_type_idx" ON "experiences" USING btree ("student_id","type");--> statement-breakpoint
 CREATE INDEX "projects_student_id_idx" ON "projects" USING btree ("student_id");--> statement-breakpoint
+CREATE INDEX "cv_export_job_items_job_position_idx" ON "cv_export_job_items" USING btree ("job_id","position");--> statement-breakpoint
+CREATE INDEX "cv_export_jobs_requested_by_idx" ON "cv_export_jobs" USING btree ("requested_by","created_at");--> statement-breakpoint
+CREATE INDEX "cv_export_jobs_status_idx" ON "cv_export_jobs" USING btree ("status","created_at");--> statement-breakpoint
 CREATE INDEX "cv_exports_student_id_idx" ON "cv_exports" USING btree ("student_id");--> statement-breakpoint
 CREATE INDEX "cv_exports_student_created_idx" ON "cv_exports" USING btree ("student_id","created_at");--> statement-breakpoint
+CREATE INDEX "cv_exports_student_checksum_idx" ON "cv_exports" USING btree ("student_id","checksum");--> statement-breakpoint
 CREATE INDEX "results_status_idx" ON "results" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "students_course_idx" ON "students" USING btree ("course");--> statement-breakpoint
 CREATE INDEX "students_branch_idx" ON "students" USING btree ("branch");--> statement-breakpoint
