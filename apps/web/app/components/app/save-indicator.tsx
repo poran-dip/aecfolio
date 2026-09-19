@@ -6,10 +6,12 @@ export function SaveIndicator({
   status,
   onRetry,
   className,
+  labels,
 }: {
   status: AutosaveStatus;
   onRetry?: () => void;
   className?: string;
+  labels?: Partial<Record<"dirty" | "saving" | "saved", string>>;
 }) {
   if (status.state === "clean") return null;
 
@@ -38,9 +40,9 @@ export function SaveIndicator({
   }
 
   const copy = {
-    dirty: { icon: CloudUpload, text: "Unsaved" },
-    saving: { icon: CloudUpload, text: "Saving…" },
-    saved: { icon: Check, text: "Saved" },
+    dirty: { icon: CloudUpload, text: labels?.dirty ?? "Unsaved" },
+    saving: { icon: CloudUpload, text: labels?.saving ?? "Saving…" },
+    saved: { icon: Check, text: labels?.saved ?? "Saved" },
   }[status.state];
 
   const Icon = copy.icon;

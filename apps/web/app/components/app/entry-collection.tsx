@@ -1,5 +1,5 @@
 import { VerificationStatus } from "@aecfolio/shared";
-import { Lock, Plus, Trash2 } from "lucide-react";
+import { Lock, Plus, Save, Trash2, X } from "lucide-react";
 import {
   type ReactNode,
   useCallback,
@@ -20,6 +20,7 @@ import { ConfirmDialog } from "~/components/ui/dialog";
 import { IconButton } from "~/components/ui/icon-button";
 import { toast } from "~/components/ui/toast";
 import type { AutosaveStatus } from "~/lib/autosave";
+import { clearDraft, readDraft, writeDraft } from "~/lib/local-draft";
 import { entityApi } from "~/lib/student-api";
 import { useAutosave } from "~/lib/use-autosave";
 import { SaveIndicator, summarise } from "./save-indicator";
@@ -40,6 +41,10 @@ export type EntryFieldProps<T> = {
 
 type Row<T> = { key: string; id: string | null; value: T };
 
+function sameValue<T>(a: T, b: T): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
+
 export function EntryCollection<T>({
   label,
   singular,
@@ -51,6 +56,7 @@ export function EntryCollection<T>({
   subtitleOf,
   statusOf,
   entity,
+  storageKey,
   toPayload,
   api,
   renderFields,
@@ -66,6 +72,7 @@ export function EntryCollection<T>({
   subtitleOf?: (value: T) => string | null;
   statusOf?: (value: T) => VerificationStatus | null;
   entity?: string;
+  storageKey?: string;
   toPayload?: (value: T) => unknown;
   api?: EntryApi<T>;
   renderFields: (props: EntryFieldProps<T>) => ReactNode;
@@ -76,6 +83,11 @@ export function EntryCollection<T>({
   );
   const [open, setOpen] = useState<string[]>([]);
   const [statuses, setStatuses] = useState<Record<string, AutosaveStatus>>({});
+
+  const collectionKey = storageKey ?? entity;
+  if (!collectionKey) {
+    throw new Error("EntryCollection needs either storageKey or entity");
+  }
 
   const report = useCallback((key: string, status: AutosaveStatus) => {
     setStatuses((previous) => ({ ...previous, [key]: status }));
@@ -88,7 +100,7 @@ export function EntryCollection<T>({
         "EntryCollection needs either api, or entity + toPayload",
       );
     return entityApi<T>(entity, toPayload);
-  }, [api, entity]);
+  }, [api, entity, toPayload]);
 
   function add() {
     const key = `draft-${crypto.randomUUID()}`;
@@ -112,7 +124,14 @@ export function EntryCollection<T>({
           <h2 className="font-heading text-xl font-semibold text-ink">
             {label}
           </h2>
-          <SaveIndicator status={summarise(Object.values(statuses))} />
+          <SaveIndicator
+            status={summarise(Object.values(statuses))}
+            labels={{
+              dirty: "Unsaved changes",
+              saving: "Saving draft…",
+              saved: "Draft saved locally",
+            }}
+          />
         </div>
         <Button size="sm" variant="secondary" onClick={add}>
           <Plus />
@@ -133,6 +152,7 @@ export function EntryCollection<T>({
               <EntryRow
                 key={row.key}
                 row={row}
+                draftKey={`${collectionKey}:${row.key}`}
                 api={resolved}
                 canSave={canSave}
                 titleOf={titleOf}
@@ -153,6 +173,7 @@ export function EntryCollection<T>({
 
 function EntryRow<T>({
   row,
+  draftKey,
   api,
   canSave,
   titleOf,
@@ -164,6 +185,7 @@ function EntryRow<T>({
   onRemoved,
 }: {
   row: Row<T>;
+  draftKey: string;
   api: EntryApi<T>;
   canSave: (value: T) => boolean;
   titleOf: (value: T) => string;
@@ -174,30 +196,35 @@ function EntryRow<T>({
   onStatus: (key: string, status: AutosaveStatus) => void;
   onRemoved: () => void;
 }) {
-  const [value, setValue] = useState(row.value);
+  const original = useRef(row.value);
+  const [value, setValue] = useState<T>(
+    () => readDraft<T>(draftKey) ?? row.value,
+  );
+
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmEdit, setConfirmEdit] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
+  const [committing, setCommitting] = useState(false);
   const idRef = useRef(row.id);
 
   const status = statusOf?.(value) ?? null;
   const verified = status === VerificationStatus.VERIFIED;
   const locked = verified && !unlocked;
 
-  const auto = useAutosave<T>({
-    canSave,
-    save: async (next) => {
-      if (idRef.current) {
-        await api.update(idRef.current, next);
-      } else {
-        idRef.current = await api.create(next);
-      }
-    },
+  const draft = useAutosave<T>({
+    save: async (next) => writeDraft(draftKey, next),
   });
 
   useEffect(() => {
-    onStatus(row.key, auto.status);
-  }, [auto.status, onStatus, row.key]);
+    onStatus(row.key, draft.status);
+  }, [draft.status, onStatus, row.key]);
+
+  useEffect(() => {
+    const recovered = readDraft<T>(draftKey);
+    if (recovered && !sameValue(recovered, row.value)) {
+      draft.change(recovered);
+    }
+  }, []);
 
   function set(patch: Partial<T>) {
     const demote =
@@ -207,11 +234,49 @@ function EntryRow<T>({
 
     const next = { ...value, ...patch, ...demote };
     setValue(next);
-    auto.change(next);
+    draft.change(next);
   }
 
   const title = titleOf(value).trim();
   const untitled = !canSave(value);
+  const isNew = idRef.current === null;
+  const dirty = isNew || !sameValue(value, original.current);
+
+  async function commit() {
+    if (untitled || committing) return;
+    setCommitting(true);
+    try {
+      if (idRef.current) {
+        await api.update(idRef.current, value);
+      } else {
+        idRef.current = await api.create(value);
+      }
+      original.current = value;
+      setUnlocked(false);
+      clearDraft(draftKey);
+      draft.cancel();
+      toast.success(`${title || singular} saved.`);
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : `That ${singular} could not be saved. Try again.`,
+      );
+    } finally {
+      setCommitting(false);
+    }
+  }
+
+  function discard() {
+    draft.cancel();
+    clearDraft(draftKey);
+    if (isNew) {
+      onRemoved();
+      return;
+    }
+    setValue(original.current);
+    setUnlocked(false);
+  }
 
   return (
     <AccordionItem value={row.key} className={untitled ? "border-danger" : ""}>
@@ -221,8 +286,13 @@ function EntryRow<T>({
         badge={
           <span className="flex shrink-0 items-center gap-2">
             <SaveIndicator
-              status={auto.status}
-              onRetry={() => void auto.retry()}
+              status={draft.status}
+              onRetry={() => void draft.retry()}
+              labels={{
+                dirty: "Unsaved",
+                saving: "Saving…",
+                saved: "Draft saved locally",
+              }}
             />
             {status && <ClaimStatusBadge status={status} size="sm" />}
           </span>
@@ -242,8 +312,8 @@ function EntryRow<T>({
       <AccordionContent>
         {untitled && (
           <p className="mb-3 rounded-lg border border-danger bg-danger-surface px-3 py-2 text-xs text-danger-text">
-            This {singular} needs a title before it can be saved. Nothing here
-            is stored until it has one.
+            This {singular} needs a title before it can be saved. Your changes
+            are kept in this browser until then.
           </p>
         )}
 
@@ -268,10 +338,33 @@ function EntryRow<T>({
             value,
             set,
             id: idRef.current,
-            blur: () => void auto.flush(),
+            blur: () => void draft.flush(),
             locked,
           })}
         </fieldset>
+
+        {dirty && !locked && (
+          <div className="mt-4 flex items-center justify-end gap-2 border-t border-line pt-3">
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={discard}
+              disabled={committing}
+            >
+              <X />
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="primary"
+              onClick={() => void commit()}
+              disabled={untitled || committing}
+            >
+              <Save />
+              {committing ? "Saving…" : `Save ${singular}`}
+            </Button>
+          </div>
+        )}
       </AccordionContent>
 
       <ConfirmDialog
@@ -298,7 +391,8 @@ function EntryRow<T>({
         confirmLabel={`Delete ${singular}`}
         danger
         onConfirm={async () => {
-          auto.cancel();
+          draft.cancel();
+          clearDraft(draftKey);
           const id = idRef.current;
           onRemoved();
           if (!id) return;
