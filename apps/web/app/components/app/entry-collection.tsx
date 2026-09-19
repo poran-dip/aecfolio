@@ -78,16 +78,41 @@ export function EntryCollection<T>({
   renderFields: (props: EntryFieldProps<T>) => ReactNode;
   emptyHint?: string;
 }) {
-  const [rows, setRows] = useState<Row<T>[]>(() =>
-    initial.map((row) => ({ key: row.id, id: row.id, value: row.value })),
-  );
-  const [open, setOpen] = useState<string[]>([]);
-  const [statuses, setStatuses] = useState<Record<string, AutosaveStatus>>({});
-
   const collectionKey = storageKey ?? entity;
   if (!collectionKey) {
     throw new Error("EntryCollection needs either storageKey or entity");
   }
+
+  const newRowsKey = `${collectionKey}:__new__`;
+
+  function rememberNew(key: string) {
+    const current = readDraft<string[]>(newRowsKey) ?? [];
+    if (!current.includes(key)) writeDraft(newRowsKey, [...current, key]);
+  }
+
+  function forgetNew(key: string) {
+    const current = readDraft<string[]>(newRowsKey) ?? [];
+    writeDraft(
+      newRowsKey,
+      current.filter((k) => k !== key),
+    );
+  }
+
+  const [rows, setRows] = useState<Row<T>[]>(() => {
+    const serverRows = initial.map((row) => ({
+      key: row.id,
+      id: row.id,
+      value: row.value,
+    }));
+    const phantomRows: Row<T>[] = [];
+    for (const key of readDraft<string[]>(newRowsKey) ?? []) {
+      const value = readDraft<T>(`${collectionKey}:${key}`);
+      if (value) phantomRows.push({ key, id: null, value });
+    }
+    return [...serverRows, ...phantomRows];
+  });
+  const [open, setOpen] = useState<string[]>([]);
+  const [statuses, setStatuses] = useState<Record<string, AutosaveStatus>>({});
 
   const report = useCallback((key: string, status: AutosaveStatus) => {
     setStatuses((previous) => ({ ...previous, [key]: status }));
@@ -104,7 +129,10 @@ export function EntryCollection<T>({
 
   function add() {
     const key = `draft-${crypto.randomUUID()}`;
-    setRows((previous) => [...previous, { key, id: null, value: blank() }]);
+    const value = blank();
+    writeDraft(`${collectionKey}:${key}`, value);
+    rememberNew(key);
+    setRows((previous) => [...previous, { key, id: null, value }]);
     setOpen((previous) => [...previous, key]);
   }
 
@@ -115,6 +143,8 @@ export function EntryCollection<T>({
       delete next[key];
       return next;
     });
+    clearDraft(`${collectionKey}:${key}`);
+    forgetNew(key);
   }
 
   return (
@@ -161,6 +191,7 @@ export function EntryCollection<T>({
                 singular={singular}
                 renderFields={renderFields}
                 onStatus={report}
+                onCreated={() => forgetNew(row.key)}
                 onRemoved={() => drop(row.key)}
               />
             ))}
@@ -182,6 +213,7 @@ function EntryRow<T>({
   singular,
   renderFields,
   onStatus,
+  onCreated,
   onRemoved,
 }: {
   row: Row<T>;
@@ -194,13 +226,13 @@ function EntryRow<T>({
   singular: string;
   renderFields: (props: EntryFieldProps<T>) => ReactNode;
   onStatus: (key: string, status: AutosaveStatus) => void;
+  onCreated: () => void;
   onRemoved: () => void;
 }) {
   const original = useRef(row.value);
   const [value, setValue] = useState<T>(
     () => readDraft<T>(draftKey) ?? row.value,
   );
-
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [confirmEdit, setConfirmEdit] = useState(false);
   const [unlocked, setUnlocked] = useState(false);
@@ -245,6 +277,7 @@ function EntryRow<T>({
   async function commit() {
     if (untitled || committing) return;
     setCommitting(true);
+    const wasNew = isNew;
     try {
       if (idRef.current) {
         await api.update(idRef.current, value);
@@ -255,6 +288,7 @@ function EntryRow<T>({
       setUnlocked(false);
       clearDraft(draftKey);
       draft.cancel();
+      if (wasNew) onCreated();
       toast.success(`${title || singular} saved.`);
     } catch (error) {
       toast.error(
