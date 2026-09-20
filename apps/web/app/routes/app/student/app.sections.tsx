@@ -183,6 +183,7 @@ function SectionCard({
           <EntryCollection
             label="Entries"
             singular="entry"
+            storageKey={`custom-section:${id}`}
             initial={row.data.entries}
             blank={() => ({ title: "", org: null, date: null, body: null })}
             canSave={(value) => value.title.trim().length > 0}
