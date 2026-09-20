@@ -5,7 +5,6 @@ import {
   defaultSectionsConfig,
   type TemplateManifest,
 } from "@aecfolio/ui";
-import { semesterLabel } from "./format";
 
 const ISO_TIMESTAMP =
   /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
@@ -81,10 +80,8 @@ export function sectionEntries(
     case "socials":
       return data.socials.map((row) => ({ id: row.id, label: row.title }));
     case "results":
-      return data.results.map((row) => ({
-        id: row.id,
-        label: `${semesterLabel(row.semester)} semester`,
-      }));
+      // Semesters always print first to last, so there is nothing to arrange.
+      return [];
     case "custom": {
       const found = data.customSections.find(
         (it) => it.id === section.customSectionId,
