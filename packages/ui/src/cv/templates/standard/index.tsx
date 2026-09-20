@@ -250,8 +250,7 @@ function renderSection(
     }
 
     case "results": {
-      const results = orderEntries(data.results, section.entryOrder);
-      const semesters = results
+      const semesters = data.results
         .filter((r) => r.sgpa !== null)
         .sort((a, b) => a.semester - b.semester);
       const graduationYear = expectedGraduationYear(data.student);

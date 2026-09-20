@@ -36,7 +36,7 @@ export const standardManifest: TemplateManifest<StandardOptions> = {
     socials:
       "Social links print in the header contact block on this template, so where they sit in this list has no effect — only whether they are included, and the order of the links themselves.",
     results:
-      "Prints as the Education section: your degree, the college, and your CGPA. Individual semester results only appear if you turn that option on.",
+      "Prints as the Education section: your degree, the college, and your CGPA. Individual semester results only appear if you turn that option on, and always in semester order.",
     summary:
       "Your bio, from your profile. The section disappears on its own if the bio is empty — you do not have to exclude it as well.",
     skills:

@@ -128,6 +128,22 @@ describe("sectionEntries", () => {
     ).toEqual([{ id: "e1", label: "Backend Intern · Zoho" }]);
   });
 
+  it("offers no semester results to arrange, however many there are", () => {
+    const data = makeData({
+      results: [
+        { id: "r4", semester: 4 },
+        { id: "r1", semester: 1 },
+      ] as unknown as CvData["results"],
+    });
+
+    expect(
+      sectionEntries(
+        { type: "results", include: true, order: 0, entryOrder: [] },
+        data,
+      ),
+    ).toEqual([]);
+  });
+
   it("reads a custom section's own entries and name", () => {
     const data = makeData({
       customSections: [

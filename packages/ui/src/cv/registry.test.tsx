@@ -288,6 +288,23 @@ describe("sections and options", () => {
     );
   });
 
+  it("prints semester results first to last whatever entryOrder was saved", () => {
+    const html = render({
+      data: makeCvData(),
+      sections: [
+        {
+          type: "results",
+          include: true,
+          order: 0,
+          entryOrder: ["r6", "r5"],
+        },
+      ],
+      options: { showSemesterResults: true },
+    });
+    expect(html).toContain("Semester 5");
+    expect(html.indexOf("Semester 5")).toBeLessThan(html.indexOf("Semester 6"));
+  });
+
   it("falls back to defaults for an unparseable options bag", () => {
     const html = render({
       data: makeCvData(),
