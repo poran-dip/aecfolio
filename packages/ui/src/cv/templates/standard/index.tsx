@@ -1,6 +1,7 @@
 import {
   DATE_RANGE_SEPARATOR,
   degreeLabel,
+  expectedGraduationYear,
   formatDate,
   PRESENT_LABEL,
 } from "@aecfolio/shared";
@@ -253,6 +254,7 @@ function renderSection(
       const semesters = results
         .filter((r) => r.sgpa !== null)
         .sort((a, b) => a.semester - b.semester);
+      const graduationYear = expectedGraduationYear(data.student);
 
       return (
         <Section key="results" title="Education">
@@ -262,6 +264,11 @@ function renderSection(
                 {degreeLabel(data.student.course, data.student.branch)}
               </span>
               <span className="text-cv-ink-muted">{data.institution.name}</span>
+              {graduationYear !== null && (
+                <span className="text-cv-ink-muted">
+                  {`Expected graduation: ${graduationYear}`}
+                </span>
+              )}
 
               {data.student.cgpa !== null && (
                 <span className="mt-2 inline-flex items-center gap-4">

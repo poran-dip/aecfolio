@@ -92,6 +92,10 @@ pickers → composeDate → "Jan 2025 – Dec 2025" → decomposeDate → picker
 
 `YearMonth.month` is **1-12**, not a `Date`'s 0-11. It crosses the wire as JSON and gets read by humans; an off-by-one that only surfaces in December is not worth matching `Date`'s constructor.
 
+## Expected graduation
+
+`utils/graduation.ts`. `expectedGraduationYear` is admission year plus `COURSE_DURATION_YEARS`, and it returns `null` for anyone whose status is not `ACTIVE`: an alumnus has graduated, and for a suspended or departed student the date is not one we can promise. `COURSE_DURATION_YEARS` is `SEMESTER_MAX / 2` rather than a literal 4, because cohort promotion graduates everyone at `SEMESTER_MAX` whatever their course, so the two would otherwise be able to disagree. It is derived, never stored: there is no column for it.
+
 ## Review decisions
 
 `reviewDecisionSchema` is a discriminated union rather than a flat object, so "rejected" cannot be expressed without a reason. That is the same rule as the `*_status_consistency` CHECK on `results` / `achievements` / `certifications`, restated at the layer that can return a useful message instead of a constraint violation. `PENDING` is not a decision a reviewer can send.

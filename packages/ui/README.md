@@ -232,6 +232,7 @@ Not every column belongs on every document, and two of the omissions are decisio
 | name, email, phone, location, photo                                 | header — photo behind `showPhoto`                       |
 | `titleSought`                                                       | header, beside the name; hidden when the field is empty |
 | course, branch, admissionYear, cgpa, semester                       | subtitle and Education                                  |
+| `status`                                                            | Education, only to derive the expected graduation year  |
 | bio                                                                 | the Summary section                                     |
 | skills, `spokenLanguages`                                           | the Skills section — languages behind `showLanguages`   |
 | `rollNo`                                                            | not rendered                                            |
