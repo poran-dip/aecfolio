@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
+import { StudentStatus } from "@aecfolio/shared";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { makeCvData } from "./fixtures";
@@ -124,6 +125,31 @@ describe("nothing hardcoded that belongs to the record", () => {
     const html = render({ data });
     expect(html).toContain("MCA in Computer Applications");
     expect(html).not.toContain("B.Tech");
+  });
+});
+
+describe("expected graduation", () => {
+  it("prints admission year plus four in Education for an active student", () => {
+    const data = makeCvData();
+    data.student.status = StudentStatus.ACTIVE;
+    data.student.admissionYear = 2023;
+    const html = render({ data });
+    expect(html).toContain("Expected graduation: 2027");
+    expect(html.indexOf("Assam Engineering College")).toBeLessThan(
+      html.indexOf("Expected graduation: 2027"),
+    );
+  });
+
+  it("prints nothing for a student who is not active", () => {
+    for (const status of [
+      StudentStatus.ALUMNI,
+      StudentStatus.SUSPENDED,
+      StudentStatus.LEFT,
+    ]) {
+      const data = makeCvData();
+      data.student.status = status;
+      expect(render({ data })).not.toMatch(/expected graduation/i);
+    }
   });
 });
 
