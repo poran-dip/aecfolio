@@ -153,6 +153,27 @@ describe("expected graduation", () => {
   });
 });
 
+describe("right-aligned dates", () => {
+  it("are padded in from the page edge so the italic overhang is not clipped", () => {
+    const html = render({
+      data: makeCvData(),
+      sections: [
+        { type: "experiences", include: true, order: 0, entryOrder: [] },
+        { type: "results", include: true, order: 1, entryOrder: [] },
+        { type: "certifications", include: true, order: 2, entryOrder: [] },
+      ],
+    });
+    for (const date of ["Jun 2025 – Present", "2022 – Present", "Mar 2025"]) {
+      const at = html.indexOf(date);
+      expect(at, date).toBeGreaterThan(-1);
+      const italics = [
+        ...html.slice(0, at).matchAll(/<span class="([^"]*\bitalic\b[^"]*)"/g),
+      ];
+      expect(italics.at(-1)?.[1], date).toMatch(/\bpr-3\b/);
+    }
+  });
+});
+
 describe("markdown", () => {
   it("renders block markdown in bodies", () => {
     const html = render({ data: makeCvData() });
