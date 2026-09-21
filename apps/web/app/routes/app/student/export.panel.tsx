@@ -5,7 +5,13 @@ import { useState } from "react";
 import { SortableList } from "~/components/app/sortable-list";
 import { Card, CardContent } from "~/components/ui/card";
 import { Switch } from "~/components/ui/switch";
-import { sectionEntries, sectionKey, sectionLabel } from "~/lib/cv-arrange";
+import {
+  sectionEntries,
+  sectionKey,
+  sectionLabel,
+  setEntryVisible,
+  visibleEntryCount,
+} from "~/lib/cv-arrange";
 import { cn } from "~/lib/utils";
 
 export function TemplatePicker({
@@ -93,7 +99,8 @@ export function SectionArranger({
             Sections
           </h2>
           <p className="mt-0.5 text-xs text-ink-subtle">
-            Drag to reorder, or open one to arrange the entries inside it.
+            Drag to reorder, or open one to reorder or switch off the entries
+            inside it.
           </p>
         </div>
 
@@ -107,6 +114,7 @@ export function SectionArranger({
                 ? undefined
                 : manifest.sectionNotes?.[section.type];
             const open = expanded === id;
+            const shown = visibleEntryCount(section, data);
 
             return (
               <div className="flex flex-col gap-2 py-0.5">
@@ -135,7 +143,9 @@ export function SectionArranger({
                     </span>
                     {entries.length > 0 && (
                       <span className="shrink-0 text-xs text-ink-faint tabular-nums">
-                        {entries.length}
+                        {shown === entries.length
+                          ? entries.length
+                          : `${shown}/${entries.length}`}
                       </span>
                     )}
                   </button>
@@ -160,7 +170,11 @@ export function SectionArranger({
                       <EntryArranger
                         entries={entries}
                         order={section.entryOrder}
+                        hidden={section.hiddenEntries}
                         onChange={(entryOrder) => patch(id, { entryOrder })}
+                        onHiddenChange={(hiddenEntries) =>
+                          patch(id, { hiddenEntries })
+                        }
                       />
                     )}
                   </div>
@@ -177,12 +191,17 @@ export function SectionArranger({
 function EntryArranger({
   entries,
   order,
+  hidden,
   onChange,
+  onHiddenChange,
 }: {
   entries: { id: string; label: string }[];
   order: readonly string[];
+  hidden: readonly string[];
   onChange: (order: string[]) => void;
+  onHiddenChange: (hidden: string[]) => void;
 }) {
+  const off = new Set(hidden);
   const rank = new Map(order.map((id, i) => [id, i]));
   const sorted = entries
     .slice()
@@ -197,9 +216,23 @@ function EntryArranger({
       items={sorted}
       onReorder={(next) => onChange(next.map((item) => item.id))}
       renderItem={(item) => (
-        <span className="block truncate text-xs text-ink-muted">
-          {item.label || "Untitled"}
-        </span>
+        <div className="flex items-center gap-2">
+          <span
+            className={cn(
+              "block min-w-0 flex-1 truncate text-xs text-ink-muted",
+              off.has(item.id) && "text-ink-faint line-through",
+            )}
+          >
+            {item.label || "Untitled"}
+          </span>
+          <Switch
+            checked={!off.has(item.id)}
+            aria-label={`Include ${item.label || "Untitled"}`}
+            onCheckedChange={(visible) =>
+              onHiddenChange(setEntryVisible(hidden, item.id, visible))
+            }
+          />
+        </div>
       )}
     />
   );

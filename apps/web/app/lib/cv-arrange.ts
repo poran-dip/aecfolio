@@ -105,11 +105,16 @@ export function normalizeSections(
   if (!saved || saved.length === 0) return fallback;
 
   const customIds = new Set(data.customSections.map((it) => it.id));
-  const kept = saved.filter(
-    (section) =>
-      manifest.supportedSections.includes(section.type) &&
-      (section.type !== "custom" || customIds.has(section.customSectionId)),
-  );
+  const kept = saved
+    .filter(
+      (section) =>
+        manifest.supportedSections.includes(section.type) &&
+        (section.type !== "custom" || customIds.has(section.customSectionId)),
+    )
+    .map((section) => ({
+      ...section,
+      hiddenEntries: section.hiddenEntries ?? [],
+    }));
 
   const seen = new Set(kept.map(sectionKey));
   const added = fallback.filter((section) => !seen.has(sectionKey(section)));
@@ -124,4 +129,22 @@ export function withEntryOrder(
   ids: string[],
 ): CvSectionPreference {
   return { ...section, entryOrder: ids };
+}
+
+export function setEntryVisible(
+  hidden: readonly string[],
+  id: string,
+  visible: boolean,
+): string[] {
+  const rest = hidden.filter((entryId) => entryId !== id);
+  return visible ? rest : [...rest, id];
+}
+
+export function visibleEntryCount(
+  section: CvSectionPreference,
+  data: CvData,
+): number {
+  const hidden = new Set(section.hiddenEntries ?? []);
+  return sectionEntries(section, data).filter((entry) => !hidden.has(entry.id))
+    .length;
 }

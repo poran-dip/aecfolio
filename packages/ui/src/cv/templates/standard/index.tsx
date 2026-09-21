@@ -8,8 +8,9 @@ import {
 import type { CSSProperties } from "react";
 import { ExternalLink } from "../../../icons";
 import { Markdown } from "../../../markdown";
+import type { PageMargins } from "../../page";
 import type { ResolvedSection } from "../../sections";
-import { orderEntries } from "../../sections";
+import { arrangeEntries } from "../../sections";
 import type { CvData } from "../../types";
 import type { StandardOptions } from "./options";
 import { Header } from "./parts/header";
@@ -23,35 +24,40 @@ import {
 } from "./parts/primitives";
 
 type Density = {
-  marginBlock: string;
-  marginInline: string;
+  marginBlock: number;
+  marginInline: number;
   sectionGap: string;
   entryGap: string;
 };
 
 const DENSITY: Record<StandardOptions["density"], Density> = {
   comfortable: {
-    marginBlock: "10mm",
-    marginInline: "12mm",
+    marginBlock: 10,
+    marginInline: 12,
     sectionGap: "20px",
     entryGap: "14px",
   },
   compact: {
-    marginBlock: "8mm",
-    marginInline: "10mm",
+    marginBlock: 8,
+    marginInline: 10,
     sectionGap: "14px",
     entryGap: "10px",
   },
 };
 
 function pageRule(density: Density): string {
-  return `@page{size:210mm 297mm;margin:${density.marginBlock} ${density.marginInline};}`;
+  return `@page{size:210mm 297mm;margin:${density.marginBlock}mm ${density.marginInline}mm;}`;
+}
+
+export function standardPageMargins(options: StandardOptions): PageMargins {
+  const { marginBlock, marginInline } = DENSITY[options.density];
+  return { blockMm: marginBlock, inlineMm: marginInline };
 }
 
 function pageVariables(density: Density): CSSProperties {
   return {
-    "--cv-page-padding-block": density.marginBlock,
-    "--cv-page-padding-inline": density.marginInline,
+    "--cv-page-padding-block": `${density.marginBlock}mm`,
+    "--cv-page-padding-inline": `${density.marginInline}mm`,
     "--cv-section-gap": density.sectionGap,
     "--cv-entry-gap": density.entryGap,
   } as CSSProperties;
@@ -83,7 +89,7 @@ export function StandardTemplate({
 }: StandardTemplateProps) {
   const socialSection = sections.find((s) => s.kind === "socials");
   const socials = socialSection
-    ? orderEntries(data.socials, socialSection.entryOrder)
+    ? arrangeEntries(data.socials, socialSection)
     : [];
 
   const body = sections
@@ -145,7 +151,7 @@ function renderSection(
     }
 
     case "experiences": {
-      const items = orderEntries(data.experiences, section.entryOrder);
+      const items = arrangeEntries(data.experiences, section);
       if (items.length === 0) return null;
       return (
         <Section key="experiences" title="Experience">
@@ -166,7 +172,7 @@ function renderSection(
     }
 
     case "projects": {
-      const items = orderEntries(data.projects, section.entryOrder);
+      const items = arrangeEntries(data.projects, section);
       if (items.length === 0) return null;
       return (
         <Section key="projects" title="Projects">
@@ -183,7 +189,7 @@ function renderSection(
     }
 
     case "achievements": {
-      const items = orderEntries(data.achievements, section.entryOrder);
+      const items = arrangeEntries(data.achievements, section);
       if (items.length === 0) return null;
       return (
         <Section key="achievements" title="Achievements">
@@ -203,7 +209,7 @@ function renderSection(
     }
 
     case "certifications": {
-      const items = orderEntries(data.certifications, section.entryOrder);
+      const items = arrangeEntries(data.certifications, section);
       if (items.length === 0) return null;
       return (
         <Section key="certifications" title="Certifications">
@@ -233,7 +239,7 @@ function renderSection(
     }
 
     case "interests": {
-      const items = orderEntries(data.interests, section.entryOrder);
+      const items = arrangeEntries(data.interests, section);
       if (items.length === 0) return null;
       return (
         <Section key="interests" title="Interests">
@@ -307,8 +313,9 @@ function renderSection(
       const custom = data.customSections.find(
         (s) => s.id === section.customSectionId,
       );
-      if (!custom || custom.entries.length === 0) return null;
-      const items = orderEntries(custom.entries, section.entryOrder);
+      if (!custom) return null;
+      const items = arrangeEntries(custom.entries, section);
+      if (items.length === 0) return null;
 
       return (
         <Section key={`custom:${custom.id}`} title={custom.name}>

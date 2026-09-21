@@ -4,9 +4,10 @@ import type { TemplateManifest } from "./manifest";
 import { defaultSectionsConfig, parseTemplateOptions } from "./manifest";
 import type { CvTemplateId } from "./manifests";
 import { templateManifests } from "./manifests";
+import type { PageMargins } from "./page";
 import type { ResolvedSection } from "./sections";
 import { resolveSections } from "./sections";
-import { StandardTemplate } from "./templates/standard";
+import { StandardTemplate, standardPageMargins } from "./templates/standard";
 import type { CvData } from "./types";
 
 export type TemplateComponentProps<TOptions> = {
@@ -24,14 +25,18 @@ export type CvRenderInput = {
 export type CvTemplate = {
   manifest: TemplateManifest<unknown>;
   render: (input: CvRenderInput) => ReactElement;
+  pageMargins: (options?: CvTemplateOptions) => PageMargins;
 };
 
 function defineTemplate<TOptions>(
   manifest: TemplateManifest<TOptions>,
   Component: (props: TemplateComponentProps<TOptions>) => ReactElement,
+  pageMargins: (options: TOptions) => PageMargins,
 ): CvTemplate {
   return {
     manifest: manifest as TemplateManifest<unknown>,
+    pageMargins: (options) =>
+      pageMargins(parseTemplateOptions(manifest, options)),
     render({ data, sections, options }) {
       const config =
         sections ?? defaultSectionsConfig(manifest, data.customSections);
@@ -47,7 +52,11 @@ function defineTemplate<TOptions>(
 }
 
 export const cvTemplates = {
-  standard: defineTemplate(templateManifests.standard, StandardTemplate),
+  standard: defineTemplate(
+    templateManifests.standard,
+    StandardTemplate,
+    standardPageMargins,
+  ),
 } satisfies Record<CvTemplateId, CvTemplate>;
 
 export function getTemplate(id: string): CvTemplate | null {

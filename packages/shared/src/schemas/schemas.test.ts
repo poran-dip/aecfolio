@@ -352,6 +352,19 @@ describe("cv preferences", () => {
     ).toEqual([]);
   });
 
+  it("keeps the entries the student switched off", () => {
+    expect(
+      cvSectionsConfigSchema.parse([{ ...section, hiddenEntries: ["p1"] }])[0]
+        .hiddenEntries,
+    ).toEqual(["p1"]);
+  });
+
+  it("defaults hiddenEntries to empty, so a section saved before it existed shows everything", () => {
+    expect(cvSectionsConfigSchema.parse([section])[0].hiddenEntries).toEqual(
+      [],
+    );
+  });
+
   it("requires a custom section to name which one", () => {
     expect(
       cvSectionsConfigSchema.safeParse([

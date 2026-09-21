@@ -184,7 +184,7 @@ export default function ExportRoute({ loaderData }: Route.ComponentProps) {
           </div>
 
           <div className="rounded-xl border border-line bg-surface p-4 lg:sticky lg:top-20">
-            <CvFrame>
+            <CvFrame margins={template.pageMargins(current.options)}>
               {template.render({
                 data,
                 sections: current.sections,

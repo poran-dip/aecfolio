@@ -1,10 +1,16 @@
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
-import { type CvData, getTemplate } from "@aecfolio/ui";
+import {
+  type CvData,
+  getTemplate,
+  type PageMargins,
+  pageBox,
+} from "@aecfolio/ui";
 import { makeCvData } from "@aecfolio/ui/fixtures";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { createApp } from "./app";
 import { createPool } from "./lib/browser";
+import { renderPdf } from "./lib/render";
 import { readPdf } from "./test/pdf";
 
 const SECRET = process.env.WORKER_SECRET as string;
@@ -227,6 +233,29 @@ describe("pagination", () => {
     }
     expect(first).toBeGreaterThan(20);
   });
+});
+
+describe("the printable page height the live preview paginates by", () => {
+  async function pagesFor(margins: PageMargins, blockHeight: number) {
+    const markup =
+      `<style>@page{size:210mm 297mm;margin:${margins.blockMm}mm ${margins.inlineMm}mm;}</style>` +
+      `<div class="cv-page"><div style="height:${blockHeight}px;background:#000;break-inside:avoid"></div></div>`;
+    const pdf = await readPdf(await renderPdf(pool, markup, "probe"));
+    return pdf.pages.length;
+  }
+
+  it.each([
+    { blockMm: 10, inlineMm: 12 },
+    { blockMm: 8, inlineMm: 10 },
+    { blockMm: 10.5, inlineMm: 12 },
+  ])(
+    "fits a block up to pageBox's height and not a pixel more (%j)",
+    async (margins) => {
+      const { contentHeight } = pageBox(margins);
+      expect(await pagesFor(margins, contentHeight - 0.4)).toBe(1);
+      expect(await pagesFor(margins, contentHeight + 0.5)).toBe(2);
+    },
+  );
 });
 
 describe("the page pool", () => {

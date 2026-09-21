@@ -50,7 +50,13 @@ export function defaultSectionsConfig(
   customSections: readonly CvCustomSectionData[] = [],
 ): CvSectionsConfig {
   const config: CvSectionsConfig = manifest.defaultSections.map(
-    (type, order) => ({ type, include: true, order, entryOrder: [] }),
+    (type, order) => ({
+      type,
+      include: true,
+      order,
+      entryOrder: [],
+      hiddenEntries: [],
+    }),
   );
 
   if (!manifest.supportedSections.includes("custom")) return config;
@@ -62,6 +68,7 @@ export function defaultSectionsConfig(
       include: true,
       order: manifest.defaultSections.length + i,
       entryOrder: [],
+      hiddenEntries: [],
     });
   });
 
