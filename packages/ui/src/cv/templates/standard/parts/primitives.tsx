@@ -101,7 +101,7 @@ export function EntryHeader({
 export function EntryDate({ children }: { children: string | null }) {
   if (!children) return null;
   return (
-    <span className="text-base text-cv-ink-muted italic">
+    <span className="pr-3 text-base text-cv-ink-muted italic">
       <MarkdownInline>{children}</MarkdownInline>
     </span>
   );

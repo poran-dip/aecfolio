@@ -47,6 +47,8 @@ Every request a tab makes is intercepted, and anything that is not a `data:` URL
 
 The shell document embeds the four Outfit faces from `public/fonts/outfit` as base64 `@font-face` rules. A `data:` or shell document cannot resolve a relative URL, which is why the old `/fonts/*` static route never worked. Because the shell loads once per tab, the ~300 KB of font data is parsed once per tab rather than once per PDF. A test asserts Outfit is embedded in the output.
 
+There is no italic face: Outfit is upright-only, so every `italic` in a CV is a slant Chromium synthesizes, and the last glyph of an italic run overhangs its layout box by about a pixel. Anything italic that ends flush with the page edge gets that overhang clipped when printed, which is why `EntryDate` carries a little right padding and why the web preview, whose sheet has its own padding, never showed the bug.
+
 ## The render version
 
 `X-Render-Version` on every PDF, and `GET /version`, identify what is doing the rendering. In production it is a hash of the running bundle, the stylesheet and the fonts, so a deploy that changes a template changes it. Outside production it is random per process, so restarting `pnpm dev` after a template change never serves a stale cached PDF. The API puts it in every export's checksum.
