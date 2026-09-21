@@ -158,9 +158,27 @@ describe("right-aligned dates", () => {
     const html = render({
       data: makeCvData(),
       sections: [
-        { type: "experiences", include: true, order: 0, entryOrder: [] },
-        { type: "results", include: true, order: 1, entryOrder: [] },
-        { type: "certifications", include: true, order: 2, entryOrder: [] },
+        {
+          type: "experiences",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+        {
+          type: "results",
+          include: true,
+          order: 1,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+        {
+          type: "certifications",
+          include: true,
+          order: 2,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
       ],
     });
     for (const date of ["Jun 2025 – Present", "2022 – Present", "Mar 2025"]) {
@@ -171,6 +189,28 @@ describe("right-aligned dates", () => {
       ];
       expect(italics.at(-1)?.[1], date).toMatch(/\bpr-3\b/);
     }
+  });
+});
+
+describe("page margins", () => {
+  const standard = getTemplate("standard");
+
+  it.each([
+    ["comfortable", "10mm 12mm"],
+    ["compact", "8mm 10mm"],
+  ])("reports the margins the %s PDF prints with", (density, margin) => {
+    const options = { density };
+    const html = render({ data: makeCvData(), options });
+    expect(html).toContain(`@page{size:210mm 297mm;margin:${margin};}`);
+
+    const { blockMm, inlineMm } = standard?.pageMargins(options) ?? {};
+    expect(`${blockMm}mm ${inlineMm}mm`).toBe(margin);
+  });
+
+  it("falls back to the default density for an unparseable options bag", () => {
+    expect(standard?.pageMargins({ density: "enormous" })).toEqual(
+      standard?.pageMargins({}),
+    );
   });
 });
 
@@ -286,9 +326,27 @@ describe("sections and options", () => {
     const html = render({
       data: makeCvData(),
       sections: [
-        { type: "certifications", include: true, order: 0, entryOrder: [] },
-        { type: "projects", include: true, order: 1, entryOrder: [] },
-        { type: "achievements", include: false, order: 2, entryOrder: [] },
+        {
+          type: "certifications",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+        {
+          type: "projects",
+          include: true,
+          order: 1,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+        {
+          type: "achievements",
+          include: false,
+          order: 2,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
       ],
     });
     expect(html.indexOf("Certifications")).toBeLessThan(
@@ -301,12 +359,77 @@ describe("sections and options", () => {
     const html = render({
       data: makeCvData(),
       sections: [
-        { type: "projects", include: true, order: 0, entryOrder: ["p2"] },
+        {
+          type: "projects",
+          include: true,
+          order: 0,
+          entryOrder: ["p2"],
+          hiddenEntries: [],
+        },
       ],
     });
     expect(html.indexOf("No link here")).toBeLessThan(
       html.indexOf("gradebook"),
     );
+  });
+
+  it("leaves out the entries the student switched off", () => {
+    const html = render({
+      data: makeCvData(),
+      sections: [
+        {
+          type: "projects",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: ["p1"],
+        },
+      ],
+    });
+    expect(html).toContain("No link here");
+    expect(html).not.toContain("gradebook");
+  });
+
+  it("prints no heading for a section whose entries are all switched off", () => {
+    const html = render({
+      data: makeCvData(),
+      sections: [
+        {
+          type: "projects",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: ["p1", "p2"],
+        },
+        {
+          type: "custom",
+          customSectionId: "cs1",
+          include: true,
+          order: 1,
+          entryOrder: [],
+          hiddenEntries: ["cse1"],
+        },
+      ],
+    });
+    expect(html).not.toContain("Projects");
+    expect(html).not.toContain("Publications");
+  });
+
+  it("applies the switch to the links in the header too", () => {
+    const html = render({
+      data: makeCvData(),
+      sections: [
+        {
+          type: "socials",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: ["so2"],
+        },
+      ],
+    });
+    expect(html).toContain("github.com/ananyab");
+    expect(html).not.toContain("linkedin.com/in/ananyab");
   });
 
   it("prints semester results first to last whatever entryOrder was saved", () => {
@@ -318,6 +441,7 @@ describe("sections and options", () => {
           include: true,
           order: 0,
           entryOrder: ["r6", "r5"],
+          hiddenEntries: [],
         },
       ],
       options: { showSemesterResults: true },
@@ -359,7 +483,15 @@ describe("sections and options", () => {
   it("treats summary and skills as sections, so they can be excluded", () => {
     const html = render({
       data: makeCvData(),
-      sections: [{ type: "projects", include: true, order: 0, entryOrder: [] }],
+      sections: [
+        {
+          type: "projects",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+      ],
     });
     expect(html).not.toContain("Summary");
     expect(html).not.toContain("PostgreSQL");
@@ -369,8 +501,20 @@ describe("sections and options", () => {
     const html = render({
       data: makeCvData(),
       sections: [
-        { type: "projects", include: true, order: 0, entryOrder: [] },
-        { type: "summary", include: true, order: 1, entryOrder: [] },
+        {
+          type: "projects",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+        {
+          type: "summary",
+          include: true,
+          order: 1,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
       ],
     });
     expect(html.indexOf("Projects")).toBeLessThan(html.indexOf("Summary"));
@@ -381,7 +525,15 @@ describe("sections and options", () => {
     data.student.bio = "   ";
     const html = render({
       data,
-      sections: [{ type: "summary", include: true, order: 0, entryOrder: [] }],
+      sections: [
+        {
+          type: "summary",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
+      ],
     });
     expect(html).not.toContain("Summary");
   });
@@ -399,8 +551,14 @@ describe("sections and options", () => {
       render({
         data: makeCvData(),
         sections: [
-          // @ts-expect-error — deliberately not a section this template knows.
-          { type: "publications", include: true, order: 0, entryOrder: [] },
+          {
+            // @ts-expect-error — deliberately not a section this template knows.
+            type: "publications",
+            include: true,
+            order: 0,
+            entryOrder: [],
+            hiddenEntries: [],
+          },
         ],
       }),
     ).not.toThrow();

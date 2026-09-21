@@ -21,6 +21,7 @@ const sectionCommon = {
   include: z.boolean(),
   order: z.number().int().min(0),
   entryOrder: z.array(z.string()).default([]),
+  hiddenEntries: z.array(z.string()).default([]),
 };
 
 export const cvSectionPreferenceSchema = z.discriminatedUnion("type", [

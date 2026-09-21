@@ -16,6 +16,13 @@ export {
   templateManifests,
 } from "./manifests";
 export {
+  PAGE_HEIGHT_MM,
+  PAGE_WIDTH_MM,
+  type PageBox,
+  type PageMargins,
+  pageBox,
+} from "./page";
+export {
   type CvRenderInput,
   type CvTemplate,
   cvTemplates,
@@ -23,6 +30,7 @@ export {
   type TemplateComponentProps,
 } from "./registry";
 export {
+  arrangeEntries,
   orderEntries,
   type ResolvedSection,
   resolveSections,

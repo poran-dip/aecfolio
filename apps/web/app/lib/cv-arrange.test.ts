@@ -1,4 +1,4 @@
-import type { CvSectionsConfig } from "@aecfolio/shared";
+import type { CvSectionPreference, CvSectionsConfig } from "@aecfolio/shared";
 import { type CvData, standardManifest } from "@aecfolio/ui";
 import { describe, expect, it } from "vitest";
 import {
@@ -7,6 +7,8 @@ import {
   sectionEntries,
   sectionKey,
   sectionLabel,
+  setEntryVisible,
+  visibleEntryCount,
 } from "./cv-arrange";
 
 function makeData(overrides: Partial<CvData> = {}): CvData {
@@ -61,8 +63,20 @@ describe("normalizeSections", () => {
   it("appends a custom section created after the preference was saved", () => {
     const data = makeData({ customSections: [custom("cs1", "Publications")] });
     const saved: CvSectionsConfig = [
-      { type: "summary", include: true, order: 0, entryOrder: [] },
-      { type: "projects", include: false, order: 1, entryOrder: [] },
+      {
+        type: "summary",
+        include: true,
+        order: 0,
+        entryOrder: [],
+        hiddenEntries: [],
+      },
+      {
+        type: "projects",
+        include: false,
+        order: 1,
+        entryOrder: [],
+        hiddenEntries: [],
+      },
     ];
 
     const sections = normalizeSections(standardManifest, data, saved);
@@ -73,13 +87,20 @@ describe("normalizeSections", () => {
 
   it("drops a custom section that no longer exists", () => {
     const saved: CvSectionsConfig = [
-      { type: "summary", include: true, order: 0, entryOrder: [] },
+      {
+        type: "summary",
+        include: true,
+        order: 0,
+        entryOrder: [],
+        hiddenEntries: [],
+      },
       {
         type: "custom",
         customSectionId: "gone",
         include: true,
         order: 1,
         entryOrder: [],
+        hiddenEntries: [],
       },
     ];
 
@@ -90,8 +111,20 @@ describe("normalizeSections", () => {
 
   it("renumbers order so it is contiguous and matches the shown order", () => {
     const saved: CvSectionsConfig = [
-      { type: "skills", include: true, order: 9, entryOrder: [] },
-      { type: "summary", include: true, order: 4, entryOrder: [] },
+      {
+        type: "skills",
+        include: true,
+        order: 9,
+        entryOrder: [],
+        hiddenEntries: [],
+      },
+      {
+        type: "summary",
+        include: true,
+        order: 4,
+        entryOrder: [],
+        hiddenEntries: [],
+      },
     ];
 
     const sections = normalizeSections(standardManifest, makeData(), saved);
@@ -107,7 +140,13 @@ describe("sectionEntries", () => {
   it("has nothing to arrange for summary", () => {
     expect(
       sectionEntries(
-        { type: "summary", include: true, order: 0, entryOrder: [] },
+        {
+          type: "summary",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
         makeData(),
       ),
     ).toEqual([]);
@@ -122,7 +161,13 @@ describe("sectionEntries", () => {
 
     expect(
       sectionEntries(
-        { type: "experiences", include: true, order: 0, entryOrder: [] },
+        {
+          type: "experiences",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
         data,
       ),
     ).toEqual([{ id: "e1", label: "Backend Intern · Zoho" }]);
@@ -138,7 +183,13 @@ describe("sectionEntries", () => {
 
     expect(
       sectionEntries(
-        { type: "results", include: true, order: 0, entryOrder: [] },
+        {
+          type: "results",
+          include: true,
+          order: 0,
+          entryOrder: [],
+          hiddenEntries: [],
+        },
         data,
       ),
     ).toEqual([]);
@@ -156,11 +207,106 @@ describe("sectionEntries", () => {
       include: true,
       order: 0,
       entryOrder: [],
+      hiddenEntries: [],
     };
 
     expect(sectionLabel(section, data)).toBe("Publications");
     expect(sectionEntries(section, data)).toEqual([
       { id: "p1", label: "A paper" },
     ]);
+  });
+});
+
+describe("normalizeSections and hiddenEntries", () => {
+  it("fills hiddenEntries for a section saved before it existed", () => {
+    const legacy = [
+      { type: "projects", include: true, order: 0, entryOrder: ["p2"] },
+    ] as unknown as CvSectionsConfig;
+
+    const projects = normalizeSections(
+      standardManifest,
+      makeData(),
+      legacy,
+    ).find((s) => s.type === "projects");
+
+    expect(projects?.hiddenEntries).toEqual([]);
+    expect(projects?.entryOrder).toEqual(["p2"]);
+  });
+
+  it("keeps what the student already switched off", () => {
+    const saved: CvSectionsConfig = [
+      {
+        type: "projects",
+        include: true,
+        order: 0,
+        entryOrder: [],
+        hiddenEntries: ["p1"],
+      },
+    ];
+
+    const projects = normalizeSections(
+      standardManifest,
+      makeData(),
+      saved,
+    ).find((s) => s.type === "projects");
+
+    expect(projects?.hiddenEntries).toEqual(["p1"]);
+  });
+});
+
+describe("setEntryVisible", () => {
+  it("adds an entry to the switched-off list", () => {
+    expect(setEntryVisible(["a"], "b", false)).toEqual(["a", "b"]);
+  });
+
+  it("removes it again when switched back on", () => {
+    expect(setEntryVisible(["a", "b"], "a", true)).toEqual(["b"]);
+  });
+
+  it("does not list an entry twice", () => {
+    expect(setEntryVisible(["a"], "a", false)).toEqual(["a"]);
+  });
+
+  it("does nothing to switch on an entry that was never off", () => {
+    expect(setEntryVisible(["a"], "z", true)).toEqual(["a"]);
+  });
+
+  it("does not mutate its input", () => {
+    const hidden = ["a"];
+    setEntryVisible(hidden, "b", false);
+    expect(hidden).toEqual(["a"]);
+  });
+});
+
+describe("visibleEntryCount", () => {
+  const data = makeData({
+    projects: [
+      { id: "p1", title: "One" },
+      { id: "p2", title: "Two" },
+      { id: "p3", title: "Three" },
+    ] as unknown as CvData["projects"],
+  });
+  const section = (hiddenEntries: string[]): CvSectionPreference => ({
+    type: "projects",
+    include: true,
+    order: 0,
+    entryOrder: [],
+    hiddenEntries,
+  });
+
+  it("counts every entry when none are off", () => {
+    expect(visibleEntryCount(section([]), data)).toBe(3);
+  });
+
+  it("does not count the ones switched off", () => {
+    expect(visibleEntryCount(section(["p2"]), data)).toBe(2);
+  });
+
+  it("ignores an id that no longer matches any entry", () => {
+    expect(visibleEntryCount(section(["gone"]), data)).toBe(3);
+  });
+
+  it("is zero when every entry is off", () => {
+    expect(visibleEntryCount(section(["p1", "p2", "p3"]), data)).toBe(0);
   });
 });
