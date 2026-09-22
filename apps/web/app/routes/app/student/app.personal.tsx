@@ -31,6 +31,7 @@ export function AccountSection({ account }: { account: Account }) {
 
   const auto = useAutosave<typeof value>({
     canSave: (next) => next.name.trim().length > 0,
+    initial: value,
     save: (next) =>
       studentApi.me({
         name: next.name.trim(),
@@ -123,6 +124,7 @@ export function ProfileSection({ profile }: { profile: Profile }) {
   const [value, setValue] = useState(profile);
 
   const auto = useAutosave<Profile>({
+    initial: value,
     save: (next) =>
       studentApi.profile({
         bio: next.bio?.trim() || null,

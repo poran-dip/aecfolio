@@ -19,7 +19,7 @@ import { Button } from "~/components/ui/button";
 import { ConfirmDialog } from "~/components/ui/dialog";
 import { IconButton } from "~/components/ui/icon-button";
 import { toast } from "~/components/ui/toast";
-import type { AutosaveStatus } from "~/lib/autosave";
+import { type AutosaveStatus, sameValue } from "~/lib/autosave";
 import { clearDraft, readDraft, writeDraft } from "~/lib/local-draft";
 import { entityApi } from "~/lib/student-api";
 import { useAutosave } from "~/lib/use-autosave";
@@ -40,10 +40,6 @@ export type EntryFieldProps<T> = {
 };
 
 type Row<T> = { key: string; id: string | null; value: T };
-
-function sameValue<T>(a: T, b: T): boolean {
-  return JSON.stringify(a) === JSON.stringify(b);
-}
 
 export function EntryCollection<T>({
   label,

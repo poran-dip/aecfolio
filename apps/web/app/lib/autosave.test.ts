@@ -137,6 +137,61 @@ describe("flush", () => {
   });
 });
 
+describe("initial baseline", () => {
+  it("never saves when nothing changes from the initial value", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const auto = createAutosaver<string>({ save, initial: "hello" });
+
+    auto.change("hello");
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DELAY);
+
+    expect(save).not.toHaveBeenCalled();
+    expect(auto.status().state).toBe("saved");
+  });
+
+  it("does not save when a value is changed and then reverted before it flushes", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const auto = createAutosaver<string>({ save, initial: "hello" });
+
+    auto.change("hell");
+    await vi.advanceTimersByTimeAsync(100);
+    auto.change("hello");
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DELAY);
+
+    expect(save).not.toHaveBeenCalled();
+    expect(auto.status().state).toBe("saved");
+  });
+
+  it("saves a genuine change, then skips a later revert to that saved value", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const auto = createAutosaver<string>({ save, initial: "hello" });
+
+    auto.change("hello world");
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DELAY);
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledWith("hello world");
+
+    auto.change("hello world!");
+    await vi.advanceTimersByTimeAsync(100);
+    auto.change("hello world");
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DELAY);
+
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(auto.status().state).toBe("saved");
+  });
+
+  it("still saves on every change when no initial value is given", async () => {
+    const save = vi.fn().mockResolvedValue(undefined);
+    const auto = createAutosaver<string>({ save });
+
+    auto.change("hello");
+    await vi.advanceTimersByTimeAsync(AUTOSAVE_DELAY);
+
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenCalledWith("hello");
+  });
+});
+
 describe("failure", () => {
   it("reports the error, keeps the value, and retries it", async () => {
     const statuses: AutosaveStatus[] = [];
