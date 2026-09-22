@@ -6,6 +6,7 @@ import { logger } from "hono/logger";
 import { fail } from "./lib/response";
 import { resolveSession, type SessionResolver } from "./lib/session";
 import { createAuthMiddleware } from "./middleware/auth";
+import { ipRateLimit } from "./middleware/rate-limit";
 import api from "./routes";
 import type { AppEnv } from "./types/context";
 
@@ -14,6 +15,12 @@ export type CreateAppOptions = {
 };
 
 const SKIP_LOG = new Set(["/api/health", "/api/auth/get-session"]);
+
+const globalRateLimit = ipRateLimit({
+  limit: 120,
+  windowMs: 60_000,
+  skip: (c) => c.req.path === "/api/health",
+});
 
 export function createApp(options: CreateAppOptions = {}) {
   const resolver = options.sessionResolver ?? resolveSession;
@@ -35,6 +42,8 @@ export function createApp(options: CreateAppOptions = {}) {
         credentials: true,
       }),
     )
+
+    .use("/api/*", globalRateLimit)
 
     .use("/api/*", createAuthMiddleware(resolver))
 

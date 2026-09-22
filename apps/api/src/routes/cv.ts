@@ -43,7 +43,10 @@ import { fail, getUser, ok } from "../lib/response";
 import { redirectToObject } from "../lib/uploads";
 import { validate } from "../lib/validate";
 import { requireAuth, requireCapability } from "../middleware/capability";
+import { ipRateLimit } from "../middleware/rate-limit";
 import type { AppEnv } from "../types/context";
+
+const cvExportRateLimit = ipRateLimit({ limit: 1, windowMs: 10_000 });
 
 async function loadSource(studentId: string) {
   const [source] = await loadCvSources([studentId]);
@@ -136,6 +139,7 @@ const cv = new Hono<AppEnv>()
   .post(
     "/exports/self",
     requireCapability(Capability.CV_EXPORT_SELF),
+    cvExportRateLimit,
     validate("json", createSelfCvExportSchema),
     async (c) => {
       const user = getUser(c);
@@ -178,6 +182,7 @@ const cv = new Hono<AppEnv>()
   .post(
     "/exports/standard",
     requireCapability(Capability.CV_EXPORT_STANDARD),
+    cvExportRateLimit,
     validate("json", createStandardCvExportSchema),
     async (c) => {
       const user = getUser(c);
