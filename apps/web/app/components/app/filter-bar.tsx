@@ -1,6 +1,6 @@
 import { Search, X } from "lucide-react";
 import type { ReactNode } from "react";
-import { useEffect, useId, useState } from "react";
+import { useId, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -29,18 +29,39 @@ export function SearchField({
   className?: string;
 }) {
   const { params, set } = useFilterNavigation();
-  const id = useId();
   const current = params.get(paramKey) ?? "";
-  const [value, setValue] = useState(current);
 
-  useEffect(() => setValue(current), [current]);
+  return (
+    <SearchFieldInput
+      key={current}
+      initialValue={current}
+      placeholder={placeholder}
+      className={className}
+      onSubmit={(value) => set({ [paramKey]: value.trim() || null })}
+    />
+  );
+}
+
+function SearchFieldInput({
+  initialValue,
+  placeholder,
+  className,
+  onSubmit,
+}: {
+  initialValue: string;
+  placeholder: string;
+  className?: string;
+  onSubmit: (value: string) => void;
+}) {
+  const id = useId();
+  const [value, setValue] = useState(initialValue);
 
   return (
     <form
       className={cn("relative flex-1 sm:max-w-xs", className)}
       onSubmit={(event) => {
         event.preventDefault();
-        set({ [paramKey]: value.trim() || null });
+        onSubmit(value);
       }}
     >
       <label htmlFor={id} className="sr-only">
