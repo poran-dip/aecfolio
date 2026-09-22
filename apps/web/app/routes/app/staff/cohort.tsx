@@ -260,50 +260,58 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
               Leave the department empty to promote the whole admission year.
             </CardDescription>
           </CardHeader>
-          <CardContent className="flex flex-wrap items-end gap-4">
-            <Field label="Admission year" required className="w-40">
-              {(props) => (
-                <Input
-                  {...props}
-                  type="number"
-                  min={ADMISSION_YEAR_MIN}
-                  max={ADMISSION_YEAR_MAX}
-                  value={admissionYear}
-                  onChange={(event) => {
-                    setAdmissionYear(event.target.value);
-                    setPreview(null);
-                  }}
-                />
-              )}
-            </Field>
-
-            <Field label="Department" className="w-52">
-              {(props) => (
-                <Select
-                  {...props}
-                  value={branch}
-                  onValueChange={(value) => {
-                    setBranch(value);
-                    setPreview(null);
-                  }}
-                  anyLabel="Every department"
-                  placeholder="Every department"
-                  options={Object.values(Branch).map((value) => ({
-                    value,
-                    label: BRANCH_LABELS[value],
-                  }))}
-                />
-              )}
-            </Field>
-
-            <Button
-              variant="secondary"
-              disabled={busy || !yearValid}
-              onClick={() => submit(true)}
+          <CardContent>
+            <fetcher.Form
+              className="flex flex-wrap items-end gap-4"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submit(true);
+              }}
             >
-              <Eye />
-              {busy && !confirming ? "Checking…" : "Preview promotion"}
-            </Button>
+              <Field label="Admission year" required className="w-40">
+                {(props) => (
+                  <Input
+                    {...props}
+                    type="number"
+                    min={ADMISSION_YEAR_MIN}
+                    max={ADMISSION_YEAR_MAX}
+                    value={admissionYear}
+                    onChange={(event) => {
+                      setAdmissionYear(event.target.value);
+                      setPreview(null);
+                    }}
+                  />
+                )}
+              </Field>
+
+              <Field label="Department" className="w-52">
+                {(props) => (
+                  <Select
+                    {...props}
+                    value={branch}
+                    onValueChange={(value) => {
+                      setBranch(value);
+                      setPreview(null);
+                    }}
+                    anyLabel="Every department"
+                    placeholder="Every department"
+                    options={Object.values(Branch).map((value) => ({
+                      value,
+                      label: BRANCH_LABELS[value],
+                    }))}
+                  />
+                )}
+              </Field>
+
+              <Button
+                type="submit"
+                variant="secondary"
+                disabled={busy || !yearValid}
+              >
+                <Eye />
+                {busy && !confirming ? "Checking…" : "Preview promotion"}
+              </Button>
+            </fetcher.Form>
           </CardContent>
         </Card>
 
@@ -327,7 +335,13 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
               </div>
 
               {missing.length > 0 ? (
-                <div className="flex flex-col gap-3 rounded-lg border border-danger-line bg-danger-surface p-4">
+                <fetcher.Form
+                  className="flex flex-col gap-3 rounded-lg border border-danger-line bg-danger-surface p-4"
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    submit(true);
+                  }}
+                >
                   <p className="flex items-start gap-2 text-sm text-danger-text">
                     <TriangleAlert className="mt-0.5 size-4 shrink-0" />
                     These semesters have no credit scheme for admission year{" "}
@@ -371,15 +385,15 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
 
                   <div>
                     <Button
+                      type="submit"
                       size="sm"
                       variant="secondary"
                       disabled={busy || !allFilled}
-                      onClick={() => submit(true)}
                     >
                       Re-check with these credits
                     </Button>
                   </div>
-                </div>
+                </fetcher.Form>
               ) : (
                 <p className="rounded-lg border border-primary-line bg-primary-surface px-4 py-3 text-sm text-primary-text">
                   Every semester this cohort moves into already has a credit
@@ -416,7 +430,13 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-col gap-4">
-            <div className="flex flex-wrap items-end gap-3">
+            <fetcher.Form
+              className="flex flex-wrap items-end gap-3"
+              onSubmit={(event) => {
+                event.preventDefault();
+                submitScheme();
+              }}
+            >
               <Field label="Department" className="w-44">
                 {(props) => (
                   <Select
@@ -491,14 +511,11 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
                 )}
               </Field>
 
-              <Button
-                disabled={busy || !schemeFormValid}
-                onClick={submitScheme}
-              >
+              <Button type="submit" disabled={busy || !schemeFormValid}>
                 <Plus />
                 Save scheme
               </Button>
-            </div>
+            </fetcher.Form>
 
             {schemes.items.length === 0 ? (
               <p className="text-sm text-ink-subtle">
@@ -508,9 +525,13 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
               <div className="flex flex-wrap gap-2">
                 {schemes.items.map((scheme) =>
                   editingSchemeId === scheme.id ? (
-                    <div
+                    <fetcher.Form
                       key={scheme.id}
                       className="flex items-center gap-2 rounded-full border border-line bg-surface py-1 pr-1 pl-3 text-sm"
+                      onSubmit={(event) => {
+                        event.preventDefault();
+                        submitSchemeEdit(scheme.id);
+                      }}
                     >
                       <span>
                         {scheme.branch} · {scheme.admissionYear} ·{" "}
@@ -528,6 +549,7 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
                         }
                       />
                       <Button
+                        type="submit"
                         size="sm"
                         disabled={
                           busy ||
@@ -535,7 +557,6 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
                           Number(editingCredits) < TOTAL_CREDITS_MIN ||
                           Number(editingCredits) > TOTAL_CREDITS_MAX
                         }
-                        onClick={() => submitSchemeEdit(scheme.id)}
                       >
                         Save
                       </Button>
@@ -547,7 +568,7 @@ export default function CohortRoute({ loaderData }: Route.ComponentProps) {
                       >
                         Cancel
                       </Button>
-                    </div>
+                    </fetcher.Form>
                   ) : (
                     <button
                       key={scheme.id}
