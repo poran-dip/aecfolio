@@ -3,6 +3,7 @@ import { apiEnv } from "@aecfolio/config";
 import { serve } from "@hono/node-server";
 import app from "./app";
 import { startJobRunner } from "./lib/cv/jobs";
+import { startSessionCleanup } from "./lib/session-cleanup";
 import { ensureBucketCors } from "./lib/storage";
 
 const isProd = apiEnv.NODE_ENV === "production";
@@ -25,5 +26,6 @@ ensureBucketCors([apiEnv.CORS_ORIGIN]).catch((err) => {
 });
 
 startJobRunner();
+startSessionCleanup();
 
 export type AppType = typeof app;
