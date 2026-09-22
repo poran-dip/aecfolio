@@ -16,9 +16,11 @@ export type UseAutosave<T> = {
 export function useAutosave<T>({
   save,
   canSave,
+  initial,
 }: {
   save: (value: T) => Promise<void>;
   canSave?: (value: T) => boolean;
+  initial?: T;
 }): UseAutosave<T> {
   const [status, setStatus] = useState<AutosaveStatus>({ state: "clean" });
 
@@ -32,6 +34,7 @@ export function useAutosave<T>({
       createAutosaver<T>({
         save: (value) => saveRef.current(value),
         canSave: (value) => canSaveRef.current?.(value) ?? true,
+        initial,
         onStatus: setStatus,
       }),
     [],

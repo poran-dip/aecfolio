@@ -8,6 +8,7 @@ export type AutosaveStatus = {
 export type AutosaveOptions<T> = {
   save: (value: T) => Promise<void>;
   canSave?: (value: T) => boolean;
+  initial?: T;
   delay?: number;
   maxWait?: number;
   onStatus?: (status: AutosaveStatus) => void;
@@ -15,6 +16,10 @@ export type AutosaveOptions<T> = {
 
 export const AUTOSAVE_DELAY = 800;
 export const AUTOSAVE_MAX_WAIT = 5000;
+
+export function sameValue<T>(a: T, b: T): boolean {
+  return JSON.stringify(a) === JSON.stringify(b);
+}
 
 export type Autosaver<T> = {
   change: (value: T) => void;
@@ -28,6 +33,7 @@ export type Autosaver<T> = {
 export function createAutosaver<T>({
   save,
   canSave = () => true,
+  initial,
   delay = AUTOSAVE_DELAY,
   maxWait = AUTOSAVE_MAX_WAIT,
   onStatus,
@@ -37,6 +43,8 @@ export function createAutosaver<T>({
   let queued: { value: T } | null = null;
   let inFlight = false;
   let status: AutosaveStatus = { state: "clean" };
+  const hasBaseline = initial !== undefined;
+  let lastSaved = initial as T;
 
   function setStatus(next: AutosaveStatus) {
     status = next;
@@ -59,11 +67,19 @@ export function createAutosaver<T>({
 
     const value = queued.value;
     queued = null;
+
+    if (hasBaseline && sameValue(value, lastSaved)) {
+      setStatus({ state: "saved" });
+      if (queued) await run();
+      return;
+    }
+
     inFlight = true;
     setStatus({ state: "saving" });
 
     try {
       await save(value);
+      lastSaved = value;
       setStatus({ state: queued ? "dirty" : "saved" });
     } catch (error) {
       if (!queued) queued = { value };
