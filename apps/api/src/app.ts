@@ -13,12 +13,14 @@ export type CreateAppOptions = {
   sessionResolver?: SessionResolver;
 };
 
+const SKIP_LOG = new Set(["/api/health", "/api/auth/get-session"]);
+
 export function createApp(options: CreateAppOptions = {}) {
   const resolver = options.sessionResolver ?? resolveSession;
 
   return new Hono<AppEnv>()
     .use("*", async (c, next) => {
-      if (apiEnv.NODE_ENV === "test") return next();
+      if (apiEnv.NODE_ENV === "test" || SKIP_LOG.has(c.req.path)) return next();
       return logger()(c, next);
     })
 
